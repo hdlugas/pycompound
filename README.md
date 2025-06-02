@@ -1,5 +1,5 @@
-# pycompound
-A Python-based tool for spectral library matching, pycompound is available in two versions: a command-line interface and Python modules for integration into customer code. It performs spectral library matching to identify chemical compounds, offering a range of spectrum preprocessing transformations and similarity measures, including Cosine and three entropy-based similarity measures. pycompound supports both high-resolution mass spectrometry (HRMS) data (e.g., LC-MS/MS) and nominal-resolution mass spectrometry (NRMS) data (e.g., GC-MS).
+# PyCompound
+A Python-based tool for spectral library matching, PyCompound is available in two versions: a command-line interface and Python modules for integration into customer code. It performs spectral library matching to identify chemical compounds, offering a range of spectrum preprocessing transformations and similarity measures, including Cosine and three entropy-based similarity measures. PyCompound supports both high-resolution mass spectrometry (HRMS) data (e.g., LC-MS/MS) and nominal-resolution mass spectrometry (NRMS) data (e.g., GC-MS).
 
 ## Table of Contents
 - [1. Install dependencies](#create-conda-env)
@@ -16,7 +16,7 @@ A Python-based tool for spectral library matching, pycompound is available in tw
 
 <a name="create-conda-env"></a>
 ## 1. Install dependencies
-pycompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Pyteomics, and netCDF4. Specifically, this software was validated with python=3.12.4, matplotlib=3.8.4, numpy=1.26.4, pandas=2.2.2, scipy=1.13.1, pyteomics=4.7.2, and netCDF4=1.6.5, although it may work with other versions of these tools. A user may consider creating a conda environment (see [https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for guidance on getting started with conda if you are unfamiliar). For a system with conda installed, one can create the environment pycompound_env with the necessary dependencies using the command:
+PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Pyteomics, and netCDF4. Specifically, this software was validated with python=3.12.4, matplotlib=3.8.4, numpy=1.26.4, pandas=2.2.2, scipy=1.13.1, pyteomics=4.7.2, and netCDF4=1.6.5, although it may work with other versions of these tools. A user may consider creating a conda environment (see [https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for guidance on getting started with conda if you are unfamiliar). For a system with conda installed, one can create the environment pycompound_env with the necessary dependencies using the command:
 ```
 conda env create -f environment.yml
 ```
@@ -113,7 +113,7 @@ The following spectrum preprocessing transformations are offered:
 Given a pair of processed spectra intensities
 $I=(a_{1},a_{2},...,a_{n}), J=(b_{1},b_{2},...,b_{n})\in\mathbb{R}^{n}$
 with $0\leq a_{i},b_{i}\leq 1$ for all $i\in\{1,2,...,n\}$ and
-$\sum_{i=1}^{n}a_{i}=\sum_{i=1}^{n}b_{i}=1$, pycompound provides
+$\sum_{i=1}^{n}a_{i}=\sum_{i=1}^{n}b_{i}=1$, PyCompound provides
 functionality for computing the following similarity measures:
 
 -   Cosine Similarity Measure:
@@ -204,7 +204,7 @@ Parameter descriptions are as follows:
 
 Some example MGF files one can use to build an LC-MS/MS library can be found from the Global Natural Products Social Molecular Networking (GNPS) databases here: [https://external.gnps2.org/gnpslibrary](https://external.gnps2.org/gnpslibrary). Some example mzML files one can use to build an LC-MS/MS library can be found in this repository: [https://github.com/HUPO-PSI/mzML](https://github.com/HUPO-PSI/mzML). 
 
-LC-MS/MS and GC-MS reference libraries are available at the Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324)). The reference libraries available in pycompound's GitHub repository are shortened versions of these reference libraries due to GitHub's limited storage.
+LC-MS/MS and GC-MS reference libraries are available at the Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324)). The reference libraries available in PyCompound's GitHub repository are shortened versions of these reference libraries due to GitHub's limited storage.
 
 <a name="run-spec-lib-matching"></a>
 ### 3.2 Run spectral library matching
@@ -312,7 +312,7 @@ Parameter descriptions are as follows:
 
 <a name="run-spec-lib-matching-python"></a>
 #### 3.2.2 Python interface
-The file pycompound/test/example_code_for_python_use.py demonstrates how some of the spectrum preprocessing functionality and similarity measures can be implemented directly in Python without using the command line. To use pycompound's spectrum preprocessing functionality and similarity measures, one must import all functionality from the scripts processing.py and similarity_measures.py with:
+The file pycompound/test/example_code_for_python_use.py demonstrates how some of the spectrum preprocessing functionality and similarity measures can be implemented directly in Python without using the command line. To use PyCompound's spectrum preprocessing functionality and similarity measures, one must import all functionality from the scripts processing.py and similarity_measures.py with:
 ```
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '../src'))) # specify the path to the src directory
 from processing import *

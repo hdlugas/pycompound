@@ -291,19 +291,21 @@ if chromatography_platform == 'HRMS':
         r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
 
 
-    q_spec_pre_trans = q_spec
-    r_spec_pre_trans = r_spec
+    q_spec_pre_trans = q_spec.copy()
+    r_spec_pre_trans = r_spec.copy()
+    q_spec_pre_trans[:,1] = q_spec_pre_trans[:,1].astype(float)
+    r_spec_pre_trans[:,1] = r_spec_pre_trans[:,1].astype(float)
 
     # apply transformation to y-axis if relevant
     if y_axis_transformation == 'normalized':
         q_spec_pre_trans[:,1] = q_spec_pre_trans[:,1] / np.max(q_spec_pre_trans[:,1])
         r_spec_pre_trans[:,1] = r_spec_pre_trans[:,1] / np.max(r_spec_pre_trans[:,1])
     elif y_axis_transformation == 'log10':
-        q_spec_pre_trans[:,1] = np.log10(q_spec_pre_trans[:,1]+1)
-        r_spec_pre_trans[:,1] = np.log10(r_spec_pre_trans[:,1]+1)
+        q_spec_pre_trans[:,1] = np.log10(np.array(q_spec_pre_trans[:,1]+1,dtype=float))
+        r_spec_pre_trans[:,1] = np.log10(np.array(r_spec_pre_trans[:,1]+1,dtype=float))
     elif y_axis_transformation == 'sqrt':
-        q_spec_pre_trans[:,1] = np.sqrt(q_spec_pre_trans[:,1])
-        r_spec_pre_trans[:,1] = np.sqrt(r_spec_pre_trans[:,1])
+        q_spec_pre_trans[:,1] = np.sqrt(np.array(q_spec_pre_trans[:,1],dtype=float))
+        r_spec_pre_trans[:,1] = np.sqrt(np.array(r_spec_pre_trans[:,1],dtype=float))
 
     # plot the untransformed spectra
     plt.subplot(2,1,1)
@@ -314,6 +316,7 @@ if chromatography_platform == 'HRMS':
     plt.xticks(fontsize=8)
     plt.yticks(fontsize=8)
     plt.title('Untransformed Spectra', fontsize=12)
+
 
     # perform the spectrum preprocessing transformations in the order specified
     is_matched = False
@@ -433,7 +436,7 @@ elif chromatography_platform == 'NRMS':
     #print(r_spec)
     q_spec = convert_spec(q_spec,mzs)
     r_spec = convert_spec(r_spec,mzs)
-
+    
 
     # plot the untransformed spectra
     plt.subplot(2,1,1)
@@ -444,8 +447,10 @@ elif chromatography_platform == 'NRMS':
         plt.xticks([])
         plt.yticks([])
     else:
-        q_spec_pre_trans = q_spec
-        r_spec_pre_trans = r_spec
+        q_spec_pre_trans = q_spec.copy()
+        r_spec_pre_trans = r_spec.copy()
+        q_spec_pre_trans[:,1] = q_spec_pre_trans[:,1].astype(float)
+        r_spec_pre_trans[:,1] = r_spec_pre_trans[:,1].astype(float)
 
         # apply transformation to y-axis if relevant
         if y_axis_transformation == 'normalized':
@@ -481,7 +486,7 @@ elif chromatography_platform == 'NRMS':
             if high_quality_reference_library == False:
                 r_spec = filter_spec_gcms(r_spec, mz_min = mz_min, mz_max = mz_max, int_min = int_min, int_max = int_max)
 
-    # compute similarity score; if the spectra contain only one point at most, their similarity is considered to be 0
+    # compute similarity score; if the spectra contain one point at most, their similarity is considered to be 0
     if q_spec.shape[0] > 1:
         if similarity_measure == 'cosine':
             similarity_score = S_cos(q_spec[:,1], r_spec[:,1])

@@ -279,33 +279,33 @@ Parameter descriptions are as follows:
 
 --high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False.
 
---mz_min: Remove all peaks with mass to charge less than mz_min in each spectrum. Default = 0.
+--mz_min: Remove all peaks with mass to charge less than mz_min in each spectrum. Default: 0.
 
---mz_max: Remove all peaks with mass to charge greater than mz_max in each spectrum. Default = 999999999999.
+--mz_max: Remove all peaks with mass to charge greater than mz_max in each spectrum. Default: 999999999999.
 
---int_min: Remove all peaks with intensity less than int_min in each spectrum. Default = 0.
+--int_min: Remove all peaks with intensity less than int_min in each spectrum. Default: 0.
 
---int_max: Remove all peaks with intensity greater than int_max in each spectrum. Default = 999999999999.
+--int_max: Remove all peaks with intensity greater than int_max in each spectrum. Default: 999999999999.
 
---window_size_centroiding (HRMS only): Window size parameter used in centroiding a given spectrum. Default = 0.5.
+--window_size_centroiding (HRMS only): Window size parameter used in centroiding a given spectrum. Default: 0.5.
 
---window_size_matching (HRMS only): Window size parameter used in matching a query spectrum and a reference library spectrum. Default = 0.5.
+--window_size_matching (HRMS only): Window size parameter used in matching a query spectrum and a reference library spectrum. Default: 0.5.
 
---noise_threshold: Ion fragments (i.e., points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default = 0.
+--noise_threshold: Ion fragments (i.e., points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.
 
---wf_mz: Mass to charge weight factor parameter. Default = 0.
+--wf_mz: Mass to charge weight factor parameter. Default: 0.
 
---wf_intensity: Intensity weight factor parameter. Default = 1.
+--wf_intensity: Intensity weight factor parameter. Default: 1.
 
---LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy H less than LET_threshold are transformed according to $\text{intensitiesNew}=\text{intensitiesOriginal}^{\frac{1+S}{1+\text{LETthreshold}}}$. Default = 0.
+--LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy H less than LET_threshold are transformed according to $\text{intensitiesNew}=\text{intensitiesOriginal}^{\frac{1+S}{1+\text{LETthreshold}}}$. Default: 0.
 
---entropy_dimension: Entropy dimension parameter. Must have a positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the Rényi and Tsallis similarity measures. This parameter will be ignored if the similarity measure cosine or Shannon is chosen. Default = 1.1.
+--entropy_dimension: Entropy dimension parameter. Must have a positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the Rényi and Tsallis similarity measures. This parameter will be ignored if the similarity measure cosine or Shannon is chosen. Default: 1.1.
 
---normalization_method: Method used to normalize the intensities of each spectrum so that the intensities sum to 1. Since the object's entropy quantifies the uncertainty of must be probability distributions, the intensities of a given spectrum must sum to 1 prior to computing the entropy of the given spectrum intensities. Options: 'standard' and 'softmax'. Default = standard.
+--normalization_method: Method used to normalize the intensities of each spectrum so that the intensities sum to 1. Since the object's entropy quantifies the uncertainty of must be probability distributions, the intensities of a given spectrum must sum to 1 prior to computing the entropy of the given spectrum intensities. Options: 'standard' and 'softmax'. Default: standard.
 
---n_top_matches_to_save: The number of top matches to report. For example, if n_top_matches_to_save=5, then for each query spectrum, the five reference spectra with the largest similarity with the given query spectrum will be reported. Default = 1.
+--n_top_matches_to_save: The number of top matches to report. For example, if n_top_matches_to_save=5, then for each query spectrum, the five reference spectra with the largest similarity with the given query spectrum will be reported. Default: 1.
 
---print_id_results: Flag indicating whether to print the identification results interactively. Regardless of this flag, the results are saved according to the parameter 'output_identification'. Default = False.
+--print_id_results: Flag indicating whether to print the identification results interactively. Regardless of this flag, the results are saved according to the parameter 'output_identification'. Default: False.
 --output_identification: Output CSV file containing the most-similar reference spectra for each query spectrum along with the corresponding similarity scores. Default is to save the identification output in the current working directory (i.e., same directory this script is contained in) with the filename 'output_lcms_identification.csv'.
 
 --output_similarity_scores: Output CSV file containing similarity scores between all query spectrum/spectra and all reference spectra. Each row corresponds to a query spectrum, the left-most column contains the query spectrum/spectra identifier, and the remaining columns contain the similarity scores with respect to all reference library spectra. If no argument is passed, then this CSV file is written to the current working directory with the filename 'output_lcms_all_similarity_scores'.csv.
@@ -503,6 +503,7 @@ python plot_spectra.py \
   --LET_threshold 0 \
   --entropy_dimension 1.1 \
   --normalization_method standard \
+  --y_axis_transformation normalized \
   --save_plots path_to_output_PDF_file
 ```
 
@@ -548,29 +549,31 @@ Parameter descriptions are as follows:
 
 --high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False.
 
---mz_min: Remove all peaks with mass to charge less than mz_min in each spectrum. Default = 0.
+--mz_min: Remove all peaks with mass to charge less than mz_min in each spectrum. Default: 0.
 
---mz_max: Remove all peaks with mass to charge greater than mz_max in each spectrum. Default = 999999999999.
+--mz_max: Remove all peaks with mass to charge greater than mz_max in each spectrum. Default: 999999999999.
 
---int_min: Remove all peaks with intensity less than int_min in each spectrum. Default = 0.
+--int_min: Remove all peaks with intensity less than int_min in each spectrum. Default: 0.
 
---int_max: Remove all peaks with intensity greater than int_max in each spectrum. Default = 999999999999.
+--int_max: Remove all peaks with intensity greater than int_max in each spectrum. Default: 999999999999.
 
---window_size_centroiding (HRMS only): Window size parameter used in centroiding a given spectrum. Default = 0.5.
+--window_size_centroiding (HRMS only): Window size parameter used in centroiding a given spectrum. Default: 0.5.
 
---window_size_matching (HRMS only): Window size parameter used in matching a query spectrum and a reference library spectrum. Default = 0.5.
+--window_size_matching (HRMS only): Window size parameter used in matching a query spectrum and a reference library spectrum. Default: 0.5.
 
---noise_threshold: Ion fragments (i.e., points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default = 0.
+--noise_threshold: Ion fragments (i.e., points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.
 
---wf_mz: Mass to charge weight factor parameter. Default = 0.
+--wf_mz: Mass to charge weight factor parameter. Default: 0.
 
---wf_intensity: Intensity weight factor parameter. Default = 1.
+--wf_intensity: Intensity weight factor parameter. Default: 1.
 
---LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy H less than LET_threshold are transformed according to $\text{intensitiesNew}=\text{intensitiesOriginal}^{\frac{1+S}{1+\text{LETthreshold}}}$. Default = 0.
+--LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy H less than LET_threshold are transformed according to $\text{intensitiesNew}=\text{intensitiesOriginal}^{\frac{1+S}{1+\text{LETthreshold}}}$. Default: 0.
 
---entropy_dimension: Entropy dimension parameter. Must have a positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the Rényi and Tsallis similarity measures. This parameter will be ignored if the similarity measure cosine or Shannon is chosen. Default = 1.1.
+--entropy_dimension: Entropy dimension parameter. Must have a positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the Rényi and Tsallis similarity measures. This parameter will be ignored if the similarity measure cosine or Shannon is chosen. Default: 1.1.
 
---normalization_method: Method used to normalize the intensities of each spectrum so that the intensities sum to 1. Since the object's entropy quantifies the uncertainty of must be probability distributions, the intensities of a given spectrum must sum to 1 prior to computing the entropy of the given spectrum intensities. Options: 'standard' and 'softmax'. Default = standard.
+--normalization_method: Method used to normalize the intensities of each spectrum so that the intensities sum to 1. Since the object's entropy quantifies the uncertainty of must be probability distributions, the intensities of a given spectrum must sum to 1 prior to computing the entropy of the given spectrum intensities. Options: 'standard' and 'softmax'. Default: standard.
+
+--y_axis_transformation: Transformation to apply to y-axis (i.e. intensity axis) of plots. Options: 'normalized', 'none', 'log10', and 'sqrt'. Default: normalized.
 
 --save_plots: Output PDF file containing the plots of the query and reference spectra before and after preprocessing transformations. If no argument is passed, then the plots will be saved to the PDF ./query_spec_{query_spectrum_ID}\_reference_spec_{reference_spectrum_ID}_plot.pdf in the current working directory.
 

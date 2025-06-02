@@ -54,7 +54,7 @@ The following spectrum preprocessing transformations are offered:
     that, for all $i\in\{1,2,...,n\}$, $x_{i}^{\star}=x_{i}$ if
     $H_{Shannon}(I)\geq T$ and
     $x_{i}^{\star}=x_{i}^{\frac{1+H_{Shannon}(I)}{1+T}}$ if
-    $H_{Shannon}(I)\textless T$.
+    $H_{Shannon}(I)<T$.
 
 -   Centroiding (only applicable to HRMS data): Given a user-defined
     window-size parameter $w_{centroiding}$ and a spectrum $I$ with m/z
@@ -63,7 +63,7 @@ The following spectrum preprocessing transformations are offered:
     merges adjacent peaks $(m_{i},x_{i}),(m_{i+1},x_{i+1})$ into the
     peak
     $(\frac{m_{i}\cdot x_{i}+m_{i+1}\cdot x_{i+1}}{x_{i}+x_{i+1}},x_{i}+x_{i+1})$
-    if $|m_{i}-m_{i+1}|\textless w_{centroiding}$ for
+    if $|m_{i}-m_{i+1}|< w_{centroiding}$ for
     $i\in\{1,2,...,n-1\}$. This centroiding procedure generalizes to
     more than two peaks whose m/z values are within a distance
     $w_{centroiding}$ of each other.
@@ -71,7 +71,7 @@ The following spectrum preprocessing transformations are offered:
 -   Noise Removal: Given a user-defined noise removal parameter $r$ and
     a spectrum $I$ with intensities $(x_{1},x_{2},...,x_{n})$, noise
     removal removes peaks from $I$ with
-    $x_{j}\textless r\cdot\text{max}(\{x_{1},x_{2},...,x_{n}\})$ for
+    $x_{j}< r\cdot\text{max}(\{x_{1},x_{2},...,x_{n}\})$ for
     $j\in\{1,2,...,n\}$.
 
 -   Matching (only applicable to HRMS data): Given a user-defined
@@ -84,12 +84,12 @@ The following spectrum preprocessing transformations are offered:
     $I^{\star}$ and $J^{\star}$ having transformed intensities and
     identical m/z ratios. Specifically, for a given peak $(a_{i},x_{i})$
     of $I$, if there are no peaks $(b_{j},y_{j})$ in $J$ with
-    $|a_{i}-b_{j}|\textless w_{matching}$, then the peak $(a_{i},x_{i})$
+    $|a_{i}-b_{j}|< w_{matching}$, then the peak $(a_{i},x_{i})$
     remains in $I^{\star}$ and the peak $(a_{i},0)$ is included in
     $J^{\star}$. If there is at least one peak $(b_{j},y_{j})$ with
-    $|a_{i}-b_{j}|\textless w_{matching}$, then the peak $(a_{i},x_{i})$
+    $|a_{i}-b_{j}|< w_{matching}$, then the peak $(a_{i},x_{i})$
     remains in $I^{\star}$ and the peak
-    $(a_{i},\sum_{j\text{ such that }|a_{i}-b_{j}|\textless w_{matching}}b_{j})$
+    $(a_{i},\sum_{j\text{ such that }|a_{i}-b_{j}|< w_{matching}}b_{j})$
     is included in $J^{\star}$. This procedure is applied when
     transposing the roles of $I$ and $J$ as well.
 
@@ -148,7 +148,7 @@ H_{Tsallis}(I,q)=\frac{\left(\sum_{i=1}^{n}a_{i}^{q}\right)-1}{1-q}
 ```
 
 ```math
-q\neq 1, \ q\textgreater 0
+q\neq 1, \ q>0
 ```
 
 -   Rényi Entropy Similarity Measure:
@@ -166,7 +166,7 @@ H_{Renyi}(I,q)=\frac{1}{1-q}ln(\sum_{i=1}^{n}a_{i}^{q})
 ```
 
 ```math
-q\neq 1, \ q\textgreater 0
+q\neq 1, \ q>0
 ```
 
 <a name="usage"></a>

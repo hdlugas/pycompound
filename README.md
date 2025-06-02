@@ -204,7 +204,7 @@ Parameter descriptions are as follows:
 
 Some example MGF files one can use to build an LC-MS/MS library can be found from the Global Natural Products Social Molecular Networking (GNPS) databases here: [https://external.gnps2.org/gnpslibrary](https://external.gnps2.org/gnpslibrary). Some example mzML files one can use to build an LC-MS/MS library can be found in this repository: [https://github.com/HUPO-PSI/mzML](https://github.com/HUPO-PSI/mzML). 
 
-LC-MS/MS and GC-MS reference libraries are available at the Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324)). The reference libraries available in pycompound are shortened versions of these reference libraries due to GitHub's limited storage.
+LC-MS/MS and GC-MS reference libraries are available at the Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324)). The reference libraries available in pycompound's GitHub repository are shortened versions of these reference libraries due to GitHub's limited storage.
 
 <a name="run-spec-lib-matching"></a>
 ### 3.2 Run spectral library matching

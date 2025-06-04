@@ -9,18 +9,18 @@ A Python-based tool for spectral library matching, PyCompound is available in tw
 - [3. Usage](#usage)
    - [3.1 Obtain LC-MS/MS or GC-MS library from MGF, mzML, or cdf file](#process-data)
    - [3.2 Run spectral library matching](#run-spec-lib-matching)
+     - [3.2.1 HRMS](#HRMS)
+     - [3.2.2 NRMS](#NRMS)
    - [3.3 Plot a query spectrum against a reference spectrum before and after spectrum preprocessing transformations](#plotting)
 - [4. Bugs/Questions?](#bugs-questions)
 
 <a name="create-conda-env"></a>
 ## 1. Install dependencies
-PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Pyteomics, and netCDF4. Specifically, this software was validated with python=3.12.4, matplotlib=3.8.4, numpy=1.26.4, pandas=2.2.2, scipy=1.13.1, pyteomics=4.7.2, and netCDF4=1.6.5, although it may work with other versions of these tools. A user may consider creating a conda environment (see [https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for guidance on getting started with conda if you are unfamiliar). For a system with conda installed, one can create the environment pycompound_env with the necessary dependencies using the command:
+PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Pyteomics, and netCDF4. Specifically, this software was validated with python=3.12.4, matplotlib=3.8.4, numpy=1.26.4, pandas=2.2.2, scipy=1.13.1, pyteomics=4.7.2, and netCDF4=1.6.5, although it may work with other versions of these tools. A user may consider creating a conda environment (see [https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for guidance on getting started with conda if you are unfamiliar). For a system with conda installed, one can create the environment pycompound_env, activate it, and install the necessary dependencies with:
 ```
-conda env create -f environment.yml
-```
-and activate it with the command:
-```
+conda create -n pycompound_env python=3.12
 conda activate pycompound_env
+pip install --extra-index-url https://pypi.org/simple/ --index-url https://test.pypi.org/simple/ pycompound_fy7392
 ```
 
 <a name="functionality"></a>
@@ -172,23 +172,19 @@ q\neq 1, \ q>0
 This repository has three main capabilities:
 1. Converting raw data to the necessary format for spectral library matching
 2. Running spectral library matching to identify compounds based on their mass spectrometry data
-3. Plotting a query spectrum vs. a reference spectrum, before and after preprocessing transformations.
+3. Plotting a query spectrum vs. a reference spectrum before and after preprocessing transformations.
 
-These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in L=NRMS vs HRMS data. To see all parameters for any of the three main scripts (build_library.py, spec_lib_matching.py, plot_spectra.py), run:
-```
-python build_library.py -h
-python spec_lib_matching.py -h
-python plot_spectra.py -h
-```
+These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in L=NRMS vs HRMS data.
 
 <a name="process-data"></a>
 ### 3.1 Obtain LC-MS/MS or GC-MS library from MGF, mzML, or cdf file
 To obtain a CSV file of LC-MS/MS spectra in the format necessary for spectral library matching from raw data in the form of an mgf, mzML, or cdf file, one can run:
 ```
-python build_library.py \
-  --input_path path_to_input_mgf_or_mzML_or_cdf_file \
-  --output_path path_to_output_csv_file \
-  --is_reference False
+from pycompound_fy7392.build_library import build_library_from_raw_data
+from pathlib import Path
+
+print('\nTest #0:')
+build_library_from_raw_data(input_path='path_to_input_file', output_path='path_to_output_file', is_reference=False)
 ```
 
 Parameter descriptions are as follows:
@@ -200,15 +196,64 @@ Parameter descriptions are as follows:
 --is_reference: Boolean flag indicating whether IDs of spectra should be written to output. Only pass True if building a reference library with known compound IDs. Only applicable to MGF files. Options: \'True\', \'False\'. Optional argument. Default: False.
 
 
-Some example MGF files one can use to build an LC-MS/MS library can be found from the Global Natural Products Social Molecular Networking (GNPS) databases here: [https://external.gnps2.org/gnpslibrary](https://external.gnps2.org/gnpslibrary). Some example mzML files one can use to build an LC-MS/MS library can be found in this repository: [https://github.com/HUPO-PSI/mzML](https://github.com/HUPO-PSI/mzML). 
+Some example MGF files one can use to build an LC-MS/MS library can be found from the Global Natural Products Social Molecular Networking (GNPS) databases here: [https://external.gnps2.org/gnpslibrary](https://external.gnps2.org/gnpslibrary). Some example mzML files one can use to build an LC-MS/MS library can be found in this repository: [https://github.com/HUPO-PSI/mzML](https://github.com/HUPO-PSI/mzML). The script tests/test_build_libraries.py demonstrates this usage.
 
 LC-MS/MS and GC-MS reference libraries are available at the Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324)). The reference libraries available in PyCompound's GitHub repository are shortened versions of these reference libraries due to GitHub's limited storage.
 
 <a name="run-spec-lib-matching"></a>
 ### 3.2 Run spectral library matching
-The file pycompound/test/example_code_for_python_use.py demonstrates how some of the spectrum preprocessing functionality and similarity measures can be implemented.
+The files tests/test_spec_lib_matching.py tests/example_code_for_python_use.py demonstrate how some of the spectrum preprocessing functionality and similarity measures can be implemented. The two main functions - one for HRMS data and one for NRMS data - can be implemented as:
+```
+from pycompound_fy7392.spec_lib_matching import run_spec_lib_matching_on_HRMS_data
+from pycompound_fy7392.spec_lib_matching import run_spec_lib_matching_on_NRMS_data
 
-In particular, the available spectrum preprocessing transformations and similarity measures are:
+run_spec_lib_matching_on_HRMS_data(query_data='path_to_query_library', reference_data='path_to_reference_library', likely_reference_IDs=None, similarity_measure='cosine', spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, normalization_method='standard', n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None)
+run_spec_lib_matching_on_NRMS_data(query_data='path_to_query_library', reference_data='path_to_reference_library', likely_reference_IDs=None, similarity_measure='cosine', spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, normalization_method='standard', n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None)
+```
+
+Parameter descriptions are as follows:
+
+--query_data: CSV file of query mass spectrum/spectra to be identified. Each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
+
+--reference_data: CSV file of the reference mass spectra. Each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
+
+--likely_reference_IDs: CSV file with one column containing the IDs of a subset of all compounds in the reference_data to be used in spectral library matching. Each ID in this file must be an ID in the reference library. Default: None (i.e. default is to use entire reference library)
+
+--similarity_measure: \'cosine\', \'shannon\', \'renyi\', and \'tsallis\'. Default: cosine.
+
+--spectrum_preprocessing_order: The spectrum preprocessing transformations and the order in which they are to be applied. Note that these transformations are applied prior to computing similarity scores. Format must be a string with 2-6 characters chosen from C, F, M, N, L, W representing centroiding, filtering based on mass/charge and intensity values, matching, noise removal, low-entropy trannsformation, and weight-factor-transformation, respectively. For example, if \'WCM\' is passed, then each spectrum will undergo a weight factor transformation, then centroiding, and then matching. Note that if an argument is passed, then \'M\' must be contained in the argument, since matching is a required preprocessing step in spectral library matching of HRMS data. Furthermore, \'C\' must be performed before matching since centroiding can change the number of ion fragments in a given spectrum. Note that C and M are not applicable to NRMS data. Default: FCNMWL for HRMS and FNLW for NRMS.')
+
+--high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False')
+
+--mz_min: Remove all peaks with mass/charge value less than mz_min in each spectrum. Default: 0
+
+--mz_max: Remove all peaks with mass/charge value greater than mz_max in each spectrum. Default: 9999999
+
+--int_min: Remove all peaks with intensity value less than int_min in each spectrum. Default: 0
+
+--int_max: Remove all peaks with intensity value greater than int_max in each spectrum. Default: 9999999
+
+--window_size_centroiding (only for HRMS): Window size parameter used in centroiding a given spectrum. Default: 0.5
+
+--window_size_matching (only for HRMS): Window size parameter used in matching a query spectrum and a reference library spectrum. Default: 0.5
+
+--noise_threshold: Ion fragments (i.e. points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.0
+
+--wf_mz: Mass/charge weight factor parameter. Default: 0.0
+
+--wf_intensity: Intensity weight factor parameter. Default: 0.0
+
+--LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy less than LET_threshold are transformed according to intensitiesNew=intensitiesOriginal^{(1+S)/(1+LET_threshold)}. Default: 0.0
+
+--entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
+
+--normalization_method: Method used to normalize the intensities of each spectrum so that the intensities sum to 1. Since the objects entropy quantifies the uncertainy of must be probability distributions, the intensities of a given spectrum must sum to 1 prior to computing the entropy of the given spectrum intensities. Options: \'standard\' and \'softmax\'. Default: standard.
+
+--n_top_matches_to_save: The number of top matches to report. For example, if n_top_matches_to_save=5, then for each query spectrum, the five reference spectra with the largest similarity with the given query spectrum will be reported. Default: 1
+
+--print_id_results: Flag that prints identification results if True. Default: False
+
+For a user who may wish to incorporate our transformations and similarity measures directly in their python code similar to the example script tests/example_code_for_python_use.py, the available transformations and similarity measures are:
 ```
 # Weight factor transformation
 wf_transform(spec_mzs, spec_ints, wf_mz, wf_int)

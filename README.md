@@ -9,8 +9,6 @@ A Python-based tool for spectral library matching, PyCompound is available in tw
 - [3. Usage](#usage)
    - [3.1 Obtain LC-MS/MS or GC-MS library from MGF, mzML, or cdf file](#process-data)
    - [3.2 Run spectral library matching](#run-spec-lib-matching)
-     - [3.2.1 HRMS](#HRMS)
-     - [3.2.2 NRMS](#NRMS)
    - [3.3 Plot a query spectrum against a reference spectrum before and after spectrum preprocessing transformations](#plotting)
 - [4. Bugs/Questions?](#bugs-questions)
 
@@ -174,7 +172,7 @@ This repository has three main capabilities:
 2. Running spectral library matching to identify compounds based on their mass spectrometry data
 3. Plotting a query spectrum vs. a reference spectrum before and after preprocessing transformations.
 
-These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in L=NRMS vs HRMS data.
+These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in L=NRMS vs HRMS data. Example scripts which implement these tasks can be found in the pycompound/tests directory.
 
 <a name="process-data"></a>
 ### 3.1 Obtain LC-MS/MS or GC-MS library from MGF, mzML, or cdf file
@@ -205,8 +203,51 @@ The files tests/test_spec_lib_matching.py tests/example_code_for_python_use.py d
 from pycompound_fy7392.spec_lib_matching import run_spec_lib_matching_on_HRMS_data
 from pycompound_fy7392.spec_lib_matching import run_spec_lib_matching_on_NRMS_data
 
-run_spec_lib_matching_on_HRMS_data(query_data='path_to_query_library', reference_data='path_to_reference_library', likely_reference_IDs=None, similarity_measure='cosine', spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, normalization_method='standard', n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None)
-run_spec_lib_matching_on_NRMS_data(query_data='path_to_query_library', reference_data='path_to_reference_library', likely_reference_IDs=None, similarity_measure='cosine', spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, normalization_method='standard', n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None)
+run_spec_lib_matching_on_HRMS_data(
+        query_data='path_to_query_library',
+        reference_data='path_to_reference_library',
+        likely_reference_IDs=None,
+        similarity_measure='cosine',
+        spectrum_preprocessing_order='FCNMWL',
+        high_quality_reference_library=False,
+        mz_min=0,
+        mz_max=9999999,
+        int_min=0,
+        int_max=9999999,
+        window_size_centroiding=0.5,
+        window_size_matching=0.5,
+        noise_threshold=0.0,
+        wf_mz=0.0,
+        wf_intensity=1.0,
+        LET_threshold=0.0,
+        entropy_dimension=1.1,
+        normalization_method='standard',
+        n_top_matches_to_save=1,
+        print_id_results=False,
+        output_identification=None,
+        output_similarity_scores=None)
+
+run_spec_lib_matching_on_NRMS_data(
+        query_data='path_to_query_library',
+        reference_data='path_to_reference_library',
+        likely_reference_IDs=None,
+        similarity_measure='cosine',
+        spectrum_preprocessing_order='FNLW',
+        high_quality_reference_library=False,
+        mz_min=0,
+        mz_max=9999999,
+        int_min=0,
+        int_max=9999999,
+        noise_threshold=0.0,
+        wf_mz=0.0,
+        wf_intensity=1.0,
+        LET_threshold=0.0,
+        entropy_dimension=1.1,
+        normalization_method='standard',
+        n_top_matches_to_save=1,
+        print_id_results=False,
+        output_identification=None,
+        output_similarity_scores=None)
 ```
 
 Parameter descriptions are as follows:
@@ -419,8 +460,49 @@ The basic usage of the functions plot a query spectrum vs a reference spectrum b
 from pycompound_fy7392.plot_spectra import generate_plots_on_HRMS_data
 from pycompound_fy7392.plot_spectra import generate_plots_on_NRMS_data
 
-generate_plots_on_HRMS_data(query_data='path_to_query_library', reference_data='path_to_reference_data',spectrum_ID1=None, spectrum_ID2=None, similarity_measure='cosine', spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, normalization_method='standard', y_axis_transformation='normalized', output_path=None)
-generate_plots_on_NRMS_data(query_data='path_to_query_library', reference_data='path_to_reference_data',spectrum_ID1=None, spectrum_ID2=None, similarity_measure='cosine', spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, normalization_method='standard', y_axis_transformation='normalized', output_path=None)
+generate_plots_on_HRMS_data(
+        query_data='path_to_query_library',
+        reference_data='path_to_reference_data',
+        spectrum_ID1=None,
+        spectrum_ID2=None,
+        similarity_measure='cosine',
+        spectrum_preprocessing_order='FCNMWL',
+        high_quality_reference_library=False,
+        mz_min=0,
+        mz_max=9999999,
+        int_min=0,
+        int_max=9999999,
+        window_size_centroiding=0.5,
+        window_size_matching=0.5,
+        noise_threshold=0.0,
+        wf_mz=0.0,
+        wf_intensity=1.0,
+        LET_threshold=0.0,
+        entropy_dimension=1.1,
+        normalization_method='standard',
+        y_axis_transformation='normalized',
+        output_path=None)
+
+generate_plots_on_NRMS_data(
+        query_data='path_to_query_library',
+        reference_data='path_to_reference_data',
+        spectrum_ID1=None,
+        spectrum_ID2=None,
+        similarity_measure='cosine',
+        spectrum_preprocessing_order='FNLW',
+        high_quality_reference_library=False,
+        mz_min=0,
+        mz_max=9999999,
+        int_min=0,
+        int_max=9999999,
+        noise_threshold=0.0,
+        wf_mz=0.0,
+        wf_intensity=1.0,
+        LET_threshold=0.0,
+        entropy_dimension=1.1,
+        normalization_method='standard',
+        y_axis_transformation='normalized',
+        output_path=None)
 ```
 
 Parameter descriptions are as follows:

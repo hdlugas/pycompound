@@ -4,12 +4,7 @@ from pycompound_fy7392.plot_spectra import generate_plots_on_NRMS_data
 from pathlib import Path
 import os
 
-print('\n\ntest #0:')
-generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.csv',
-        reference_data=f'{Path.cwd()}/data/lcms_reference_library.csv',
-        high_quality_reference_library=False,
-        output_path=f'{Path.cwd()}/plots/test0.pdf')
+os.makedirs(f'{Path.cwd()}/plots', exist_ok=True)
 
 print('\n\ntest #1:')
 generate_plots_on_HRMS_data(
@@ -194,5 +189,19 @@ generate_plots_on_HRMS_data(
         mz_max = 650,
         y_axis_transformation='sqrt',
         output_path=f'{Path.cwd()}/plots/test_no_wf_sqrt_y_axis_mz_zoom.pdf')
+
+print('\n\ntest #26:')
+generate_plots_on_HRMS_data(
+        query_data=f'{Path.cwd()}/data/lcms_query_library.csv',
+        reference_data=f'{Path.cwd()}/data/lcms_reference_library.csv',
+        high_quality_reference_library=False,
+        output_path=f'{Path.cwd()}/plots/test_HRMS.pdf')
+
+print('\n\ntest #27:')
+generate_plots_on_NRMS_data(
+        query_data=f'{Path.cwd()}/data/gcms_query_library.csv',
+        reference_data=f'{Path.cwd()}/data/gcms_reference_library.csv',
+        high_quality_reference_library=False,
+        output_path=f'{Path.cwd()}/plots/test_NRMS.pdf')
 
 

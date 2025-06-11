@@ -4,10 +4,10 @@ from pycompound_fy7392.spec_lib_matching import run_spec_lib_matching_on_NRMS_da
 from pathlib import Path
 import os
 
+
 print('\n\ntest #0:')
 run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.csv', reference_data=f'{Path.cwd()}/data/lcms_reference_library.csv')
 
-'''
 print('\n\ntest #1:')
 run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.csv', reference_data=f'{Path.cwd()}/data/lcms_reference_library.csv', similarity_measure='hello')
 
@@ -130,6 +130,17 @@ run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_lib
 
 print('\n\ntest #40:')
 run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.csv', reference_data=f'{Path.cwd()}/data/lcms_reference_library.csv', likely_reference_IDs=f'{Path.cwd()}/data/likely_lcms_ids.csv')
-'''
+
+print('\n\ntest #41:')
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/1min.mzML', reference_data=f'{Path.cwd()}/data/lcms_reference_library.csv')
+
+print('\n\ntest #42:')
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/GNPS-SELLECKCHEM-FDA-PART1.mgf', reference_data=f'{Path.cwd()}/data/lcms_reference_library.csv')
+
+print('\n\ntest #43:')
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.csv', reference_data=f'{Path.cwd()}/data/GNPS-SELLECKCHEM-FDA-PART1.mgf')
+
+print('\n\ntest #44:')
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/n_Alkane+76_mixtures_1_.cdf', reference_data=f'{Path.cwd()}/data/gcms_reference_library.csv')
 
 

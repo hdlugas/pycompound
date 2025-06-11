@@ -89,21 +89,6 @@ The following spectrum preprocessing transformations are offered:
     is included in $J^{\star}$. This procedure is applied when
     transposing the roles of $I$ and $J$ as well.
 
--   Normalization: Prior to computing entropy - regardless of whether in
-    the context of performing the low-entropy transformation or
-    computing an entropy-based similarity score - the intensities of
-    each spectrum must be normalized to sum to 1 in order to represent a
-    probability distribution. To normalize a given spectrum $I$ with
-    intensities $(x_{1},x_{2},...,x_{n})$ into spectrum $I^{\star}$ with
-    intensities $(x_{1}^{\star},x_{2}^{\star},...,x_{n}^{\star})$ such
-    that $\sum_{i=1}^{n}x_{i}^{\star}=1$, two methods are offered:
-
-    \- Standard: $x_{i}^{\star}=\frac{x_{i}}{\sum_{i=1}^{n}x_{i}}$.
-
-    \- Softmax:
-    $x_{i}^{\star}=\frac{e^{x_{i}}}{\sum_{i=1}^{n}e^{x_{i}}}$ where
-    $e\approx 2.72$ is Euler's constant.
-
 <a name="similarity-measures"></a>
 ## 2.2 Similarity Measures
 Given a pair of processed spectra intensities
@@ -221,7 +206,6 @@ run_spec_lib_matching_on_HRMS_data(
         wf_intensity=1.0,
         LET_threshold=0.0,
         entropy_dimension=1.1,
-        normalization_method='standard',
         n_top_matches_to_save=1,
         print_id_results=False,
         output_identification=None,
@@ -243,7 +227,6 @@ run_spec_lib_matching_on_NRMS_data(
         wf_intensity=1.0,
         LET_threshold=0.0,
         entropy_dimension=1.1,
-        normalization_method='standard',
         n_top_matches_to_save=1,
         print_id_results=False,
         output_identification=None,
@@ -288,8 +271,6 @@ Parameter descriptions are as follows:
 
 --entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
 
---normalization_method: Method used to normalize the intensities of each spectrum so that the intensities sum to 1. Since the objects entropy quantifies the uncertainy of must be probability distributions, the intensities of a given spectrum must sum to 1 prior to computing the entropy of the given spectrum intensities. Options: \'standard\' and \'softmax\'. Default: standard.
-
 --n_top_matches_to_save: The number of top matches to report. For example, if n_top_matches_to_save=5, then for each query spectrum, the five reference spectra with the largest similarity with the given query spectrum will be reported. Default: 1
 
 --print_id_results: Flag that prints identification results if True. Default: False
@@ -319,17 +300,6 @@ Args:
    normalization_method: either 'standard' or 'softmax'
 Returns:
    np.ndarray: 1d numpy array of transformed intensities
-"""
-
-# Normalize intensities to sum to 1
-normalize(intensities, method)
-"""
-Normalize a spectrum so intensities sum to 1 so that the intensities represent a probability distribution
-Args:
-   intensities: 1d numpy array
-   method: either 'standard' or 'softmax'
-Returns:
-   np.ndarray: 1d numpy array of normalized intensities
 """
 
 # Filter HR-MS such as LC-MS/MS spectrum
@@ -479,7 +449,6 @@ generate_plots_on_HRMS_data(
         wf_intensity=1.0,
         LET_threshold=0.0,
         entropy_dimension=1.1,
-        normalization_method='standard',
         y_axis_transformation='normalized',
         output_path=None)
 
@@ -500,7 +469,6 @@ generate_plots_on_NRMS_data(
         wf_intensity=1.0,
         LET_threshold=0.0,
         entropy_dimension=1.1,
-        normalization_method='standard',
         y_axis_transformation='normalized',
         output_path=None)
 ```
@@ -541,8 +509,6 @@ Parameter descriptions are as follows:
 
 --entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
 
---normalization_method: Method used to normalize the intensities of each spectrum so that the intensities sum to 1. Since the objects entropy quantifies the uncertainy of must be probability distributions, the intensities of a given spectrum must sum to 1 prior to computing the entropy of the given spectrum intensities. Options: \'standard\' and \'softmax\'. Default: standard.
-
 --y_axis_transformation: transformation to apply to y-axis (i.e. intensity axis) of plots. Options: \'normalized\', \'none\', \'log10\', and \'sqrt\'. Default: normalized.')
 
 --output_path: path to output PDF file containing the plots of the spectra before and after preprocessing transformations. If no argument is passed, then the plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.
@@ -551,7 +517,7 @@ An example of such a generated plot is seen below.
 
 <br />
 
-![image](https://github.com/user-attachments/assets/176c875d-535c-4e5f-b83e-5b19f30157bf)
+![image](https://github.com/user-attachments/assets/de22a402-1329-4bb3-a664-9423159264c8)
 
 <br />
 
@@ -580,8 +546,6 @@ This plot compares two MS/MS spectra: Spectrum ID 1 (unknown, in blue) and Spect
 -   Weight Factors (m/z, intensity): (0.0, 1.0) -- Non-zero intensities were transformed using weights of 0.0 for m/z and 1.0 for intensity.
 
 -   Low-Entropy Threshold: 0.0 -- No low-entropy transformation was applied.
-
--   Normalization Method: Standard -- Intensity values were scaled using standard normalization, dividing each intensity by the sum of intensities so they sum to 1 and consequently represent a probability distribution.
 
 <a name="bugs-questions"></a>
 ## 4. Bugs/Questions?

@@ -47,7 +47,8 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
             df_query = pd.read_csv(output_path_tmp)
         if extension == 'csv' or extension == 'CSV':
             df_query = pd.read_csv(query_data)
-        unique_query_ids = df_query.iloc[:,0].unique()
+        unique_query_ids = df_query.iloc[:,0].unique().tolist()
+        unique_query_ids = [str(tmp) for tmp in unique_query_ids]
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
@@ -61,11 +62,8 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
             df_reference = pd.read_csv(output_path_tmp)
         if extension == 'csv' or extension == 'CSV':
             df_reference = pd.read_csv(reference_data)
-
-        if likely_reference_IDs is not None:
-            likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
-            df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
-        unique_reference_ids = df_reference.iloc[:,0].unique()
+        unique_reference_ids = df_reference.iloc[:,0].unique().tolist()
+        unique_reference_ids = [str(tmp) for tmp in unique_reference_ids]
 
 
     ##### process input parameters and ensure they are in a valid format #####
@@ -160,18 +158,22 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
         output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.pdf'
 
 
+    #print(spectrum_ID1)
+    #print(spectrum_ID2)
+    #print(unique_query_ids)
+    #print(unique_reference_ids)
     if spectrum_ID1 in unique_query_ids and spectrum_ID2 in unique_query_ids:
         query_idx = unique_query_ids.index(spectrum_ID1)
         reference_idx = unique_query_ids.index(spectrum_ID2)
-        q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
-        r_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[reference_idx])[0]
+        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == unique_query_ids[query_idx])[0]
+        r_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == unique_query_ids[reference_idx])[0]
         q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
         r_spec = np.asarray(pd.concat([df_query.iloc[r_idxs_tmp,1], df_query.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
     elif spectrum_ID1 in unique_reference_ids and spectrum_ID2 in unique_reference_ids:
         query_idx = unique_reference_ids.index(spectrum_ID1)
         reference_idx = unique_reference_ids.index(spectrum_ID2)
-        q_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[query_idx])[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[reference_idx])[0]
+        q_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == unique_reference_ids[query_idx])[0]
+        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == unique_reference_ids[reference_idx])[0]
         q_spec = np.asarray(pd.concat([df_reference.iloc[q_idxs_tmp,1], df_reference.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
         r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
     else:
@@ -181,8 +183,8 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
             spectrum_ID2 = spec_tmp
         query_idx = unique_query_ids.index(spectrum_ID1)
         reference_idx = unique_reference_ids.index(spectrum_ID2)
-        q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[reference_idx])[0]
+        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == unique_query_ids[query_idx])[0]
+        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == unique_reference_ids[reference_idx])[0]
         q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
         r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
 
@@ -319,8 +321,8 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
 
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
     plt.figlegend(loc = 'upper center')
-    fig.text(0.05, 0.18, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
-    fig.text(0.05, 0.15, f'Similarity Measure: {similarity_measure}', fontsize=7)
+    fig.text(0.05, 0.18, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
+    fig.text(0.05, 0.15, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
     fig.text(0.05, 0.12, f'Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}', fontsize=7)
     fig.text(0.05, 0.09, f'High Quality Reference Library: {high_quality_reference_library}', fontsize=7)
     fig.text(0.05, 0.06, f'Window Size (Centroiding): {window_size_centroiding}', fontsize=7)
@@ -330,7 +332,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     fig.text(0.45, 0.12, f'Noise Threshold: {noise_threshold}', fontsize=7)
     fig.text(0.45, 0.09, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
     fig.text(0.45, 0.06, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
-    fig.text(0.45, 0.03, f'Normalization Method: {normalization_method}', fontsize=7)
+    fig.text(0.45, 0.03, f'Normalization Method: {normalization_method.capitalize()}', fontsize=7)
     plt.savefig(output_path, format='pdf')
 
 
@@ -386,9 +388,6 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             df_reference = pd.read_csv(output_path_tmp)
         if extension == 'csv' or extension == 'CSV':
             df_reference = pd.read_csv(reference_data)
-            if likely_reference_IDs is not None:
-                likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
-                df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
             unique_reference_ids = df_reference.iloc[:,0].unique()
 
 
@@ -628,8 +627,8 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     #plt.subplots_adjust(top = 0.8, hspace = 0.7)
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
     plt.figlegend(loc = 'upper center')
-    fig.text(0.05, 0.15, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
-    fig.text(0.05, 0.12, f'Similarity Measure: {similarity_measure}', fontsize=7)
+    fig.text(0.05, 0.15, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
+    fig.text(0.05, 0.12, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
     fig.text(0.05, 0.09, f'Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}', fontsize=7)
     fig.text(0.05, 0.06, f'High Quality Reference Library: {high_quality_reference_library}', fontsize=7)
     fig.text(0.05, 0.03, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
@@ -637,7 +636,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     fig.text(0.45, 0.12, f'Noise Threshold: {noise_threshold}', fontsize=7)
     fig.text(0.45, 0.09, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
     fig.text(0.45, 0.06, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
-    fig.text(0.45, 0.03, f'Normalization Method: {normalization_method}', fontsize=7)
+    fig.text(0.45, 0.03, f'Normalization Method: {normalization_method.capitalize()}', fontsize=7)
     plt.savefig(output_path, format='pdf')
 
 

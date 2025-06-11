@@ -506,7 +506,9 @@ generate_plots_on_NRMS_data(
 ```
 
 An example of such a generated plot is seen below.
+<br />
 ![image](https://github.com/user-attachments/assets/1806fdb6-8b4e-41f5-9697-395865943b01)
+<br />
 
 Parameter descriptions are as follows:
 

@@ -1,8 +1,9 @@
 
 # this script's function runs spectral library matching to identify unknown query compound(s)
 
-from processing import *
-from similarity_measures import *
+from pycompound_fy7392.build_library import build_library_from_raw_data
+from .processing import *
+from .similarity_measures import *
 import pandas as pd
 from pathlib import Path
 import sys
@@ -41,14 +42,29 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, lik
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
     else:
-        df_query = pd.read_csv(query_data)
+        extension = query_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = query_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            df_query = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
         sys.exit()
     else:
-        df_reference = pd.read_csv(reference_data)
+        extension = reference_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = reference_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
+            df_reference = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_reference = pd.read_csv(reference_data)
+
         if likely_reference_IDs is not None:
             likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
             df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
@@ -146,7 +162,9 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, lik
     ####################################### begin spectral library matching #######################################
     # compute the similarity score between each query library spectrum/spectra and all reference library spectra
     all_similarity_scores =  []
+    print(len(unique_query_ids))
     for query_idx in range(0,len(unique_query_ids)):
+        print(f'query spectrum #{query_idx} is being identified')
         q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
         q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
 
@@ -299,18 +317,33 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
     else:
-        df_query = pd.read_csv(query_data)
+        extension = query_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = query_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            df_query = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
         sys.exit()
     else:
-        df_reference = pd.read_csv(reference_data)
-        if likely_reference_IDs is not None:
-            likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
-            df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
-        unique_reference_ids = df_reference.iloc[:,0].unique()
+        extension = reference_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = reference_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
+            df_reference = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_reference = pd.read_csv(reference_data)
+            if likely_reference_IDs is not None:
+                likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
+                df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
+            unique_reference_ids = df_reference.iloc[:,0].unique()
+
 
     if spectrum_preprocessing_order is not None:
         spectrum_preprocessing_order = list(spectrum_preprocessing_order)

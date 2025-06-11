@@ -1,8 +1,8 @@
 
 # this script's functions plot a given query spectrum against a given reference spectrum before and after spectrum preprocessing transformations
 
-from processing import *
-from similarity_measures import *
+from .processing import *
+from .similarity_measures import *
 import pandas as pd
 from pathlib import Path
 import sys
@@ -207,11 +207,25 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     plt.subplot(2,1,1)
     plt.vlines(x=q_spec_pre_trans[:,0], ymin=[0]*q_spec_pre_trans.shape[0], ymax=q_spec_pre_trans[:,1], linewidth=3, color='blue', label=f'Spectrum ID 1: {spectrum_ID1}')
     plt.vlines(x=r_spec_pre_trans[:,0], ymin=[0]*r_spec_pre_trans.shape[0], ymax=-r_spec_pre_trans[:,1], linewidth=3, color='red', label=f'Spectrum ID 2: {spectrum_ID2}')
-    plt.xlabel('m/z',fontsize=8)
-    plt.ylabel(ylab, fontsize=8)
-    plt.xticks(fontsize=8)
-    plt.yticks(fontsize=8)
-    plt.title('Untransformed Spectra', fontsize=12)
+    plt.xlabel('m/z',fontsize=7)
+    plt.ylabel(ylab, fontsize=7)
+    plt.xticks(fontsize=7)
+    plt.yticks(fontsize=7)
+    plt.title('Untransformed Spectra', fontsize=10)
+
+    # get the ranges of m/z and intensity values to display at the bottom of the two plots
+    mz_min_tmp_q = round(q_spec[:,0].min(),1)
+    mz_min_tmp_r = round(r_spec[:,0].min(),1)
+    int_min_tmp_q = round(q_spec[:,1].min(),1)
+    int_min_tmp_r = round(r_spec[:,1].min(),1)
+    mz_max_tmp_q = round(q_spec[:,0].max(),1)
+    mz_max_tmp_r = round(r_spec[:,0].max(),1)
+    int_max_tmp_q = round(q_spec[:,1].max(),1)
+    int_max_tmp_r = round(r_spec[:,1].max(),1)
+    mz_min_tmp = min([mz_min_tmp_q,mz_min_tmp_r])
+    mz_max_tmp = min([mz_max_tmp_q,mz_max_tmp_r])
+    int_min_tmp = min([int_min_tmp_q,int_min_tmp_r])
+    int_max_tmp = max([int_max_tmp_q,int_max_tmp_r])
 
     # perform the spectrum preprocessing transformations in the order specified
     is_matched = False
@@ -284,20 +298,32 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
                 ylab = 'Raw Intensity'
             plt.vlines(x=q_spec[:,0], ymin=[0]*q_spec.shape[0], ymax=q_spec[:,1], linewidth=3, color='blue')
             plt.vlines(x=r_spec[:,0], ymin=[0]*r_spec.shape[0], ymax=-r_spec[:,1], linewidth=3, color='red')
-            plt.xlabel('m/z', fontsize=8)
-            plt.ylabel(ylab, fontsize=8)
-            plt.xticks(fontsize=8)
-            plt.yticks(fontsize=8)
-            plt.title(f'Transformed Spectra\n Similarity Score: {round(similarity_score,4)}', fontsize=12)
+            plt.xlabel('m/z', fontsize=7)
+            plt.ylabel(ylab, fontsize=7)
+            plt.xticks(fontsize=7)
+            plt.yticks(fontsize=7)
+            plt.title(f'Transformed Spectra', fontsize=10)
     else:
         plt.text(0.5, 0.5, 'All points in the spectra were removed during preprocessing. \nChange the spectrum_preprocesing_order and/or change other spectrum-preprocessing parameters.', ha='center', va='center', fontsize=7, color='black')
         plt.xticks([])
         plt.yticks([])
 
-    plt.subplots_adjust(top = 0.8, hspace = 0.7)
-    plt.figlegend(loc = 'upper center')
-    plt.savefig(output_path, format='pdf')
 
+    plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
+    plt.figlegend(loc = 'upper center')
+    fig.text(0.05, 0.18, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
+    fig.text(0.05, 0.15, f'Similarity Measure: {similarity_measure}', fontsize=7)
+    fig.text(0.05, 0.12, f'Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}', fontsize=7)
+    fig.text(0.05, 0.09, f'High Quality Reference Library: {high_quality_reference_library}', fontsize=7)
+    fig.text(0.05, 0.06, f'Window Size (Centroiding): {window_size_centroiding}', fontsize=7)
+    fig.text(0.05, 0.03, f'Window Size (Matching): {window_size_matching}', fontsize=7)
+    fig.text(0.45, 0.18, f'Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]', fontsize=7)
+    fig.text(0.45, 0.15, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
+    fig.text(0.45, 0.12, f'Noise Threshold: {noise_threshold}', fontsize=7)
+    fig.text(0.45, 0.09, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
+    fig.text(0.45, 0.06, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
+    fig.text(0.45, 0.03, f'Normalization Method: {normalization_method}', fontsize=7)
+    plt.savefig(output_path, format='pdf')
 
 
 
@@ -464,6 +490,14 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
 
     q_spec = convert_spec(q_spec,mzs)
     r_spec = convert_spec(r_spec,mzs)
+
+    # get the ranges of m/z and intensity values to display at the bottom of the two plots
+    int_min_tmp_q = min(q_spec[q_spec[:,1].nonzero(),1][0])
+    int_min_tmp_r = min(r_spec[r_spec[:,1].nonzero(),1][0])
+    int_max_tmp_q = max(q_spec[q_spec[:,1].nonzero(),1][0])
+    int_max_tmp_r = max(r_spec[r_spec[:,1].nonzero(),1][0])
+    int_min_tmp = int(min([int_min_tmp_q,int_min_tmp_r]))
+    int_max_tmp = int(max([int_max_tmp_q,int_max_tmp_r]))
     
     # create the figure
     fig, axes = plt.subplots(nrows=2, ncols=1)
@@ -499,11 +533,11 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             ylab = 'Raw Intensity'
         plt.vlines(x=q_spec_pre_trans[:,0], ymin=[0]*len(q_spec_pre_trans[:,0]), ymax=q_spec_pre_trans[:,1], linewidth=3, color='blue', label=f'Spectrum ID1: {spectrum_ID1}')
         plt.vlines(x=r_spec_pre_trans[:,0], ymin=[0]*len(r_spec_pre_trans[:,0]), ymax=-r_spec_pre_trans[:,1], linewidth=3, color='red', label=f'Spectrum ID2: {spectrum_ID2}')
-        plt.xlabel('m/z',fontsize=8)
-        plt.ylabel(ylab, fontsize=8)
-        plt.xticks(fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.title('Untransformed Query and Reference Spectra', fontsize=12)
+        plt.xlabel('m/z',fontsize=7)
+        plt.ylabel(ylab, fontsize=7)
+        plt.xticks(fontsize=7)
+        plt.yticks(fontsize=7)
+        plt.title('Untransformed Query and Reference Spectra', fontsize=10)
 
     for transformation in spectrum_preprocessing_order:
         if transformation == 'W': # weight factor transformation
@@ -569,15 +603,26 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             ylab = 'Raw Intensity'
         plt.vlines(x=mzs, ymin=[0]*len(mzs), ymax=q_spec[:,1], linewidth=3, color='blue')
         plt.vlines(x=mzs, ymin=[0]*len(mzs), ymax=-r_spec[:,1], linewidth=3, color='red')
-        plt.xlabel('m/z', fontsize=8)
-        plt.ylabel(ylab, fontsize=8)
-        plt.xticks(fontsize=8)
-        plt.yticks(fontsize=8)
-        plt.title(f'Transformed Query and Reference Spectra\n Similarity Score: {round(similarity_score,4)}', fontsize=12)
+        plt.xlabel('m/z', fontsize=7)
+        plt.ylabel(ylab, fontsize=7)
+        plt.xticks(fontsize=7)
+        plt.yticks(fontsize=7)
+        plt.title(f'Transformed Query and Reference Spectra', fontsize=10)
 
 
-    plt.subplots_adjust(top = 0.8, hspace = 0.7)
+    #plt.subplots_adjust(top = 0.8, hspace = 0.7)
+    plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
     plt.figlegend(loc = 'upper center')
+    fig.text(0.05, 0.15, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
+    fig.text(0.05, 0.12, f'Similarity Measure: {similarity_measure}', fontsize=7)
+    fig.text(0.05, 0.09, f'Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}', fontsize=7)
+    fig.text(0.05, 0.06, f'High Quality Reference Library: {high_quality_reference_library}', fontsize=7)
+    fig.text(0.05, 0.03, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
+    fig.text(0.45, 0.15, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
+    fig.text(0.45, 0.12, f'Noise Threshold: {noise_threshold}', fontsize=7)
+    fig.text(0.45, 0.09, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
+    fig.text(0.45, 0.06, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
+    fig.text(0.45, 0.03, f'Normalization Method: {normalization_method}', fontsize=7)
     plt.savefig(output_path, format='pdf')
 
 

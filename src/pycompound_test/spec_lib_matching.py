@@ -345,6 +345,7 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
             unique_reference_ids = df_reference.iloc[:,0].unique()
 
 
+    ##### process input parameters and ensure they are in a valid format #####
     if spectrum_preprocessing_order is not None:
         spectrum_preprocessing_order = list(spectrum_preprocessing_order)
     else:

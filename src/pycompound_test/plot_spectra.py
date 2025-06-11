@@ -39,25 +39,33 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
     else:
-        df_query = pd.read_csv(query_data)
+        extension = query_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = query_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            df_query = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
-        unique_query_ids = list(map(str,unique_query_ids))
-        df_query = df_query.astype(object)
-        df_query.iloc[:,0] = df_query.iloc[:,0].astype(str)
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
         sys.exit()
     else:
-        df_reference = pd.read_csv(reference_data)
-        unique_reference_ids = df_reference.iloc[:,0].unique()
-        unique_reference_ids = list(map(str,unique_reference_ids))
-        df_reference = df_reference.astype(object)
-        df_reference.iloc[:,0] = df_reference.iloc[:,0].astype(str)
+        extension = reference_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = reference_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
+            df_reference = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_reference = pd.read_csv(reference_data)
 
-    common_IDs = np.intersect1d(unique_query_ids,unique_reference_ids)
-    if len(common_IDs) > 0:
-        print(f'Warning: the query and reference library have overlapping IDs: {common_IDs}')
+        if likely_reference_IDs is not None:
+            likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
+            df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
+        unique_reference_ids = df_reference.iloc[:,0].unique()
 
 
     ##### process input parameters and ensure they are in a valid format #####
@@ -356,25 +364,32 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
     else:
-        df_query = pd.read_csv(query_data)
+        extension = query_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = query_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            df_query = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
-        unique_query_ids = list(map(str,unique_query_ids))
-        df_query = df_query.astype(object)
-        df_query.iloc[:,0] = df_query.iloc[:,0].astype(str)
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
         sys.exit()
     else:
-        df_reference = pd.read_csv(reference_data)
-        unique_reference_ids = df_reference.iloc[:,0].unique()
-        unique_reference_ids = list(map(str,unique_reference_ids))
-        df_reference = df_reference.astype(object)
-        df_reference.iloc[:,0] = df_reference.iloc[:,0].astype(str)
-
-    common_IDs = np.intersect1d(unique_query_ids,unique_reference_ids)
-    if len(common_IDs) > 0:
-        print(f'Warning: the query and reference library have overlapping IDs: {common_IDs}')
+        extension = reference_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = reference_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
+            df_reference = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_reference = pd.read_csv(reference_data)
+            if likely_reference_IDs is not None:
+                likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
+                df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
+            unique_reference_ids = df_reference.iloc[:,0].unique()
 
 
     ##### process input parameters and ensure they are in a valid format #####

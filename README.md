@@ -1,5 +1,5 @@
 # PyCompound
-A Python-based tool for spectral library matching, PyCompound is available in two versions: a command-line interface and Python modules for integration into customer code. It performs spectral library matching to identify chemical compounds, offering a range of spectrum preprocessing transformations and similarity measures, including Cosine and three entropy-based similarity measures. PyCompound supports both high-resolution mass spectrometry (HRMS) data (e.g., LC-MS/MS) and nominal-resolution mass spectrometry (NRMS) data (e.g., GC-MS).
+A Python-based tool for spectral library matching, PyCompound is available in two versions: a command-line interface and Python modules for integration into custom code. It performs spectral library matching to identify chemical compounds, offering a range of spectrum preprocessing transformations and similarity measures, including Cosine and three entropy-based similarity measures. PyCompound supports both high-resolution mass spectrometry (HRMS) data (e.g., LC-MS/MS) and nominal-resolution mass spectrometry (NRMS) data (e.g., GC-MS).
 
 ## Table of Contents
 - [1. Install dependencies](#create-conda-env)
@@ -252,11 +252,11 @@ run_spec_lib_matching_on_NRMS_data(
 
 Parameter descriptions are as follows:
 
---query_data (mandatory argument):   
-  * HRMS case: 3-column CSV file of query mass spectrum/spectra to be identified. Each row should correspond to a single ion fragment of a mass spectrum, the left-most column should contain an identifier, the middle columns should correspond to the mass to charge (m/z) ratios, and the right-most column should contain the intensities. For example, if spectrum A has 3 ion fragments, then there would be three rows in this CSV file corresponding to spectrum A.
-  * NRMS case: CSV file of query mass spectrum/spectra to be identified. Each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns contains the intensity with respect to a single m/z ratio.
+--query_data (mandatory argument):
+  * HRMS case: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, must have 3 columns with each row corresponding to a single ion fragment of a mass spectrum, the left-most column containing an identifier, the middle columns corresponding to the mass to charge (m/z) ratios, and the right-most column containing the intensities. For example, if spectrum A has 3 ion fragments, then there would be three rows in this CSV file corresponding to spectrum A.
+  * NRMS case: cdf or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum with the left-most column containing an identifier and each of the other columns containing the intensity with respect to a single m/z ratio.
 
---reference_data (mandatory argument): Same format CSV file as query_data except of reference library spectra.
+--reference_data (mandatory argument): Same format csv file as query_data except of reference library spectra.
 
 --likely_reference_IDs: CSV file with one column containing the IDs of a subset of all compounds in the reference_data to be used in spectral library matching. Each ID in this file must be an ID in the reference library. Default: None (i.e. default is to use entire reference library)
 
@@ -505,11 +505,14 @@ generate_plots_on_NRMS_data(
         output_path=None)
 ```
 
+An example of such a generated plot is seen below.
+<img src="https://github.com/user-attachments/files/20683597/test_HRMS.pdf" width="200" height="200" />
+
 Parameter descriptions are as follows:
 
---query_data (mandatory argument):   
-  * HRMS case: 3-column CSV file of query mass spectrum/spectra to be identified. Each row should correspond to a single ion fragment of a mass spectrum, the left-most column should contain an identifier, the middle columns should correspond to the mass to charge (m/z) ratios, and the right-most column should contain the intensities. For example, if spectrum A has 3 ion fragments, then there would be three rows in this CSV file corresponding to spectrum A.
-  * NRMS case: CSV file of query mass spectrum/spectra to be identified. Each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns contains the intensity with respect to a single m/z ratio.
+--query_data (mandatory argument):
+  * HRMS case: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, must have 3 columns with each row corresponding to a single ion fragment of a mass spectrum, the left-most column containing an identifier, the middle columns corresponding to the mass to charge (m/z) ratios, and the right-most column containing the intensities. For example, if spectrum A has 3 ion fragments, then there would be three rows in this CSV file corresponding to spectrum A.
+  * NRMS case: cdf or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum with the left-most column containing an identifier and each of the other columns containing the intensity with respect to a single m/z ratio.
 
 --reference_data (mandatory argument): Same format CSV file as query_data except of reference library spectra.
 

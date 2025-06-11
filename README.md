@@ -505,14 +505,6 @@ generate_plots_on_NRMS_data(
         output_path=None)
 ```
 
-An example of such a generated plot is seen below.
-
-<br />
-
-![image](https://github.com/user-attachments/assets/1806fdb6-8b4e-41f5-9697-395865943b01)
-
-<br />
-
 Parameter descriptions are as follows:
 
 --query_data (mandatory argument):
@@ -555,6 +547,41 @@ Parameter descriptions are as follows:
 
 --output_path: path to output PDF file containing the plots of the spectra before and after preprocessing transformations. If no argument is passed, then the plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.
 
+An example of such a generated plot is seen below.
+
+<br />
+
+![image](https://github.com/user-attachments/assets/176c875d-535c-4e5f-b83e-5b19f30157bf)
+
+<br />
+
+This plot compares two MS/MS spectra: Spectrum ID 1 (unknown, in blue) and Spectrum ID 2 (Hectochlorin M+H, in red). The top panel displays the untransformed spectra, while the bottom panel shows the transformed spectra following preprocessing steps. The footnote details are as follows:
+
+-   Filtering: Given user-defined parameters (mz_min,mz_max),
+
+-   Similarity Measure: Cosine -- The similarity measure used is cosine correlation.
+
+-   Similarity Score: 0.9946 -- The cosine similarity score between the two transformed spectra.
+
+-   Spectrum Preprocessing Order: FCNMWL -- The sequence of preprocessing steps applied: Filtering (F), Centroiding (C), Noise removal (N), Matching (M), Weight factor transformation (W), and Low-entropy transformation (L).
+
+-   High Quality Reference Library: False -- Both query and reference spectra underwent the same preprocessing transformations.
+
+-   Window Size (Centroiding): 0.5 -- A 0.5 Da window was used for centroiding peaks.
+
+-   Window Size (Matching): 0.5 -- Peaks were aligned using a 0.5 Da m/z tolerance window.
+
+-   Raw-Scale M/Z Range: [217.7, 628.8] -- The maximum and minimum of m/z values of peaks with non-zero intensities.
+
+-   Raw-Scale Intensity Range: [3885.0, 5549140] -- The maximum and minimum of absolute non-zero intensity values of the raw spectra before normalization.
+
+-   Noise Threshold: 0.0 -- No noise threshold was applied.
+
+-   Weight Factors (m/z, intensity): (0.0, 1.0) -- Non-zero intensities were transformed using weights of 0.0 for m/z and 1.0 for intensity.
+
+-   Low-Entropy Threshold: 0.0 -- No low-entropy transformation was applied.
+
+-   Normalization Method: Standard -- Intensity values were scaled using standard normalization, dividing each intensity by the sum of intensities so they sum to 1 and consequently represent a probability distribution.
 
 <a name="bugs-questions"></a>
 ## 4. Bugs/Questions?

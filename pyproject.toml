@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pycompound_fy7392"
+version = "0.0.7"
+authors = [
+  { name="Hunter Dlugas", email="fy7392@wayne.edu" },
+]
+description = "Python package to perform compound identification in mass spectrometry via spectral library matching."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+dependencies = [
+    "matplotlib==3.8.4",
+    "numpy==1.26.4",
+    "pandas==2.2.2",
+    "scipy==1.13.1",
+    "pyteomics==4.7.2",
+    "netCDF4==1.6.5",
+    "lxml>=5.1.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/hdlugas/pycompound"
+Issues = "https://github.com/hdlugas/pycompound/issues"

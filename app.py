@@ -140,7 +140,7 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
 
 
     df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
-    df.to_csv(output_path, index=False, sep='\t')
+    df.to_csv(output_path, index=False)
 
 
 
@@ -178,11 +178,11 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
             df_query = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
+        if extension=='csv' or extension=='CSV':
             df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique().tolist()
         unique_query_ids = [str(tmp) for tmp in unique_query_ids]
@@ -193,11 +193,11 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
             output_path_tmp = reference_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
             df_reference = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
+        if extension=='csv' or extension=='CSV':
             df_reference = pd.read_csv(reference_data)
         unique_reference_ids = df_reference.iloc[:,0].unique().tolist()
         unique_reference_ids = [str(tmp) for tmp in unique_reference_ids]
@@ -290,7 +290,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     if output_path is None:
         print(f'Warning: plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.')
         output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.pdf'
-
 
     if spectrum_ID1 in unique_query_ids and spectrum_ID2 in unique_query_ids:
         query_idx = unique_query_ids.index(spectrum_ID1)
@@ -487,11 +486,11 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
+        if extension=='csv' or extension=='CSV':
             df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
 
@@ -501,11 +500,11 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
             output_path_tmp = reference_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
             df_reference = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
+        if extension=='csv' or extension=='CSV':
             df_reference = pd.read_csv(reference_data)
             unique_reference_ids = df_reference.iloc[:,0].unique()
 
@@ -1028,11 +1027,11 @@ def convert_spec(spec, mzs):
 def get_reference_df(reference_data, likely_reference_IDs=None):
     extension = reference_data.rsplit('.',1)
     extension = extension[(len(extension)-1)]
-    if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+    if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
         output_path_tmp = reference_data[:-3] + 'csv'
         build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
         df_reference = pd.read_csv(output_path_tmp)
-    if extension == 'csv' or extension == 'CSV':
+    if extension=='csv' or extension=='CSV':
         df_reference = pd.read_csv(reference_data)
     if likely_reference_IDs is not None:
         likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
@@ -1885,11 +1884,11 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, lik
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
+        if extension=='csv' or extension=='CSV':
             df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
 
@@ -2135,11 +2134,11 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
+        if extension=='csv' or extension=='CSV':
             df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
 
@@ -3151,7 +3150,8 @@ def server(input, output, session):
                 if isinstance(out_obj, (str, os.PathLike, Path)):
                     csv_path = Path(out_obj)
                 elif isinstance(out_obj, pd.DataFrame):
-                    out_obj.to_csv(tmp_csv_path, index=False, sep='\t')
+                    #out_obj.to_csv(tmp_csv_path, index=False, sep='\t')
+                    out_obj.to_csv(tmp_csv_path, index=False)
                     csv_path = tmp_csv_path
                 else:
                     raise TypeError(f"build_library returned unsupported type: {type(out_obj)}")
@@ -3200,7 +3200,8 @@ def server(input, output, session):
                 if isinstance(out_obj, (str, os.PathLike, Path)):
                     csv_path = Path(out_obj)
                 elif isinstance(out_obj, pd.DataFrame):
-                    out_obj.to_csv(tmp_csv_path, index=False, sep='\t')
+                    #out_obj.to_csv(tmp_csv_path, index=False, sep='\t')
+                    out_obj.to_csv(tmp_csv_path, index=False)
                     csv_path = tmp_csv_path
                 else:
                     raise TypeError(f"build_library returned unsupported type: {type(out_obj)}")

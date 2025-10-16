@@ -1,0 +1,10 @@
+lxml
+matplotlib
+netCDF4
+numpy
+orjson
+pandas
+pillow
+pyteomics
+scipy
+shiny

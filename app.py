@@ -1,7 +1,9 @@
 
 from shiny import App, ui, reactive, render, req
+from shiny.types import SilentException
 from pathlib import Path
 from contextlib import redirect_stdout, redirect_stderr
+import contextlib
 import subprocess
 import traceback
 import asyncio
@@ -15,15 +17,17 @@ import netCDF4 as nc
 from pyteomics import mgf, mzml
 import ast
 from numbers import Real
-from itertools import product
+import logging
+from scipy.optimize import differential_evolution
 import scipy
+import scipy.stats
+from itertools import product
 import json
 
 
 _LOG_QUEUE: asyncio.Queue[str] = asyncio.Queue()
 
 
-###########################################################################################################################
 def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
     '''
     Converts mgf, mzML, cdf, or msp file to the necessary format for spectral library matching.
@@ -140,8 +144,7 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
 
 
     df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
-    df.to_csv(output_path, index=False)
-
+    df.to_csv(output_path, index=False, sep='\t')
 
 
 
@@ -178,11 +181,11 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
             df_query = pd.read_csv(output_path_tmp)
-        if extension=='csv' or extension=='CSV':
+        if extension == 'csv' or extension == 'CSV':
             df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique().tolist()
         unique_query_ids = [str(tmp) for tmp in unique_query_ids]
@@ -193,11 +196,11 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
             output_path_tmp = reference_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
             df_reference = pd.read_csv(output_path_tmp)
-        if extension=='csv' or extension=='CSV':
+        if extension == 'csv' or extension == 'CSV':
             df_reference = pd.read_csv(reference_data)
         unique_reference_ids = df_reference.iloc[:,0].unique().tolist()
         unique_reference_ids = [str(tmp) for tmp in unique_reference_ids]
@@ -290,6 +293,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     if output_path is None:
         print(f'Warning: plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.')
         output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.pdf'
+
 
     if spectrum_ID1 in unique_query_ids and spectrum_ID2 in unique_query_ids:
         query_idx = unique_query_ids.index(spectrum_ID1)
@@ -430,9 +434,9 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
         plt.yticks([])
 
 
-    #print('\n\n\n')
-    #print(high_quality_reference_library)
-    #print('\n\n\n')
+    print('\n\n\n')
+    print(high_quality_reference_library)
+    print('\n\n\n')
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
     plt.figlegend(loc = 'upper center')
     fig.text(0.05, 0.18, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
@@ -486,11 +490,11 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp)
-        if extension=='csv' or extension=='CSV':
+        if extension == 'csv' or extension == 'CSV':
             df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
 
@@ -500,11 +504,11 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
             output_path_tmp = reference_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
             df_reference = pd.read_csv(output_path_tmp)
-        if extension=='csv' or extension=='CSV':
+        if extension == 'csv' or extension == 'CSV':
             df_reference = pd.read_csv(reference_data)
             unique_reference_ids = df_reference.iloc[:,0].unique()
 
@@ -734,7 +738,6 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
 
     if return_plot == True:
         return fig
-
 
 
 def wf_transform(spec_mzs, spec_ints, wf_mz, wf_int):
@@ -1027,17 +1030,16 @@ def convert_spec(spec, mzs):
 def get_reference_df(reference_data, likely_reference_IDs=None):
     extension = reference_data.rsplit('.',1)
     extension = extension[(len(extension)-1)]
-    if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
+    if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
         output_path_tmp = reference_data[:-3] + 'csv'
         build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
         df_reference = pd.read_csv(output_path_tmp)
-    if extension=='csv' or extension=='CSV':
+    if extension == 'csv' or extension == 'CSV':
         df_reference = pd.read_csv(reference_data)
     if likely_reference_IDs is not None:
         likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
         df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
     return df_reference
-
 
 
 
@@ -1393,6 +1395,127 @@ def get_similarity(similarity_measure, q_ints, r_ints, weights, q):
     return similarity
 
 
+def _vector_to_full_params(X, default_params, optimize_params):
+    params = default_params.copy()
+    for name, val in zip(optimize_params, X):
+        params[name] = float(val)
+    return params
+
+
+def objective_function_HRMS(X, ctx):
+    p = _vector_to_full_params(X, ctx["default_params"], ctx["optimize_params"])
+    acc = get_acc_HRMS(
+        ctx["df_query"], ctx["df_reference"],
+        ctx["unique_query_ids"], ctx["unique_reference_ids"],
+        ctx["similarity_measure"], ctx["weights"], ctx["spectrum_preprocessing_order"],
+        ctx["mz_min"], ctx["mz_max"], ctx["int_min"], ctx["int_max"],
+        p["window_size_centroiding"], p["window_size_matching"], p["noise_threshold"],
+        p["wf_mz"], p["wf_int"], p["LET_threshold"],
+        p["entropy_dimension"],
+        ctx["high_quality_reference_library"],
+        verbose=False
+    )
+    print(f"\nparams({ctx['optimize_params']}) = {np.array(X)}\naccuracy: {acc*100}%")
+    return 1.0 - acc
+
+def objective_function_NRMS(X, ctx):
+    p = _vector_to_full_params(X, ctx["default_params"], ctx["optimize_params"])
+    acc = get_acc_NRMS(
+        ctx["df_query"], ctx["df_reference"],
+        ctx["unique_query_ids"], ctx["unique_reference_ids"],
+        ctx["similarity_measure"], ctx["weights"], ctx["spectrum_preprocessing_order"],
+        ctx["mz_min"], ctx["mz_max"], ctx["int_min"], ctx["int_max"],
+        p["noise_threshold"], p["wf_mz"], p["wf_int"], p["LET_threshold"], p["entropy_dimension"],
+        ctx["high_quality_reference_library"],
+        verbose=False
+    )
+    print(f"\nparams({ctx['optimize_params']}) = {np.array(X)}\naccuracy: {acc*100}%")
+    return 1.0 - acc
+
+
+
+def tune_params_DE(query_data=None, reference_data=None, chromatography_platform='HRMS', similarity_measure='cosine', weights=None, spectrum_preprocessing_order='CNMWL', mz_min=0, mz_max=999999999, int_min=0, int_max=999999999, high_quality_reference_library=False, optimize_params=["window_size_centroiding","window_size_matching","noise_threshold","wf_mz","wf_int","LET_threshold","entropy_dimension"], param_bounds={"window_size_centroiding":(0.0,0.5),"window_size_matching":(0.0,0.5),"noise_threshold":(0.0,0.25),"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0.0,5.0),"entropy_dimension":(1.0,3.0)}, default_params={"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1}, maxiters=3, de_workers=1, de_updating='immediate', log_hook=None):
+
+    def _log(msg):
+        if log_hook:
+            try: log_hook(msg if msg.endswith("\n") else msg + "\n")
+            except: pass
+
+    def callback(xk, conv):
+        _log(f"iter callback: conv={conv:.4g}, x={xk}")
+        return False
+
+    if query_data is None:
+        print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
+        sys.exit()
+    else:
+        extension = query_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = query_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            df_query = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_query = pd.read_csv(query_data)
+        unique_query_ids = df_query.iloc[:,0].unique()
+
+    if reference_data is None:
+        print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
+        sys.exit()
+    else:
+        if isinstance(reference_data,str):
+            df_reference = get_reference_df(reference_data=reference_data)
+            unique_reference_ids = df_reference.iloc[:,0].unique()
+        else:
+            dfs = []
+            unique_reference_ids = []
+            for f in reference_data:
+                tmp = get_reference_df(reference_data=f)
+                dfs.append(tmp)
+                unique_reference_ids.extend(tmp.iloc[:,0].unique())
+            df_reference = pd.concat(dfs, axis=0, ignore_index=True)
+
+    unique_query_ids = df_query['id'].unique().tolist()
+    unique_reference_ids = df_reference['id'].unique().tolist()
+
+    ctx = dict(
+        df_query=df_query,
+        df_reference=df_reference,
+        unique_query_ids=unique_query_ids,
+        unique_reference_ids=unique_reference_ids,
+        similarity_measure=similarity_measure,
+        weights=weights,
+        spectrum_preprocessing_order=spectrum_preprocessing_order,
+        mz_min=mz_min, mz_max=mz_max, int_min=int_min, int_max=int_max,
+        high_quality_reference_library=high_quality_reference_library,
+        default_params=default_params,
+        optimize_params=optimize_params,
+    )
+
+    bounds = [param_bounds[p] for p in optimize_params]
+
+    print('here!!!!!!!!!!!!!!!')
+    print(de_workers)
+    print('here!!!!!!!!!!!!!!!')
+    if chromatography_platform == 'HRMS':
+        result = differential_evolution(objective_function_HRMS, bounds=bounds, args=(ctx,), maxiter=maxiters, tol=0.0, workers=de_workers, seed=1)
+    else:
+        result = differential_evolution(objective_function_NRMS, bounds=bounds, args=(ctx,), maxiter=maxiters, tol=0.0, workers=de_workers, seed=1)
+
+    best_full_params = _vector_to_full_params(result.x, default_params, optimize_params)
+    best_acc = 100.0 - (result.fun * 100.0)
+
+    print("\n=== Differential Evolution Result ===")
+    print(f"Optimized over: {optimize_params}")
+    print("Best values (selected params):")
+    for name in optimize_params:
+        print(f"  {name}: {best_full_params[name]}")
+    print("\nFull parameter set used in final evaluation:")
+    for k, v in best_full_params.items():
+        print(f"  {k}: {v}")
+    print(f"\nBest accuracy: {best_acc:.3f}%")
+    _log(f"best = {result.x}, acc={100*(1-result.fun):.3f}%")
+
 
 default_HRMS_grid = {'similarity_measure':['cosine'], 'weight':[{'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}], 'spectrum_preprocessing_order':['FCNMWL'], 'mz_min':[0], 'mz_max':[9999999], 'int_min':[0], 'int_max':[99999999], 'window_size_centroiding':[0.5], 'window_size_matching':[0.5], 'noise_threshold':[0.0], 'wf_mz':[0.0], 'wf_int':[1.0], 'LET_threshold':[0.0], 'entropy_dimension':[1.1], 'high_quality_reference_library':[False]}
 default_NRMS_grid = {'similarity_measure':['cosine'], 'weight':[{'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}], 'spectrum_preprocessing_order':['FCNMWL'], 'mz_min':[0], 'mz_max':[9999999], 'int_min':[0], 'int_max':[99999999], 'noise_threshold':[0.0], 'wf_mz':[0.0], 'wf_int':[1.0], 'LET_threshold':[0.0], 'entropy_dimension':[1.1], 'high_quality_reference_library':[False]}
@@ -1420,6 +1543,7 @@ def _eval_one_HRMS(df_query, df_reference, unique_query_ids, unique_reference_id
         LET_threshold=LET_threshold_tmp,
         entropy_dimension=entropy_dimension_tmp,
         high_quality_reference_library=high_quality_reference_library_tmp,
+        verbose=True
     )
 
     return (
@@ -1460,8 +1584,83 @@ def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_id
 
 
 
+def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
+    """
+    runs spectral library matching on high-resolution mass spectrometry (HRMS) data with all possible combinations of parameters in the grid dict, saves results from each choice of parameters to a TXT file, and prints top-performing parameters
 
-def tune_params_on_HRMS_data_shiny(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
+    --query_data: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
+    --reference_data: mgf, mzML, or csv file of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
+    --grid: dict with all possible parameter values to try.
+    --output_path: accuracy from each choice of parameter set is saved to a TXT file here.
+    """
+
+    grid = {**default_HRMS_grid, **(grid or {})}
+    for key, value in grid.items():
+        globals()[key] = value
+
+    if query_data is None:
+        print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
+        sys.exit()
+    else:
+        extension = query_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = query_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            df_query = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_query = pd.read_csv(query_data)
+        unique_query_ids = df_query.iloc[:,0].unique()
+
+    if reference_data is None:
+        print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
+        sys.exit()
+    else:
+        if isinstance(reference_data,str):
+            df_reference = get_reference_df(reference_data=reference_data)
+            unique_reference_ids = df_reference.iloc[:,0].unique()
+        else:
+            dfs = []
+            unique_reference_ids = []
+            for f in reference_data:
+                tmp = get_reference_df(reference_data=f)
+                dfs.append(tmp)
+                unique_reference_ids.extend(tmp.iloc[:,0].unique())
+            df_reference = pd.concat(dfs, axis=0, ignore_index=True)
+
+    print(f'\nNote that there are {len(unique_query_ids)} unique query spectra, {len(unique_reference_ids)} unique reference spectra, and {len(set(unique_query_ids) & set(unique_reference_ids))} of the query and reference spectra IDs are in common.\n')
+
+    if output_path is None:
+        output_path = f'{Path.cwd()}/tuning_param_output.txt'
+        print(f'Warning: since output_path=None, the output will be written to the current working directory: {output_path}')
+
+    param_grid = product(similarity_measure, weight, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, noise_threshold,
+                         window_size_centroiding, window_size_matching, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library)
+    results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_HRMS)(df_query, df_reference, unique_query_ids, unique_reference_ids, *params) for params in param_grid)
+
+    df_out = pd.DataFrame(results, columns=[
+        'ACC','SIMILARITY.MEASURE','WEIGHT','SPECTRUM.PROCESSING.ORDER', 'MZ.MIN','MZ.MAX','INT.MIN','INT.MAX','NOISE.THRESHOLD',
+        'WINDOW.SIZE.CENTROIDING','WINDOW.SIZE.MATCHING', 'WF.MZ','WF.INT','LET.THRESHOLD','ENTROPY.DIMENSION', 'HIGH.QUALITY.REFERENCE.LIBRARY'
+    ])
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("\"","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("{","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("}","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace(":","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Cosine","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Shannon","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Renyi","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Tsallis","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace(" ","",regex=False)
+    df_out.to_csv(output_path, index=False, sep='\t', quoting=csv.QUOTE_NONE)
+
+    if return_output is False:
+        df_out.to_csv(output_path, index=False, sep='\t', quoting=csv.QUOTE_NONE)
+    else:
+        return df_out
+
+
+
+def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
     """
     runs spectral library matching on high-resolution mass spectrometry (HRMS) data with all possible 
     combinations of parameters in the grid dict, saves results from each choice of parameters to a TXT file, 
@@ -1569,8 +1768,81 @@ def tune_params_on_HRMS_data_shiny(query_data=None, reference_data=None, grid=No
         print(f'Wrote results to {output_path}')
 
 
+def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
+    """
+    runs spectral library matching on nominal-resolution mass spectrometry (NRMS) data with all possible combinations of parameters in the grid dict, saves results from each choice of parameters to a TXT file, and prints top-performing parameters
 
-def tune_params_on_NRMS_data_shiny(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
+    --query_data: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
+    --reference_data: mgf, mzML, or csv file of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
+    --grid: dict with all possible parameter values to try
+    --output_path: accuracy from each choice of parameter set is saved to a TXT file here
+    """
+
+    grid = {**default_NRMS_grid, **(grid or {})}
+    for key, value in grid.items():
+        globals()[key] = value
+
+    if query_data is None:
+        print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
+        sys.exit()
+    else:
+        extension = query_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+            output_path_tmp = query_data[:-3] + 'csv'
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            df_query = pd.read_csv(output_path_tmp)
+        if extension == 'csv' or extension == 'CSV':
+            df_query = pd.read_csv(query_data)
+        unique_query_ids = df_query.iloc[:,0].unique()
+
+    if reference_data is None:
+        print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
+        sys.exit()
+    else:
+        if isinstance(reference_data,str):
+            df_reference = get_reference_df(reference_data=reference_data)
+            unique_reference_ids = df_reference.iloc[:,0].unique()
+        else:
+            dfs = []
+            unique_reference_ids = []
+            for f in reference_data:
+                tmp = get_reference_df(reference_data=f)
+                dfs.append(tmp)
+                unique_reference_ids.extend(tmp.iloc[:,0].unique())
+            df_reference = pd.concat(dfs, axis=0, ignore_index=True)
+
+    print(f'\nNote that there are {len(unique_query_ids)} unique query spectra, {len(unique_reference_ids)} unique reference spectra, and {len(set(unique_query_ids) & set(unique_reference_ids))} of the query and reference spectra IDs are in common.\n')
+
+    if output_path is None:
+        output_path = f'{Path.cwd()}/tuning_param_output.txt'
+        print(f'Warning: since output_path=None, the output will be written to the current working directory: {output_path}')
+
+    param_grid = product(similarity_measure, weight, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max,
+                         noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library)
+    results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_NRMS)(df_query, df_reference, unique_query_ids, unique_reference_ids, *params) for params in param_grid)
+
+    df_out = pd.DataFrame(results, columns=[
+        'ACC','SIMILARITY.MEASURE','WEIGHT','SPECTRUM.PROCESSING.ORDER', 'MZ.MIN','MZ.MAX','INT.MIN','INT.MAX',
+        'NOISE.THRESHOLD','WF.MZ','WF.INT','LET.THRESHOLD','ENTROPY.DIMENSION', 'HIGH.QUALITY.REFERENCE.LIBRARY'
+    ])
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("\"","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("{","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("}","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace(":","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Cosine","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Shannon","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Renyi","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Tsallis","",regex=False)
+    df_out['WEIGHT'] = df_out['WEIGHT'].str.replace(" ","",regex=False)
+    if return_output is False:
+        df_out.to_csv(output_path, index=False, sep='\t', quoting=csv.QUOTE_NONE)
+    else:
+        return df_out
+
+
+
+def tune_params_on_NRMS_data_grid_shiny(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
     """
     runs spectral library matching on nominal-resolution mass spectrometry (NRMS) data with all possible 
     combinations of parameters in the grid dict, saves results from each choice of parameters to a TXT file, 
@@ -1676,21 +1948,25 @@ def tune_params_on_NRMS_data_shiny(query_data=None, reference_data=None, grid=No
 
 
 
-def get_acc_HRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, window_size_centroiding, window_size_matching, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library):
+def get_acc_HRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, window_size_centroiding, window_size_matching, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library, verbose=True):
 
     n_top_matches_to_save = 1
 
     all_similarity_scores =  []
     for query_idx in range(0,len(unique_query_ids)):
-        print(f'query spectrum #{query_idx} is being identified')
+        if verbose is True:
+            print(f'query spectrum #{query_idx} is being identified')
         q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
         q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        #q_spec_tmp = q_spec_tmp.astype(float)
 
         similarity_scores = []
         for ref_idx in range(0,len(unique_reference_ids)):
             q_spec = q_spec_tmp
             r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
             r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+            #print(r_spec)
+            #r_spec = r_spec.astype(float)
 
             is_matched = False
             for transformation in spectrum_preprocessing_order:
@@ -1764,7 +2040,7 @@ def get_acc_HRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
 
 
-def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library):
+def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library, verbose=True):
 
     n_top_matches_to_save = 1
 
@@ -1781,7 +2057,7 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
         similarity_scores = []
         for ref_idx in range(0,len(unique_reference_ids)):
             q_spec = q_spec_tmp
-            if ref_idx % 1000 == 0:
+            if verbose is True and ref_idx % 1000 == 0:
                 print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
             r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
             r_spec_tmp = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
@@ -1850,7 +2126,7 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
 
 
-def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, likely_reference_ids=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False):
+def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, likely_reference_ids=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False, verbose=True):
     '''
     runs spectral library matching on high-resolution mass spectrometry (HRMS) data
 
@@ -1884,11 +2160,11 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, lik
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp)
-        if extension=='csv' or extension=='CSV':
+        if extension == 'csv' or extension == 'CSV':
             df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
 
@@ -1997,14 +2273,13 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, lik
 
     all_similarity_scores =  []
     for query_idx in range(0,len(unique_query_ids)):
-        print(f'query spectrum #{query_idx} is being identified')
+        if verbose is True:
+            print(f'query spectrum #{query_idx} is being identified')
         q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
         q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
 
         similarity_scores = []
         for ref_idx in range(0,len(unique_reference_ids)):
-            #if ref_idx % 100 == 0:
-            #    print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
             q_spec = q_spec_tmp
             r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
             r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
@@ -2134,11 +2409,11 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension=='mgf' or extension=='MGF' or extension=='msp' or extension=='MSP' or extension=='mzML' or extension=='mzml' or extension=='MZML' or extension=='cdf' or extension=='CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp)
-        if extension=='csv' or extension=='CSV':
+        if extension == 'csv' or extension == 'CSV':
             df_query = pd.read_csv(query_data)
         unique_query_ids = df_query.iloc[:,0].unique()
 
@@ -2243,9 +2518,9 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
 
         similarity_scores = []
         for ref_idx in range(0,len(unique_reference_ids)):
-            q_spec = q_spec_tmp
-            if ref_idx % 1000 == 0:
+            if verbose is True and ref_idx % 1000 == 0:
                 print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
+            q_spec = q_spec_tmp
             r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
             r_spec_tmp = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
             r_spec = convert_spec(r_spec_tmp,mzs)
@@ -2330,10 +2605,26 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
     else:
         return df_top_ref_specs
 
-###########################################################################################################################
+
+class _UIWriter:
+    def __init__(self, loop, q: asyncio.Queue[str]):
+        self._loop = loop
+        self._q = q
+    def write(self, s: str):
+        if s:
+            self._loop.call_soon_threadsafe(self._q.put_nowait, s)
+        return len(s)
+    def flush(self):
+        pass
 
 
-
+def attach_logging_to_writer(writer):
+    handler = logging.StreamHandler(writer)
+    handler.setLevel(logging.INFO)
+    root = logging.getLogger()
+    root.addHandler(handler)
+    root.setLevel(logging.INFO)
+    return handler, root
 
 
 
@@ -2704,7 +2995,7 @@ def run_spec_lib_matching_ui(platform: str):
 
 
 
-def run_parameter_tuning_ui(platform: str):
+def run_parameter_tuning_grid_ui(platform: str):
     base_inputs = [
         ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or csv):"),
         ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or csv):"),
@@ -2745,7 +3036,7 @@ def run_parameter_tuning_ui(platform: str):
     ]
 
 
-    run_button_parameter_tuning = ui.download_button("run_btn_parameter_tuning", "Tune parameters", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
+    run_button_parameter_tuning_grid = ui.download_button("run_btn_parameter_tuning_grid", "Tune parameters (grid search)", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
     back_button = ui.input_action_button("back", "Back to main menu", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
 
     if platform == "HRMS":
@@ -2767,7 +3058,7 @@ def run_parameter_tuning_ui(platform: str):
 
     log_panel = ui.card(
         ui.card_header("Identification log"),
-        ui.output_text_verbatim("tuning_log"),
+        ui.output_text_verbatim("match_log"),
         style="max-height:300px; overflow:auto"
     )
 
@@ -2775,7 +3066,7 @@ def run_parameter_tuning_ui(platform: str):
         ui.TagList(
             ui.h2("Tune parameters"),
             inputs_columns,
-            run_button_parameter_tuning,
+            run_button_parameter_tuning_grid,
             back_button,
             log_panel
         ),
@@ -2783,12 +3074,152 @@ def run_parameter_tuning_ui(platform: str):
 
 
 
-'''
-app_ui = ui.page_fluid(
-    ui.output_ui("main_ui"),
-    ui.output_text("status_output")
-)
-'''
+PARAMS_HRMS = {
+    "window_size_centroiding": (0.0, 0.5),
+    "window_size_matching":    (0.0, 0.5),
+    "noise_threshold":         (0.0, 0.25),
+    "wf_mz":                   (0.0, 5.0),
+    "wf_int":                  (0.0, 5.0),
+    "LET_threshold":           (0.0, 5.0),
+    "entropy_dimension":       (1.0, 3.0)
+}
+
+PARAMS_NRMS = {
+    "noise_threshold":         (0.0, 0.25),
+    "wf_mz":                   (0.0, 5.0),
+    "wf_int":                  (0.0, 5.0),
+    "LET_threshold":           (0.0, 5.0),
+    "entropy_dimension":       (1.0, 3.0)
+}
+
+
+def run_parameter_tuning_DE_ui(platform: str):
+    # Pick param set per platform
+    if platform == "HRMS":
+        PARAMS = PARAMS_HRMS
+    else:
+        PARAMS = PARAMS_NRMS
+
+    base_inputs = [
+        ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or csv):"),
+        ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or csv):"),
+        ui.input_select(
+            "similarity_measure",
+            "Select similarity measure:",
+            [
+                "cosine","shannon","renyi","tsallis","mixture","jaccard","dice",
+                "3w_jaccard","sokal_sneath","binary_cosine","mountford",
+                "mcconnaughey","driver_kroeber","simpson","braun_banquet",
+                "fager_mcgowan","kulczynski","intersection","hamming","hellinger",
+            ],
+        ),
+        ui.input_text(
+            "weights",
+            "Weights for mixture similarity measure (cosine, shannon, renyi, tsallis):",
+            "0.25, 0.25, 0.25, 0.25",
+        ),
+        ui.input_select(
+            "high_quality_reference_library",
+            "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.",
+            [False, True],
+        ),
+    ]
+
+    if platform == "HRMS":
+        extra_inputs = [
+            ui.input_text(
+                "spectrum_preprocessing_order",
+                "Sequence of characters for preprocessing order (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used.",
+                "FCNMWL",
+            ),
+            ui.input_numeric("window_size_centroiding", "Centroiding window-size:", 0.5),
+            ui.input_numeric("window_size_matching", "Matching window-size:", 0.5),
+        ]
+    else:
+        extra_inputs = [
+            ui.input_text(
+                "spectrum_preprocessing_order",
+                "Sequence of characters for preprocessing order (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation)).",
+                "FNLW",
+            )
+        ]
+
+    numeric_inputs = [
+        ui.input_numeric("mz_min", "Minimum m/z for filtering:", 0),
+        ui.input_numeric("mz_max", "Maximum m/z for filtering:", 99_999_999),
+        ui.input_numeric("int_min", "Minimum intensity for filtering:", 0),
+        ui.input_numeric("int_max", "Maximum intensity for filtering:", 999_999_999),
+        ui.input_numeric("noise_threshold", "Noise removal threshold:", 0.0),
+        ui.input_numeric("wf_mz", "Mass/charge weight factor:", 0.0),
+        ui.input_numeric("wf_int", "Intensity weight factor:", 1.0),
+        ui.input_numeric("LET_threshold", "Low-entropy threshold:", 0.0),
+        ui.input_numeric("entropy_dimension", "Entropy dimension (Renyi/Tsallis only):", 1.1),
+        ui.input_numeric("max_iterations", "Maximum number of iterations:", 5),
+    ]
+
+    run_button_parameter_tuning_DE = ui.input_action_button(
+        "run_btn_parameter_tuning_DE",
+        "Tune parameters (differential evolution optimization)",
+        style="font-size:16px; padding:15px 30px; width:300px; height:100px",
+    )
+    back_button = ui.input_action_button(
+        "back",
+        "Back to main menu",
+        style="font-size:16px; padding:15px 30px; width:300px; height:100px",
+    )
+
+    # Build the 4-column inputs panel (fixed slices corrected, unpack lists properly)
+    if platform == "HRMS":
+        inputs_columns = ui.layout_columns(
+            ui.div(*base_inputs, style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(*extra_inputs, style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(*numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(*numeric_inputs[5:11], style="display:flex; flex-direction:column; gap:10px;"),
+            col_widths=(3, 3, 3, 3),
+        )
+    else:  # NRMS
+        inputs_columns = ui.layout_columns(
+            ui.div(*base_inputs, style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(*extra_inputs, style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(*numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(*numeric_inputs[5:11], style="display:flex; flex-direction:column; gap:10px;"),
+            col_widths=(3, 3, 3, 3),
+        )
+
+    # Main page: sidebar (param selection + bounds) and body (inputs + buttons + live log)
+    return ui.page_fillable(
+        ui.layout_sidebar(
+            ui.sidebar(
+                ui.h3("Select continuous parameters to optimize"),
+                ui.input_checkbox_group(
+                    "params",
+                    None,
+                    choices=list(PARAMS.keys()),
+                    selected=["noise_threshold", "LET_threshold"],
+                ),
+                ui.hr(),
+                ui.h4("Bounds for selected parameters"),
+                ui.output_ui("bounds_inputs"),
+                width=360,
+            ),
+            ui.div(
+                ui.h2("Tune parameters (differential evolution optimization)"),
+                inputs_columns,
+                run_button_parameter_tuning_DE,
+                back_button,
+                ui.br(),
+                ui.card(
+                    ui.card_header("Live log"),
+                    ui.output_text_verbatim("run_log"),   # <-- make sure server defines this
+                ),
+                style="display:flex; flex-direction:column; gap:16px;",
+            ),
+        )
+    )
+
+
+
+
 
 app_ui = ui.page_fluid(
     ui.head_content(ui.tags.link(rel="icon", href="emblem.png")),
@@ -2808,11 +3239,11 @@ def server(input, output, session):
     run_status_plot_spectra = reactive.Value("")
     run_status_spec_lib_matching = reactive.Value("")
     run_status_plot_spectra_within_spec_lib_matching = reactive.Value("")
-    run_status_parameter_tuning = reactive.Value("")
-    is_tuning_running = reactive.Value(False)
+    run_status_parameter_tuning_grid = reactive.Value("")
+    run_status_parameter_tuning_DE = reactive.Value("")
+    is_tuning_grid_running = reactive.Value(False)
+    is_tuning_DE_running = reactive.Value(False)
     match_log_rv = reactive.Value("")
-    tuning_log_rv = reactive.Value("")
-    current_log_sink = reactive.Value("")
     is_matching_rv = reactive.Value(False)
     is_any_job_running = reactive.Value(False)
     latest_csv_path_rv = reactive.Value("")
@@ -2831,6 +3262,64 @@ def server(input, output, session):
     converted_query_path_rv = reactive.Value(None)
     converted_reference_path_rv = reactive.Value(None)
 
+    @output
+    @render.ui
+    def bounds_inputs():
+        selected = input.params()
+        if not selected:
+            return ui.div(ui.em("Select one or more parameters above."))
+
+        if input.chromatography_platform() == 'HRMS':
+            PARAMS = PARAMS_HRMS
+        else:
+            PARAMS = PARAMS_NRMS
+        blocks = []
+        for name in selected:
+            lo, hi = PARAMS.get(name, (0.0, 1.0))
+            blocks.append(
+                ui.card(
+                    ui.card_header(name),
+                    ui.layout_columns(
+                        ui.input_numeric(f"min_{name}", "Lower", lo, step=0.001),
+                        ui.input_numeric(f"max_{name}", "Upper", hi, step=0.001),
+                    )
+                )
+            )
+        return ui.div(*blocks)
+
+    def _read_bounds_dict():
+        selected = input.params()
+        out = {}
+        for name in selected:
+            lo_default, hi_default = PARAMS.get(name, (0.0, 1.0))
+            lo_id = f"min_{name}"
+            hi_id = f"max_{name}"
+
+            lo_val = input[lo_id]() if lo_id in input else lo_default
+            hi_val = input[hi_id]() if hi_id in input else hi_default
+
+            out[name] = (float(lo_val), float(hi_val))
+        return out
+
+    def _read_bounds():
+        opt_params = input.params()
+        bounds_dict = {}
+        if input.chromatography_platform() == 'HRMS':
+            PARAMS = PARAMS_HRMS
+        else:
+            PARAMS = PARAMS_NRMS
+
+        for p in opt_params:
+            lo_id, hi_id = f"min_{p}", f"max_{p}"
+            lo_default, hi_default = PARAMS.get(p, (0.0, 1.0))
+            lo = input[lo_id]() if lo_id in input else lo_default
+            hi = input[hi_id]() if hi_id in input else hi_default
+            if lo > hi:
+                lo, hi = hi, lo
+            bounds_dict[p] = (float(lo), float(hi))
+
+        bounds_list = [bounds_dict[p] for p in opt_params]
+        return opt_params, bounds_dict, bounds_list
 
     def _reset_plot_spectra_state():
         query_status_rv.set("")
@@ -2852,7 +3341,6 @@ def server(input, output, session):
 
     def _reset_spec_lib_matching_state():
         match_log_rv.set("")
-        is_tuning_running.set(False)
         is_matching_rv.set(False)
         is_any_job_running.set(False)
         try:
@@ -2864,26 +3352,22 @@ def server(input, output, session):
 
     def _reset_parameter_tuning_state():
         match_log_rv.set("")
-        is_tuning_running.set(False)
-        is_matching_rv.set(False)
+        is_tuning_grid_running.set(False)
+        is_tuning_DE_running.set(False)
         is_any_job_running.set(False)
-
-
-    @render.text
-    def tuning_log():
-        return tuning_log_rv.get()
 
 
     @reactive.effect
     @reactive.event(input.back)
     def _clear_on_back_from_pages():
         page = current_page()
-        current_log_sink.set("none")
         if page == "plot_spectra":
             _reset_plot_spectra_state()
         elif page == "run_spec_lib_matching":
             _reset_spec_lib_matching_state()
-        elif page == "run_parameter_tuning":
+        elif page == "run_parameter_tuning_grid":
+            _reset_parameter_tuning_state()
+        elif page == "run_parameter_tuning_DE":
             _reset_parameter_tuning_state()
 
     @reactive.effect
@@ -2893,7 +3377,9 @@ def server(input, output, session):
             _reset_plot_spectra_state()
         elif page == "run_spec_lib_matching":
             _reset_spec_lib_matching_state()
-        elif page == "run_parameter_tuning":
+        elif page == "run_parameter_tuning_grid":
+            _reset_parameter_tuning_state()
+        elif page == "run_parameter_tuning_DE":
             _reset_parameter_tuning_state()
 
 
@@ -2919,38 +3405,15 @@ def server(input, output, session):
             pass
 
 
-    '''
     @reactive.effect
     async def _pump_logs():
-        if not (is_any_job_running.get() or is_tuning_running.get() or is_matching_rv.get()):
+        if not (is_any_job_running.get() or is_tuning_grid_running.get() or is_tuning_DE_running.get() or is_matching_rv.get()):
             return
         reactive.invalidate_later(0.05)
         msgs = _drain_queue_nowait(_LOG_QUEUE)
         if msgs:
             match_log_rv.set(match_log_rv.get() + "".join(msgs))
             await reactive.flush()
-    '''
-
-    @reactive.effect
-    async def _pump_logs():
-        if not (is_any_job_running.get() or is_tuning_running.get() or is_matching_rv.get()):
-            return
-
-        reactive.invalidate_later(0.05)
-        msgs = _drain_queue_nowait(_LOG_QUEUE)
-        if not msgs:
-            return
-
-        sink = current_log_sink.get()
-        text = "".join(msgs)
-
-        if sink == "tuning":
-            tuning_log_rv.set(tuning_log_rv.get() + text)
-        else:
-            match_log_rv.set(match_log_rv.get() + text)
-
-        await reactive.flush()
-
 
 
     def process_database(file_path: str):
@@ -3023,9 +3486,12 @@ def server(input, output, session):
         elif input.run_spec_lib_matching() > match_clicks.get():
             current_page.set("run_spec_lib_matching")
             match_clicks.set(input.run_spec_lib_matching())
-        elif input.run_parameter_tuning() > match_clicks.get():
-            current_page.set("run_parameter_tuning")
-            match_clicks.set(input.run_parameter_tuning())
+        elif input.run_parameter_tuning_grid() > match_clicks.get():
+            current_page.set("run_parameter_tuning_grid")
+            match_clicks.set(input.run_parameter_tuning_grid())
+        elif input.run_parameter_tuning_DE() > match_clicks.get():
+            current_page.set("run_parameter_tuning_DE")
+            match_clicks.set(input.run_parameter_tuning_DE())
         elif hasattr(input, "back") and input.back() > back_clicks.get():
             current_page.set("main_menu")
             back_clicks.set(input.back())
@@ -3069,7 +3535,8 @@ def server(input, output, session):
                 ),
                 ui.input_action_button("plot_spectra", "Plot two spectra before and after preprocessing transformations.", style="font-size:18px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.input_action_button("run_spec_lib_matching", "Run spectral library matching to perform compound identification on a query library of spectra.", style="font-size:18px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),
-                ui.input_action_button("run_parameter_tuning", "Tune parameters to maximize accuracy of compound identification given a query library with known spectrum IDs.", style="font-size:18px; padding:20px 40px; width:450px; height:120px; margin-top:10px; margin-right:50px"),
+                ui.input_action_button("run_parameter_tuning_grid", "Grid search: Tune parameters to maximize accuracy of compound identification given a query library with known spectrum IDs.", style="font-size:18px; padding:20px 40px; width:450px; height:120px; margin-top:10px; margin-right:50px"),
+                ui.input_action_button("run_parameter_tuning_DE", "Differential evolution optimization: Tune parameters to maximize accuracy of compound identification given a query library with known spectrum IDs.", style="font-size:18px; padding:20px 40px; width:500px; height:150px; margin-top:10px; margin-right:50px"),
                 ui.div(
                     "References:",
                     style="margin-top:35px; text-align:left; font-size:24px; font-weight:bold"
@@ -3120,8 +3587,10 @@ def server(input, output, session):
             return plot_spectra_ui(input.chromatography_platform())
         elif current_page() == "run_spec_lib_matching":
             return run_spec_lib_matching_ui(input.chromatography_platform())
-        elif current_page() == "run_parameter_tuning":
-            return run_parameter_tuning_ui(input.chromatography_platform())
+        elif current_page() == "run_parameter_tuning_grid":
+            return run_parameter_tuning_grid_ui(input.chromatography_platform())
+        elif current_page() == "run_parameter_tuning_DE":
+            return run_parameter_tuning_DE_ui(input.chromatography_platform())
 
 
 
@@ -3150,8 +3619,7 @@ def server(input, output, session):
                 if isinstance(out_obj, (str, os.PathLike, Path)):
                     csv_path = Path(out_obj)
                 elif isinstance(out_obj, pd.DataFrame):
-                    #out_obj.to_csv(tmp_csv_path, index=False, sep='\t')
-                    out_obj.to_csv(tmp_csv_path, index=False)
+                    out_obj.to_csv(tmp_csv_path, index=False, sep='\t')
                     csv_path = tmp_csv_path
                 else:
                     raise TypeError(f"build_library returned unsupported type: {type(out_obj)}")
@@ -3200,8 +3668,7 @@ def server(input, output, session):
                 if isinstance(out_obj, (str, os.PathLike, Path)):
                     csv_path = Path(out_obj)
                 elif isinstance(out_obj, pd.DataFrame):
-                    #out_obj.to_csv(tmp_csv_path, index=False, sep='\t')
-                    out_obj.to_csv(tmp_csv_path, index=False)
+                    out_obj.to_csv(tmp_csv_path, index=False, sep='\t')
                     csv_path = tmp_csv_path
                 else:
                     raise TypeError(f"build_library returned unsupported type: {type(out_obj)}")
@@ -3239,6 +3706,9 @@ def server(input, output, session):
         if input.high_quality_reference_library() != 'False':
             high_quality_reference_library_tmp2 = True
 
+        print(input.high_quality_reference_library())
+        print(high_quality_reference_library_tmp2)
+
         if input.chromatography_platform() == "HRMS":
             fig = generate_plots_on_HRMS_data(query_data=input.query_data()[0]['datapath'], reference_data=input.reference_data()[0]['datapath'], spectrum_ID1=spectrum_ID1, spectrum_ID2=spectrum_ID2, similarity_measure=input.similarity_measure(), weights=weights, spectrum_preprocessing_order=input.spectrum_preprocessing_order(), high_quality_reference_library=high_quality_reference_library_tmp2, mz_min=input.mz_min(), mz_max=input.mz_max(), int_min=input.int_min(), int_max=input.int_max(), window_size_centroiding=input.window_size_centroiding(), window_size_matching=input.window_size_matching(), noise_threshold=input.noise_threshold(), wf_mz=input.wf_mz(), wf_intensity=input.wf_int(), LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(), y_axis_transformation=input.y_axis_transformation(), return_plot=True)
             plt.show()
@@ -3254,10 +3724,6 @@ def server(input, output, session):
 
     @render.download(filename="identification_output.txt")
     async def run_btn_spec_lib_matching():
-        current_log_sink.set("matching")
-        match_log_rv.set("")
-        _drain_queue_nowait(_LOG_QUEUE)
-
         match_log_rv.set("Running identification...\n")
         await reactive.flush()
 
@@ -3322,17 +3788,11 @@ def server(input, output, session):
         spectrum_ID1 = input.spectrum_ID1() or None
         spectrum_ID2 = input.spectrum_ID2() or None
 
-        '''
         hq = input.high_quality_reference_library()
         if isinstance(hq, str):
             hq = hq.lower() == "true"
         elif isinstance(hq, (int, float)):
             hq = bool(hq)
-        '''
-
-        high_quality_reference_library_tmp2 = False
-        if input.high_quality_reference_library() != 'False':
-            high_quality_reference_library_tmp2 = True
 
         weights = [float(weight.strip()) for weight in input.weights().split(",") if weight.strip()]
         weights = {'Cosine':weights[0], 'Shannon':weights[1], 'Renyi':weights[2], 'Tsallis':weights[3]}
@@ -3345,7 +3805,7 @@ def server(input, output, session):
             similarity_measure=input.similarity_measure(),
             weights=weights,
             spectrum_preprocessing_order=input.spectrum_preprocessing_order(),
-            high_quality_reference_library=high_quality_reference_library_tmp2,
+            high_quality_reference_library=hq,
             mz_min=input.mz_min(), mz_max=input.mz_max(),
             int_min=input.int_min(), int_max=input.int_max(),
             noise_threshold=input.noise_threshold(),
@@ -3372,13 +3832,10 @@ def server(input, output, session):
             yield buf.getvalue()
 
 
-    @render.download(filename="parameter_tuning_output.txt")
-    async def run_btn_parameter_tuning():
-        current_log_sink.set("tuning")
-        tuning_log_rv.set("")
-        _drain_queue_nowait(_LOG_QUEUE)
+    @render.download(filename="parameter_tuning_grid_output.txt")
+    async def run_btn_parameter_tuning_grid():
         is_any_job_running.set(True)
-        is_tuning_running.set(True)
+        is_tuning_grid_running.set(True)
         match_log_rv.set("Running grid search of all parameters specified...\n")
         await reactive.flush()
 
@@ -3399,7 +3856,7 @@ def server(input, output, session):
         common_kwargs = dict(
             query_data=input.query_data()[0]["datapath"],
             reference_data=input.reference_data()[0]["datapath"],
-            output_path=str(Path.cwd() / "parameter_tuning_output.txt"),
+            output_path=str(Path.cwd() / "parameter_tuning_grid_output.txt"),
             return_output=True,
         )
 
@@ -3427,7 +3884,7 @@ def server(input, output, session):
                     'window_size_centroiding': window_size_centroiding_tmp,
                     'window_size_matching': window_size_matching_tmp,
                 }
-                df_out = await asyncio.to_thread(_run_with_redirects, tune_params_on_HRMS_data_shiny, rw, **common_kwargs, grid=grid)
+                df_out = await asyncio.to_thread(_run_with_redirects, tune_params_on_HRMS_data_grid_shiny, rw, **common_kwargs, grid=grid)
             else:
                 grid = {
                     'similarity_measure': similarity_measure_tmp,
@@ -3444,26 +3901,170 @@ def server(input, output, session):
                     'entropy_dimension': entropy_dimension_tmp,
                     'high_quality_reference_library': high_quality_reference_library_tmp,
                 }
-                df_out = await asyncio.to_thread(_run_with_redirects, tune_params_on_NRMS_data_shiny, rw, **common_kwargs, grid=grid)
+                df_out = await asyncio.to_thread(_run_with_redirects, tune_params_on_NRMS_data_grid_shiny, rw, **common_kwargs, grid=grid)
 
             match_log_rv.set(match_log_rv.get() + "\n✅ Parameter tuning finished.\n")
         except Exception as e:
             match_log_rv.set(match_log_rv.get() + f"\n❌ Error: {e}\n")
             raise
         finally:
-            is_tuning_running.set(False)
+            is_tuning_grid_running.set(False)
             is_any_job_running.set(False)
             await reactive.flush()
 
-        yield df_out.to_csv(index=False,sep='\t').encode("utf-8")
-
-
+        yield df_out.to_csv(index=False, sep='\t').encode("utf-8")
 
 
 
     @reactive.effect
+    @reactive.event(input.run_btn_parameter_tuning_DE)
+    async def run_btn_parameter_tuning_DE():
+        match_log_rv.set("Tuning specified continuous parameters using differential evolution...\n")
+        is_any_job_running.set(True)
+        is_tuning_DE_running.set(True)
+        await reactive.flush()
+
+        # --- helpers ---
+        def _safe_float(v, default):
+            try:
+                if v is None:
+                    return default
+                return float(v)
+            except Exception:
+                return default
+
+        def _iget(id, default=None):
+            # Safe getter for Shiny inputs (avoids SilentException)
+            if id in input:
+                try:
+                    return input[id]()
+                except SilentException:
+                    return default
+            return default
+
+        # ---- log plumbing (stdout/stderr -> UI) ----
+        loop = asyncio.get_running_loop()
+        q: asyncio.Queue[str | None] = asyncio.Queue()
+
+        class UIWriter(io.TextIOBase):
+            def write(self, s: str):
+                if s:
+                    loop.call_soon_threadsafe(q.put_nowait, s)
+                return len(s)
+            def flush(self): pass
+
+        async def _drain():
+            while True:
+                msg = await q.get()
+                if msg is None:
+                    break
+                match_log_rv.set(match_log_rv.get() + msg)
+                await reactive.flush()
+
+        drain_task = asyncio.create_task(_drain())
+        writer = UIWriter()
+
+        # ---------- SNAPSHOT INPUTS SAFELY ----------
+        try:
+            qfile = _iget("query_data")[0]["datapath"]
+            rfile = _iget("reference_data")[0]["datapath"]
+
+            platform = _iget("chromatography_platform", "HRMS")
+            sim = _iget("similarity_measure", "cosine")
+            spro = _iget("spectrum_preprocessing_order", "FCNMWL")
+
+            hq_raw = _iget("high_quality_reference_library", False)
+            if isinstance(hq_raw, str):
+                hq = hq_raw.lower() == "true"
+            else:
+                hq = bool(hq_raw)
+
+            mz_min = _safe_float(_iget("mz_min", 0.0), 0.0)
+            mz_max = _safe_float(_iget("mz_max", 99_999_999.0), 99_999_999.0)
+            int_min = _safe_float(_iget("int_min", 0.0), 0.0)
+            int_max = _safe_float(_iget("int_max", 999_999_999.0), 999_999_999.0)
+
+            # weights "a,b,c,d"
+            w_text = _iget("weights", "") or ""
+            w_list = [float(w.strip()) for w in w_text.split(",") if w.strip()]
+            w_list = (w_list + [0.0, 0.0, 0.0, 0.0])[:4]
+            weights = {"Cosine": w_list[0], "Shannon": w_list[1], "Renyi": w_list[2], "Tsallis": w_list[3]}
+
+            # selected params + bounds
+            opt_params = tuple(_iget("params", ()) or ())
+            bounds_dict = {}
+            # populate bounds using the min_/max_ inputs if present, otherwise fall back
+            # to your default PARAMS dicts already defined in your file
+            param_defaults = PARAMS_HRMS if platform == "HRMS" else PARAMS_NRMS
+            for p in opt_params:
+                lo = _safe_float(_iget(f"min_{p}", param_defaults.get(p, (0.0, 1.0))[0]),
+                                 param_defaults.get(p, (0.0, 1.0))[0])
+                hi = _safe_float(_iget(f"max_{p}", param_defaults.get(p, (0.0, 1.0))[1]),
+                                 param_defaults.get(p, (0.0, 1.0))[1])
+                if lo > hi:
+                    lo, hi = hi, lo
+                bounds_dict[p] = (lo, hi)
+
+            # defaults (guarded!)
+            defaults = {
+                "window_size_centroiding": _safe_float(_iget("window_size_centroiding", 0.5), 0.5),
+                "window_size_matching":    _safe_float(_iget("window_size_matching",    0.5), 0.5),
+                "noise_threshold":         _safe_float(_iget("noise_threshold",         0.0), 0.0),
+                "wf_mz":                   _safe_float(_iget("wf_mz",                   0.0), 0.0),
+                "wf_int":                  _safe_float(_iget("wf_int",                  1.0), 1.0),
+                "LET_threshold":           _safe_float(_iget("LET_threshold",           0.0), 0.0),
+                "entropy_dimension":       _safe_float(_iget("entropy_dimension",       1.1), 1.1),
+            }
+            if platform == "NRMS":
+                defaults.pop("window_size_centroiding", None)
+                defaults.pop("window_size_matching", None)
+
+        except Exception as e:
+            import traceback
+            tb = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+            match_log_rv.set(match_log_rv.get() + f"\n❌ Input snapshot failed:\n{tb}\n")
+            is_tuning_DE_running.set(False); is_any_job_running.set(False)
+            await q.put(None); await drain_task; await reactive.flush()
+            return
+
+        def _run():
+            from contextlib import redirect_stdout, redirect_stderr
+            with redirect_stdout(writer), redirect_stderr(writer):
+                return tune_params_DE(
+                    query_data=qfile,
+                    reference_data=rfile,
+                    chromatography_platform=input.chromatography_platform(),
+                    similarity_measure=sim,
+                    weights=weights,
+                    spectrum_preprocessing_order=spro,
+                    mz_min=mz_min, mz_max=mz_max,
+                    int_min=int_min, int_max=int_max,
+                    high_quality_reference_library=hq,
+                    optimize_params=list(opt_params),
+                    param_bounds=bounds_dict,
+                    default_params=defaults,
+                    de_workers=1,
+                    maxiters=input.max_iterations()
+                )
+
+        try:
+            _ = await asyncio.to_thread(_run)
+            match_log_rv.set(match_log_rv.get() + "\n✅ Differential evolution finished.\n")
+        except Exception as e:
+            import traceback
+            tb = "".join(traceback.format_exception(type(e), e, e.__traceback__))
+            match_log_rv.set(match_log_rv.get() + f"\n❌ {type(e).__name__}: {e}\n{tb}\n")
+        finally:
+            await q.put(None)
+            await drain_task
+            is_tuning_DE_running.set(False)
+            is_any_job_running.set(False)
+            await reactive.flush()
+
+
+    @reactive.effect
     async def _pump_reactive_writer_logs():
-        if not is_tuning_running.get():
+        if not is_tuning_grid_running.get():
             return
 
         reactive.invalidate_later(0.1)
@@ -3477,32 +4078,15 @@ def server(input, output, session):
     def status_output():
         return run_status_plot_spectra.get()
         return run_status_spec_lib_matching.get()
-        return run_status_parameter_tuning.get()
+        return run_status_parameter_tuning_grid.get()
+        return run_status_parameter_tuning_DE.get()
+
+    @output
+    @render.text
+    def run_log():
+        return match_log_rv.get()
 
 
 app = App(app_ui, server)
-
-
-
-'''
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-
-class _InjectBaseURLMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        hdrs = dict(request.scope.get("headers", []))
-        if b"rstudio-connect-app-base-url" not in hdrs:
-            host = request.headers.get("x-forwarded-host") or request.headers.get("host") or ""
-            proto = request.headers.get("x-forwarded-proto") or "https"
-            root_path = (request.scope.get("root_path") or "").rstrip("/")
-            base = f"{proto}://{host}{root_path}"
-            new_headers = list(request.scope.get("headers", [])) + [
-                (b"rstudio-connect-app-base-url", base.encode("utf-8"))
-            ]
-            request.scope["headers"] = new_headers
-        return await call_next(request)
-
-app.starlette_app.add_middleware(_InjectBaseURLMiddleware)
-'''
 
 

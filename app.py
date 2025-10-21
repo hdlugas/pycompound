@@ -27,15 +27,31 @@ import json
 
 _LOG_QUEUE: asyncio.Queue[str] = asyncio.Queue()
 
+import re
+import urllib.parse
+import urllib.request
+
+_ADDUCT_PAT = re.compile(r"\s*(?:\[(M[^\]]+)\]|(M[+-][A-Za-z0-9]+)\+?)\s*$", re.IGNORECASE)
+
+def _strip_adduct(name: str) -> str:
+    return _ADDUCT_PAT.sub("", name).strip()
+
+def get_pubchem_url(query: str) -> str:
+    base_name = _strip_adduct(query)
+    endpoint = ("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/" + urllib.parse.quote(base_name) + "/cids/TXT")
+    try:
+        with urllib.request.urlopen(endpoint, timeout=10) as r:
+            txt = r.read().decode("utf-8").strip()
+        cid = txt.splitlines()[0].strip()
+        if cid.isdigit():
+            return f"https://pubchem.ncbi.nlm.nih.gov/compound/{cid}"
+    except Exception:
+        pass
+    q = urllib.parse.quote(base_name)
+    return f"https://pubchem.ncbi.nlm.nih.gov/#query={q}"
+
 
 def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
-    '''
-    Converts mgf, mzML, cdf, or msp file to the necessary format for spectral library matching.
-
-    --input_path: Path to input file (must be mgf, mzML, cdf, or msp file). Mandatory argument.
-    --output_path: Path to output TXT file. Default: current working directory.
-    --is_reference: Boolean flag indicating whether IDs of spectra should be written to output. Only pass true if building a reference library with known compound IDs. Only applicable to mgf and msp files. Options: \'True\', \'False\'. Optional argument. Default: False.
-    '''
 
     if input_path is None:
         print('Error: please specify input_path (i.e. the path to the input mgf, mzML, cdf, or msp file). Mandatory argument.')
@@ -148,32 +164,7 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
 
 
 
-def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
-    '''
-    plots two spectra against each other before and after preprocessing transformations for high-resolution mass spectrometry data
-
-    --query_data: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: mgf, mzML, or csv file of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --spectrum_ID1: ID of one spectrum to be plotted. Default is first spectrum in the query library. Optional argument.
-    --spectrum_ID2: ID of another spectrum to be plotted. Default is first spectrum in the reference library. Optional argument.
-    --similarity_measure: cosine, shannon, renyi, tsallis, mixture, jaccard, dice, 3w_jaccard, sokal_sneath, binary_cosine, mountford, mcconnaughey, driver_kroeber, simpson, braun_banquet, fager_mcgowan, kulczynski, intersection, hamming, hellinger. Default: cosine.
-    --weights: dict of weights to give to each non-binary similarity measure (i.e. cosine, shannon, renyi, and tsallis) when the mixture similarity measure is specified. Default: 0.25 for each of the four non-binary similarity measures.
-    --spectrum_preprocessing_order: The spectrum preprocessing transformations and the order in which they are to be applied. Note that these transformations are applied prior to computing similarity scores. Format must be a string with 2-6 characters chosen from C, F, M, N, L, W representing centroiding, filtering based on mass/charge and intensity values, matching, noise removal, low-entropy trannsformation, and weight-factor-transformation, respectively. For example, if \'WCM\' is passed, then each spectrum will undergo a weight factor transformation, then centroiding, and then matching. Note that if an argument is passed, then \'M\' must be contained in the argument, since matching is a required preprocessing step in spectral library matching of HRMS data. Furthermore, \'C\' must be performed before matching since centroiding can change the number of ion fragments in a given spectrum. Default: FCNMWL')
-    --high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False')
-    --mz_min: Remove all peaks with mass/charge value less than mz_min in each spectrum. Default: 0
-    --mz_max: Remove all peaks with mass/charge value greater than mz_max in each spectrum. Default: 9999999
-    --int_min: Remove all peaks with intensity value less than int_min in each spectrum. Default: 0
-    --int_max: Remove all peaks with intensity value greater than int_max in each spectrum. Default: 9999999
-    --window_size_centroiding: Window size parameter used in centroiding a given spectrum. Default: 0.5
-    --window_size_matching: Window size parameter used in matching a query spectrum and a reference library spectrum. Default: 0.5
-    --noise_threshold: Ion fragments (i.e. points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.0
-    --wf_mz: Mass/charge weight factor parameter. Default: 0.0
-    --wf_intensity: Intensity weight factor parameter. Default: 0.0
-    --LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy less than LET_threshold are transformed according to intensitiesNew=intensitiesOriginal^{(1+S)/(1+LET_threshold)}. Default: 0.0
-    --entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
-    --y_axis_transformation: transformation to apply to y-axis (i.e. intensity axis) of plots. Options: \'normalized\', \'none\', \'log10\', and \'sqrt\'. Default: normalized.')
-    --output_path: path to output PDF file containing the plots of the spectra before and after preprocessing transformations. If no argument is passed, then the plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.
-    '''
+def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='No', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
@@ -434,24 +425,27 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
         plt.yticks([])
 
 
-    print('\n\n\n')
-    print(high_quality_reference_library)
-    print('\n\n\n')
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
     plt.figlegend(loc = 'upper center')
-    fig.text(0.05, 0.18, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
-    fig.text(0.05, 0.15, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
-    fig.text(0.05, 0.12, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
-    fig.text(0.05, 0.09, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
-    fig.text(0.05, 0.06, f'Window Size (Centroiding): {window_size_centroiding}', fontsize=7)
-    fig.text(0.05, 0.03, f'Window Size (Matching): {window_size_matching}', fontsize=7)
-    fig.text(0.45, 0.18, f'Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]', fontsize=7)
-    fig.text(0.45, 0.15, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
-    fig.text(0.45, 0.12, f'Noise Threshold: {noise_threshold}', fontsize=7)
-    fig.text(0.45, 0.09, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
-    fig.text(0.45, 0.06, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
+    fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
+    fig.text(0.05, 0.17, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
+    fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
+    fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
+    fig.text(0.05, 0.08, f'Window Size (Centroiding): {window_size_centroiding}', fontsize=7)
+    fig.text(0.05, 0.05, f'Window Size (Matching): {window_size_matching}', fontsize=7)
     if similarity_measure == 'mixture':
-        fig.text(0.45, 0.03, f'Weights for mixture similarity: {weights}', fontsize=7)
+        fig.text(0.05, 0.02, f'Weights for mixture similarity: {weights}', fontsize=7)
+    fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]', fontsize=7)
+    fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
+    fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
+    fig.text(0.40, 0.11, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
+    fig.text(0.40, 0.08, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
+    if print_url_spectrum1 == 'Yes':
+        url_tmp = get_pubchem_url(query=spectrum_ID1)
+        fig.text(0.40, 0.05, f'PubChem URL for Spectrum {spectrum_ID1}: {url_tmp}', fontsize=7)
+    if print_url_spectrum2 == 'Yes':
+        url_tmp = get_pubchem_url(query=spectrum_ID2)
+        fig.text(0.40, 0.02, f'PubChem URL for Spectrum {spectrum_ID2}: {url_tmp}', fontsize=7)
 
     plt.savefig(output_path, format='pdf')
 
@@ -461,28 +455,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
 
 
 
-def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
-    '''
-    plots two spectra against each other before and after preprocessing transformations for high-resolution mass spectrometry data
-
-    --query_data: cdf or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: cdf of csv file of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --similarity_measure: cosine, shannon, renyi, tsallis, mixture, jaccard, dice, 3w_jaccard, sokal_sneath, binary_cosine, mountford, mcconnaughey, driver_kroeber, simpson, braun_banquet, fager_mcgowan, kulczynski, intersection, hamming, hellinger. Default: cosine.
-    --weights: dict of weights to give to each non-binary similarity measure (i.e. cosine, shannon, renyi, and tsallis) when the mixture similarity measure is specified. Default: 0.25 for each of the four non-binary similarity measures.
-    --spectrum_preprocessing_order: The spectrum preprocessing transformations and the order in which they are to be applied. Note that these transformations are applied prior to computing similarity scores. Format must be a string with 2-4 characters chosen from F, N, L, W representing filtering based on mass/charge and intensity values, noise removal, low-entropy trannsformation, and weight-factor-transformation, respectively. For example, if \'WN\' is passed, then each spectrum will undergo a weight factor transformation and then noise removal. Default: FNLW')
-    --high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False')
-    --mz_min: Remove all peaks with mass/charge value less than mz_min in each spectrum. Default: 0
-    --mz_max: Remove all peaks with mass/charge value greater than mz_max in each spectrum. Default: 9999999
-    --int_min: Remove all peaks with intensity value less than int_min in each spectrum. Default: 0
-    --int_max: Remove all peaks with intensity value greater than int_max in each spectrum. Default: 9999999
-    --noise_threshold: Ion fragments (i.e. points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.0
-    --wf_mz: Mass/charge weight factor parameter. Default: 0.0
-    --wf_intensity: Intensity weight factor parameter. Default: 0.0
-    --LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy less than LET_threshold are transformed according to intensitiesNew=intensitiesOriginal^{(1+S)/(1+LET_threshold)}. Default: 0.0
-    --entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
-    --y_axis_transformation: transformation to apply to y-axis (i.e. intensity axis) of plots. Options: \'normalized\', \'none\', \'log10\', and \'sqrt\'. Default: normalized.')
-    --output_path: path to output PDF file containing the plots of the spectra before and after preprocessing transformations. If no argument is passed, then the plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.
-    '''
+def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='No', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
@@ -723,17 +696,24 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
 
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
     plt.figlegend(loc = 'upper center')
-    fig.text(0.05, 0.15, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
-    fig.text(0.05, 0.12, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
-    fig.text(0.05, 0.09, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
-    fig.text(0.05, 0.06, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
-    fig.text(0.05, 0.03, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
-    fig.text(0.45, 0.15, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
-    fig.text(0.45, 0.12, f'Noise Threshold: {noise_threshold}', fontsize=7)
-    fig.text(0.45, 0.09, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
-    fig.text(0.45, 0.06, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
-    if similarity_measure=='mixture':
-        fig.text(0.45, 0.03, f'Weights for mixture similarity: {weights}', fontsize=7)
+    fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
+    fig.text(0.05, 0.17, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
+    fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
+    fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
+    fig.text(0.05, 0.08, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
+    if similarity_measure == 'mixture':
+        fig.text(0.05, 0.05, f'Weights for mixture similarity: {weights}', fontsize=7)
+    fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
+    fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
+    fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
+    fig.text(0.40, 0.08, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
+    if print_url_spectrum1 == 'Yes':
+        url_tmp = get_pubchem_url(query=spectrum_ID1)
+        fig.text(0.40, 0.05, f'PubChem URL for Spectrum {spectrum_ID1}: {url_tmp}', fontsize=7)
+    if print_url_spectrum2 == 'Yes':
+        url_tmp = get_pubchem_url(query=spectrum_ID2)
+        fig.text(0.40, 0.02, f'PubChem URL for Spectrum {spectrum_ID2}: {url_tmp}', fontsize=7)
+
     plt.savefig(output_path, format='pdf')
 
     if return_plot == True:
@@ -741,41 +721,11 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
 
 
 def wf_transform(spec_mzs, spec_ints, wf_mz, wf_int):
-    '''
-    This function performs a weight factor transformation on a spectrum
-    
-    input:
-    wf_int: float
-    wf_mz: float
-    spec_mzs: 1d np array representing mass/charge values 
-    spec_ints: 1d np array representing intensity values 
-
-    spec_mzs and spec_ints must be of the same length N
-
-    output:
-    spec_ints: 1d np array of weight-factor-transformed spectrum intensities
-    '''
-
     spec_ints = np.power(spec_mzs, wf_mz) * np.power(spec_ints, wf_int)
     return(spec_ints)
 
 
 def LE_transform(intensity, thresh, normalization_method):
-    '''
-    This transformation was presented by: 
-    Li, Y.; Kind, T.; Folz, J.; Vaniya, A.; Mehta, S. S.; Fiehn, O.
-    Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. 
-    Nature Methods 2021, 18, 1524–1531
-    
-    input:
-    intensity: 1d np array
-    thresh: nonnegative float
-    normalization_method: either 'standard' or 'softmax'
-    
-    output:
-    1d np array of transformed intensities
-    '''
-
     intensity_tmp = normalize(intensity, method=normalization_method)
     if np.sum(intensity_tmp) > 0:
         S = scipy.stats.entropy(intensity_tmp.astype('float'))
@@ -788,17 +738,6 @@ def LE_transform(intensity, thresh, normalization_method):
 
 
 def normalize(intensities,method='standard'):
-    '''
-    Normalizes a given vector to sum to 1 so that it represents a probability distribution
-
-    input:
-    intensities: 1d np array
-    method: normalization method; either 'standard' or 'softmax'
-
-    output:
-    1d np array of normalized intensities
-    '''
-
     if np.sum(intensities) > 0:
         if method == 'softmax':
             if np.any(intensities > 700):
@@ -814,20 +753,6 @@ def normalize(intensities,method='standard'):
 
 
 def filter_spec_lcms(spec, mz_min = 0, mz_max = 999999999999, int_min = 0, int_max = 999999999999, is_matched = False):
-    '''
-    keep points in a given spectrum in a given range of mz values and intensity values
-
-    input:
-    spec: Nx2 np array representing a mass spectrum with each row representing a peak, the first column representing mass/charge ratio, and the second column representing intensity
-    mz_min: remove peaks with mass/charge value smaller than mz_min
-    mz_max: remove peaks with mass/charge value larger than mz_max
-    int_min: remove peaks with intensity value smaller than int_min
-    int_max: remove peaks with intensity value larger than int_max
-
-    output:
-    Mx2 np array representing a mass spectrum with M <= N
-    '''
-
     if is_matched == False:
         spec = spec[spec[:,0] >= mz_min]
         spec = spec[spec[:,0] <= mz_max]
@@ -842,20 +767,6 @@ def filter_spec_lcms(spec, mz_min = 0, mz_max = 999999999999, int_min = 0, int_m
 
 
 def filter_spec_gcms(spec, mz_min = 0, mz_max = 999999999999, int_min = 0, int_max = 999999999999):
-    '''
-    keep points in a given spectrum in a given range of mz values and intensity values
-
-    input:
-    spec: 1d np array representing the intensities of a nominal-resolution mass spectrum
-    mz_min: remove peaks with mass/charge value smaller than mz_min
-    mz_max: remove peaks with mass/charge value larger than mz_max
-    int_min: remove peaks with intensity value smaller than int_min
-    int_max: remove peaks with intensity value larger than int_max
-
-    output:
-    spec: 1d np array representing the intensities of a nominal-resolution mass spectrum post-filtering
-    '''
-
     spec[np.where(spec[:,0] < mz_min)[0],1] = 0
     spec[np.where(spec[:,0] > mz_max)[0],1] = 0
     spec[np.where(spec[:,1] < int_min)[0],1] = 0
@@ -864,17 +775,6 @@ def filter_spec_gcms(spec, mz_min = 0, mz_max = 999999999999, int_min = 0, int_m
 
 
 def remove_noise(spec, nr):
-    '''
-    removes points with intensity less than max(intensities)*nr
-
-    input:
-    spec: Nx2 np array representing a mass spectrum with each row representing a peak, the first column representing mass/charge ratio, and the second column representing intensity
-    nr: positive float
-
-    output:
-    Nx2 np array representing a mass spectrum with low-intensity peaks assigned intensity of 0
-    '''
-
     if spec.shape[0] > 1:
         if nr is not None:
             spec[np.where(spec[:,1] < np.max(spec[:,1]) * nr)[0]] = 0
@@ -883,20 +783,6 @@ def remove_noise(spec, nr):
 
 
 def centroid_spectrum(spec, window_size):
-    '''
-    This function was presented by: 
-    Li, Y.; Kind, T.; Folz, J.; Vaniya, A.; Mehta, S. S.; Fiehn, O.
-    Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. 
-    Nature Methods 2021, 18, 1524–1531
-
-    input:
-    spectrum: Nx2 np array with first column being mass/charge and second column being intensity
-    window_size: window-size parameter
-
-    output:
-    Mx2 np array representing the centroided spectrum with M <= N
-    '''
-
     spec = spec[np.argsort(spec[:,0])]
 
     mz_array = spec[:, 0]
@@ -949,24 +835,6 @@ def centroid_spectrum(spec, window_size):
 
 
 def match_peaks_in_spectra(spec_a, spec_b, window_size):
-    '''
-    This function was presented by: 
-    Li, Y.; Kind, T.; Folz, J.; Vaniya, A.; Mehta, S. S.; Fiehn, O.
-    Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. 
-    Nature Methods 2021, 18, 1524–1531
-
-    This function matches two spectra to find common peaks in order
-    to obtain two lists of intensities of the same length
-
-    input:
-    spec_a: Nx2 np array with first column being mass/charge and second column being intensity
-    spec_b: Mx2 np array with first column being mass/charge and second column being intensity
-    window_size: window-size parameter
-
-    output:
-    Kx3 np array with first column being mass/charge, second column being matched intensities of spec_a, and third column being matched intensities of spec_b
-    '''
-
     a = 0
     b = 0
 
@@ -1006,16 +874,6 @@ def match_peaks_in_spectra(spec_a, spec_b, window_size):
 
 
 def convert_spec(spec, mzs):
-    '''
-    imputes intensities of 0 where there is no mass/charge value reported in a given spectrum
-    input: 
-    spec: Nx2 numpy array
-    mzs: list of entire span of mass/charge values considering both the query and reference libraries
-
-    output: 
-    Nx2 numpy array
-    '''
-
     ints_tmp = []
     for i in range(0,len(mzs)):
         if mzs[i] in spec[:,0]:
@@ -1059,15 +917,6 @@ def ent_tsallis(ints, q):
 
 
 def S_shannon(ints_a, ints_b):
-    '''
-    Shannon Entropy Similarity Measure
-
-    This similarity function was presented by: 
-    Li, Y.; Kind, T.; Folz, J.; Vaniya, A.; Mehta, S. S.; Fiehn, O.
-    Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. 
-    * Note that since scipy.stats.entropy normalizes the input vector to sum to 1, vec1 and vec1 need not be normalized when computing ent_ab
-    '''
-
     ent_a = scipy.stats.entropy(ints_a)
     ent_b = scipy.stats.entropy(ints_b)
     ent_ab = scipy.stats.entropy(ints_a + ints_b)
@@ -1075,12 +924,6 @@ def S_shannon(ints_a, ints_b):
 
 
 def S_renyi(ints_a, ints_b, q):
-    '''
-    Renyi Entropy Similarity Measure
-    * This is a novel similarity measure which generalizes the Shannon Entropy Similarity Measure
-    * The Renyi Similarity Measure approaches the Shannon Entropy Similiarity Measure as q approaches 1
-    * ints_a and ints_b must be normalized to sum to 1
-    '''
     if q == 1:
         print('Warning: the Renyi Entropy Similarity Measure is equivalent to the Shannon Entropy Similarity Measure when the entropy dimension is 1')
         return S_shannon(ints_a, ints_b)
@@ -1093,12 +936,6 @@ def S_renyi(ints_a, ints_b, q):
 
 
 def S_tsallis(ints_a, ints_b, q):
-    '''
-    Tsallis Entropy Similarity Measure
-    * This is a novel similarity measure which generalizes the Shannon Entropy Similarity Measure
-    * The Tsallis Similarity Measure approaches the Shannon Entropy Similiarity Measure as q approaches 1
-    * ints_a and ints_b must be normalized to sum to 1
-    '''
     if q == 1:
         print('Warning: the Tsallis Entropy Similarity Measure is equivalent to the Shannon Entropy Similarity Measure when the entropy dimension is 1')
         return S_shannon(ints_a, ints_b)
@@ -1110,9 +947,6 @@ def S_tsallis(ints_a, ints_b, q):
         return 1 - (2 * ent_merg - ent_a - ent_b) / N
 
 def S_mixture(ints_a, ints_b, weights={'Cosine':0.25, 'Shannon':0.25, 'Renyi':0.25, 'Tsallis':0.25}, q=1.1):
-    '''
-    Mixture similarity measure that is a weighted sum of any combination of the four similarity measures of Cosine, Shannon, Renyi, and Tsallis
-    '''
     if set(weights.keys()).issubset(set(['Cosine','Shannon','Renyi','Tsallis'])) is False:
         print('Error: the keys to the weight parameter dict of the function S_mixture must be one of the four: Cosine, Shannon, Renyi, Tsallis')
         sys.exit()
@@ -1494,9 +1328,6 @@ def tune_params_DE(query_data=None, reference_data=None, chromatography_platform
 
     bounds = [param_bounds[p] for p in optimize_params]
 
-    print('here!!!!!!!!!!!!!!!')
-    print(de_workers)
-    print('here!!!!!!!!!!!!!!!')
     if chromatography_platform == 'HRMS':
         result = differential_evolution(objective_function_HRMS, bounds=bounds, args=(ctx,), maxiter=maxiters, tol=0.0, workers=de_workers, seed=1)
     else:
@@ -1585,15 +1416,6 @@ def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_id
 
 
 def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
-    """
-    runs spectral library matching on high-resolution mass spectrometry (HRMS) data with all possible combinations of parameters in the grid dict, saves results from each choice of parameters to a TXT file, and prints top-performing parameters
-
-    --query_data: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: mgf, mzML, or csv file of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --grid: dict with all possible parameter values to try.
-    --output_path: accuracy from each choice of parameter set is saved to a TXT file here.
-    """
-
     grid = {**default_HRMS_grid, **(grid or {})}
     for key, value in grid.items():
         globals()[key] = value
@@ -1661,21 +1483,6 @@ def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, grid=Non
 
 
 def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
-    """
-    runs spectral library matching on high-resolution mass spectrometry (HRMS) data with all possible 
-    combinations of parameters in the grid dict, saves results from each choice of parameters to a TXT file, 
-    and prints top-performing parameters
-
-    --query_data: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, each row
-       should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the 
-       other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: mgf, mzML, or csv file of the reference mass spectra. If csv file, each row should correspond
-       to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the 
-       compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --grid: dict with all possible parameter values to try.
-    --output_path: accuracy from each choice of parameter set is saved to a TXT file here.
-    """
-
     local_grid = {**default_HRMS_grid, **(grid or {})}
     for key, value in local_grid.items():
         globals()[key] = value
@@ -1734,7 +1541,6 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, gr
         len(entropy_dimension) * len(high_quality_reference_library)
     )
     done = 0
-
     for params in param_grid:
         res = _eval_one_HRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, *params)
         results.append(res)
@@ -1769,15 +1575,6 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, gr
 
 
 def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
-    """
-    runs spectral library matching on nominal-resolution mass spectrometry (NRMS) data with all possible combinations of parameters in the grid dict, saves results from each choice of parameters to a TXT file, and prints top-performing parameters
-
-    --query_data: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: mgf, mzML, or csv file of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --grid: dict with all possible parameter values to try
-    --output_path: accuracy from each choice of parameter set is saved to a TXT file here
-    """
-
     grid = {**default_NRMS_grid, **(grid or {})}
     for key, value in grid.items():
         globals()[key] = value
@@ -1843,21 +1640,6 @@ def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=Non
 
 
 def tune_params_on_NRMS_data_grid_shiny(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
-    """
-    runs spectral library matching on nominal-resolution mass spectrometry (NRMS) data with all possible 
-    combinations of parameters in the grid dict, saves results from each choice of parameters to a TXT file, 
-    and prints top-performing parameters
-
-    --query_data: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, each row
-       should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the 
-       other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: mgf, mzML, or csv file of the reference mass spectra. If csv file, each row should correspond
-       to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the 
-       compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --grid: dict with all possible parameter values to try.
-    --output_path: accuracy from each choice of parameter set is saved to a TXT file here.
-    """
-
     local_grid = {**default_NRMS_grid, **(grid or {})}
     for key, value in local_grid.items():
         globals()[key] = value
@@ -1958,15 +1740,12 @@ def get_acc_HRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
             print(f'query spectrum #{query_idx} is being identified')
         q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
         q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        #q_spec_tmp = q_spec_tmp.astype(float)
 
         similarity_scores = []
         for ref_idx in range(0,len(unique_reference_ids)):
             q_spec = q_spec_tmp
             r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
             r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
-            #print(r_spec)
-            #r_spec = r_spec.astype(float)
 
             is_matched = False
             for transformation in spectrum_preprocessing_order:
@@ -2127,33 +1906,6 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
 
 def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, likely_reference_ids=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False, verbose=True):
-    '''
-    runs spectral library matching on high-resolution mass spectrometry (HRMS) data
-
-    --query_data: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: either string or list of strings with pass to mgf, mzML, sdf, and/or csv file(s) of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --likely_reference_ids: CSV file with one column containing the IDs of a subset of all compounds in the reference_data to be used in spectral library matching. Each ID in this file must be an ID in the reference library. Default: None (i.e. default is to use entire reference library)
-    --similarity_measure: cosine, shannon, renyi, tsallis, mixture, jaccard, dice, 3w_jaccard, sokal_sneath, binary_cosine, mountford, mcconnaughey, driver_kroeber, simpson, braun_banquet, fager_mcgowan, kulczynski, intersection, hamming, hellinger. Default: cosine.
-    --weights: dict of weights to give to each non-binary similarity measure (i.e. cosine, shannon, renyi, and tsallis) when the mixture similarity measure is specified. Default: 0.25 for each of the four non-binary similarity measures.
-    --spectrum_preprocessing_order: The spectrum preprocessing transformations and the order in which they are to be applied. Note that these transformations are applied prior to computing similarity scores. Format must be a string with 2-6 characters chosen from C, F, M, N, L, W representing centroiding, filtering based on mass/charge and intensity values, matching, noise removal, low-entropy trannsformation, and weight-factor-transformation, respectively. For example, if \'WCM\' is passed, then each spectrum will undergo a weight factor transformation, then centroiding, and then matching. Note that if an argument is passed, then \'M\' must be contained in the argument, since matching is a required preprocessing step in spectral library matching of HRMS data. Furthermore, \'C\' must be performed before matching since centroiding can change the number of ion fragments in a given spectrum. Default: FCNMWL')
-    --high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False')
-    --mz_min: Remove all peaks with mass/charge value less than mz_min in each spectrum. Default: 0
-    --mz_max: Remove all peaks with mass/charge value greater than mz_max in each spectrum. Default: 9999999
-    --int_min: Remove all peaks with intensity value less than int_min in each spectrum. Default: 0
-    --int_max: Remove all peaks with intensity value greater than int_max in each spectrum. Default: 9999999
-    --window_size_centroiding: Window size parameter used in centroiding a given spectrum. Default: 0.5
-    --window_size_matching: Window size parameter used in matching a query spectrum and a reference library spectrum. Default: 0.5
-    --noise_threshold: Ion fragments (i.e. points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.0
-    --wf_mz: Mass/charge weight factor parameter. Default: 0.0
-    --wf_intensity: Intensity weight factor parameter. Default: 0.0
-    --LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy less than LET_threshold are transformed according to intensitiesNew=intensitiesOriginal^{(1+S)/(1+LET_threshold)}. Default: 0.0
-    --entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
-    --n_top_matches_to_save: The number of top matches to report. For example, if n_top_matches_to_save=5, then for each query spectrum, the five reference spectra with the largest similarity with the given query spectrum will be reported. Default: 1
-    --print_id_results: Flag that prints identification results if True. Default: False
-    --output_identification: Output TXT file containing the most-similar reference spectra for each query spectrum along with the corresponding similarity scores. Default is to save identification output in current working directory with filename \'output_identification.txt\'.
-    --output_similarity_scores: Output TXT file containing similarity scores between all query spectrum/spectra and all reference spectra. Each row corresponds to a query spectrum, the left-most column contains the query spectrum/spectra identifier, and the remaining column contain the similarity scores with respect to all reference library spectra. If no argument passed, then this TXT file is written to the current working directory with filename \'output_all_similarity_scores\'.txt.')
-    '''
-
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
@@ -2377,32 +2129,6 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, lik
 
 
 def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, likely_reference_ids=None, spectrum_preprocessing_order='FNLW', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False):
-    '''
-    runs spectral library matching on nominal-resolution mass spectrometry (NRMS) data
-
-    --query_data: cdf or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: cdf of csv file of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --likely_reference_ids: CSV file with one column containing the IDs of a subset of all compounds in the reference_data to be used in spectral library matching. Each ID in this file must be an ID in the reference library. Default: None (i.e. default is to use entire reference library)
-    --similarity_measure: cosine, shannon, renyi, tsallis, mixture, jaccard, dice, 3w_jaccard, sokal_sneath, binary_cosine, mountford, mcconnaughey, driver_kroeber, simpson, braun_banquet, fager_mcgowan, kulczynski, intersection, hamming, hellinger. Default: cosine.
-    --weights: dict of weights to give to each non-binary similarity measure (i.e. cosine, shannon, renyi, and tsallis) when the mixture similarity measure is specified. Default: 0.25 for each of the four non-binary similarity measures.
-    --spectrum_preprocessing_order: The spectrum preprocessing transformations and the order in which they are to be applied. Note that these transformations are applied prior to computing similarity scores. Format must be a string with 2-4 characters chosen from F, N, L, W representing filtering based on mass/charge and intensity values, noise removal, low-entropy trannsformation, and weight-factor-transformation, respectively. For example, if \'WN\' is passed, then each spectrum will undergo a weight factor transformation and then noise removal. Default: FNLW')
-    --high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False')
-    --mz_min: Remove all peaks with mass/charge value less than mz_min in each spectrum. Default: 0
-    --mz_max: Remove all peaks with mass/charge value greater than mz_max in each spectrum. Default: 9999999
-    --int_min: Remove all peaks with intensity value less than int_min in each spectrum. Default: 0
-    --int_max: Remove all peaks with intensity value greater than int_max in each spectrum. Default: 9999999
-    --noise_threshold: Ion fragments (i.e. points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.0
-    --wf_mz: Mass/charge weight factor parameter. Default: 0.0
-    --wf_intensity: Intensity weight factor parameter. Default: 0.0
-    --LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy less than LET_threshold are transformed according to intensitiesNew=intensitiesOriginal^{(1+S)/(1+LET_threshold)}. Default: 0.0
-    --entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
-    --normalization_method: Method used to normalize the intensities of each spectrum so that the intensities sum to 1. Since the objects entropy quantifies the uncertainy of must be probability distributions, the intensities of a given spectrum must sum to 1 prior to computing the entropy of the given spectrum intensities. Options: \'standard\' and \'softmax\'. Default: standard.
-    --n_top_matches_to_save: The number of top matches to report. For example, if n_top_matches_to_save=5, then for each query spectrum, the five reference spectra with the largest similarity with the given query spectrum will be reported. Default: 1
-    --print_id_results: Flag that prints identification results if True. Default: False
-    --output_identification: Output TXT file containing the most-similar reference spectra for each query spectrum along with the corresponding similarity scores. Default is to save identification output in current working directory with filename \'output_identification.txt\'.
-    --output_similarity_scores: Output TXT file containing similarity scores between all query spectrum/spectra and all reference spectra. Each row corresponds to a query spectrum, the left-most column contains the query spectrum/spectra identifier, and the remaining column contain the similarity scores with respect to all reference library spectra. If no argument passed, then this TXT file is written to the current working directory with filename \'output_all_similarity_scores\'.txt.')
-    '''
-
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
@@ -2816,6 +2542,8 @@ def plot_spectra_ui(platform: str):
             multiple=False,
             options={"placeholder": "Upload a library..."},
         ),
+        ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1:', ['Yes', 'No']),
+        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2:', ['Yes', 'No']),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
         ui.input_text('weights', 'Weights for mixture similarity measure (cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
         ui.input_select(
@@ -2868,7 +2596,7 @@ def plot_spectra_ui(platform: str):
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
             ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:7], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[6:9], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div([numeric_inputs[5:10], select_input], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3),
@@ -2876,7 +2604,7 @@ def plot_spectra_ui(platform: str):
     elif platform == "NRMS":
         inputs_columns = ui.layout_columns(
             ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:7], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[6:9], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div([numeric_inputs[5:10], select_input], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3),
@@ -2915,6 +2643,8 @@ def run_spec_lib_matching_ui(platform: str):
             multiple=False,
             options={"placeholder": "Upload a library..."},
         ),
+        ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1 (only applicable for plotting):', ['Yes', 'No']),
+        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2 (only applicable for plotting):', ['Yes', 'No']),
         ui.input_select(
             "high_quality_reference_library",
             "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.",
@@ -2962,7 +2692,7 @@ def run_spec_lib_matching_ui(platform: str):
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
             ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:7], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[6:9], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[5:10], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3)
@@ -2970,7 +2700,7 @@ def run_spec_lib_matching_ui(platform: str):
     elif platform == "NRMS":
         inputs_columns = ui.layout_columns(
             ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:7], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[6:9], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[5:10], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3)
@@ -3168,7 +2898,6 @@ def run_parameter_tuning_DE_ui(platform: str):
         style="font-size:16px; padding:15px 30px; width:300px; height:100px",
     )
 
-    # Build the 4-column inputs panel (fixed slices corrected, unpack lists properly)
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
             ui.div(*base_inputs, style="display:flex; flex-direction:column; gap:10px;"),
@@ -3177,7 +2906,7 @@ def run_parameter_tuning_DE_ui(platform: str):
             ui.div(*numeric_inputs[5:11], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3, 3, 3, 3),
         )
-    else:  # NRMS
+    else:
         inputs_columns = ui.layout_columns(
             ui.div(*base_inputs, style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(*extra_inputs, style="display:flex; flex-direction:column; gap:10px;"),
@@ -3186,7 +2915,6 @@ def run_parameter_tuning_DE_ui(platform: str):
             col_widths=(3, 3, 3, 3),
         )
 
-    # Main page: sidebar (param selection + bounds) and body (inputs + buttons + live log)
     return ui.page_fillable(
         ui.layout_sidebar(
             ui.sidebar(
@@ -3210,7 +2938,7 @@ def run_parameter_tuning_DE_ui(platform: str):
                 ui.br(),
                 ui.card(
                     ui.card_header("Live log"),
-                    ui.output_text_verbatim("run_log"),   # <-- make sure server defines this
+                    ui.output_text_verbatim("run_log"),
                 ),
                 style="display:flex; flex-direction:column; gap:16px;",
             ),
@@ -3511,7 +3239,6 @@ def server(input, output, session):
                 ui.h2("Main Menu"),
                 ui.div(
                     ui.output_image("image"),
-                    #ui.img(src="emblem.png", width="320px", height="250px"),
                     style=(
                         "position:fixed; top:0; left:50%; transform:translateX(-50%); "
                         "z-index:1000; text-align:center; padding:10px; background-color:white;"
@@ -3706,14 +3433,11 @@ def server(input, output, session):
         if input.high_quality_reference_library() != 'False':
             high_quality_reference_library_tmp2 = True
 
-        print(input.high_quality_reference_library())
-        print(high_quality_reference_library_tmp2)
-
         if input.chromatography_platform() == "HRMS":
-            fig = generate_plots_on_HRMS_data(query_data=input.query_data()[0]['datapath'], reference_data=input.reference_data()[0]['datapath'], spectrum_ID1=spectrum_ID1, spectrum_ID2=spectrum_ID2, similarity_measure=input.similarity_measure(), weights=weights, spectrum_preprocessing_order=input.spectrum_preprocessing_order(), high_quality_reference_library=high_quality_reference_library_tmp2, mz_min=input.mz_min(), mz_max=input.mz_max(), int_min=input.int_min(), int_max=input.int_max(), window_size_centroiding=input.window_size_centroiding(), window_size_matching=input.window_size_matching(), noise_threshold=input.noise_threshold(), wf_mz=input.wf_mz(), wf_intensity=input.wf_int(), LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(), y_axis_transformation=input.y_axis_transformation(), return_plot=True)
+            fig = generate_plots_on_HRMS_data(query_data=input.query_data()[0]['datapath'], reference_data=input.reference_data()[0]['datapath'], spectrum_ID1=spectrum_ID1, spectrum_ID2=spectrum_ID2, print_url_spectrum1=input.print_url_spectrum1(), print_url_spectrum2=input.print_url_spectrum2(), similarity_measure=input.similarity_measure(), weights=weights, spectrum_preprocessing_order=input.spectrum_preprocessing_order(), high_quality_reference_library=high_quality_reference_library_tmp2, mz_min=input.mz_min(), mz_max=input.mz_max(), int_min=input.int_min(), int_max=input.int_max(), window_size_centroiding=input.window_size_centroiding(), window_size_matching=input.window_size_matching(), noise_threshold=input.noise_threshold(), wf_mz=input.wf_mz(), wf_intensity=input.wf_int(), LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(), y_axis_transformation=input.y_axis_transformation(), return_plot=True)
             plt.show()
         elif input.chromatography_platform() == "NRMS":
-            fig = generate_plots_on_NRMS_data(query_data=input.query_data()[0]['datapath'], reference_data=input.reference_data()[0]['datapath'], spectrum_ID1=spectrum_ID1, spectrum_ID2=spectrum_ID2, similarity_measure=input.similarity_measure(), spectrum_preprocessing_order=input.spectrum_preprocessing_order(), high_quality_reference_library=high_quality_reference_library_tmp2, mz_min=input.mz_min(), mz_max=input.mz_max(), int_min=input.int_min(), int_max=input.int_max(), noise_threshold=input.noise_threshold(), wf_mz=input.wf_mz(), wf_intensity=input.wf_int(), LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(), y_axis_transformation=input.y_axis_transformation(), return_plot=True)
+            fig = generate_plots_on_NRMS_data(query_data=input.query_data()[0]['datapath'], reference_data=input.reference_data()[0]['datapath'], spectrum_ID1=spectrum_ID1, spectrum_ID2=spectrum_ID2, print_url_spectrum1=input.print_url_spectrum1(), print_url_spectrum2=input.print_url_spectrum2(), similarity_measure=input.similarity_measure(), spectrum_preprocessing_order=input.spectrum_preprocessing_order(), high_quality_reference_library=high_quality_reference_library_tmp2, mz_min=input.mz_min(), mz_max=input.mz_max(), int_min=input.int_min(), int_max=input.int_max(), noise_threshold=input.noise_threshold(), wf_mz=input.wf_mz(), wf_intensity=input.wf_int(), LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(), y_axis_transformation=input.y_axis_transformation(), return_plot=True)
             plt.show()
         with io.BytesIO() as buf:
             fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
@@ -3802,6 +3526,8 @@ def server(input, output, session):
             reference_data=input.reference_data()[0]['datapath'],
             spectrum_ID1=spectrum_ID1,
             spectrum_ID2=spectrum_ID2,
+            print_url_spectrum1=input.print_url_spectrum1(),
+            print_url_spectrum2=input.print_url_spectrum2(), 
             similarity_measure=input.similarity_measure(),
             weights=weights,
             spectrum_preprocessing_order=input.spectrum_preprocessing_order(),
@@ -3924,7 +3650,6 @@ def server(input, output, session):
         is_tuning_DE_running.set(True)
         await reactive.flush()
 
-        # --- helpers ---
         def _safe_float(v, default):
             try:
                 if v is None:
@@ -3934,7 +3659,6 @@ def server(input, output, session):
                 return default
 
         def _iget(id, default=None):
-            # Safe getter for Shiny inputs (avoids SilentException)
             if id in input:
                 try:
                     return input[id]()
@@ -3942,7 +3666,6 @@ def server(input, output, session):
                     return default
             return default
 
-        # ---- log plumbing (stdout/stderr -> UI) ----
         loop = asyncio.get_running_loop()
         q: asyncio.Queue[str | None] = asyncio.Queue()
 
@@ -3964,7 +3687,6 @@ def server(input, output, session):
         drain_task = asyncio.create_task(_drain())
         writer = UIWriter()
 
-        # ---------- SNAPSHOT INPUTS SAFELY ----------
         try:
             qfile = _iget("query_data")[0]["datapath"]
             rfile = _iget("reference_data")[0]["datapath"]
@@ -3984,17 +3706,13 @@ def server(input, output, session):
             int_min = _safe_float(_iget("int_min", 0.0), 0.0)
             int_max = _safe_float(_iget("int_max", 999_999_999.0), 999_999_999.0)
 
-            # weights "a,b,c,d"
             w_text = _iget("weights", "") or ""
             w_list = [float(w.strip()) for w in w_text.split(",") if w.strip()]
             w_list = (w_list + [0.0, 0.0, 0.0, 0.0])[:4]
             weights = {"Cosine": w_list[0], "Shannon": w_list[1], "Renyi": w_list[2], "Tsallis": w_list[3]}
 
-            # selected params + bounds
             opt_params = tuple(_iget("params", ()) or ())
             bounds_dict = {}
-            # populate bounds using the min_/max_ inputs if present, otherwise fall back
-            # to your default PARAMS dicts already defined in your file
             param_defaults = PARAMS_HRMS if platform == "HRMS" else PARAMS_NRMS
             for p in opt_params:
                 lo = _safe_float(_iget(f"min_{p}", param_defaults.get(p, (0.0, 1.0))[0]),
@@ -4005,7 +3723,6 @@ def server(input, output, session):
                     lo, hi = hi, lo
                 bounds_dict[p] = (lo, hi)
 
-            # defaults (guarded!)
             defaults = {
                 "window_size_centroiding": _safe_float(_iget("window_size_centroiding", 0.5), 0.5),
                 "window_size_matching":    _safe_float(_iget("window_size_matching",    0.5), 0.5),

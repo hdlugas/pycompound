@@ -172,12 +172,12 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
-            df_query = pd.read_csv(output_path_tmp)
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'csv' or extension == 'CSV':
-            df_query = pd.read_csv(query_data)
+            df_query = pd.read_csv(query_data, sep='\t')
         unique_query_ids = df_query.iloc[:,0].unique().tolist()
         unique_query_ids = [str(tmp) for tmp in unique_query_ids]
 
@@ -187,12 +187,12 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
             output_path_tmp = reference_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
-            df_reference = pd.read_csv(output_path_tmp)
+            df_reference = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'csv' or extension == 'CSV':
-            df_reference = pd.read_csv(reference_data)
+            df_reference = pd.read_csv(reference_data, sep='\t')
         unique_reference_ids = df_reference.iloc[:,0].unique().tolist()
         unique_reference_ids = [str(tmp) for tmp in unique_reference_ids]
 
@@ -463,12 +463,12 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            df_query = pd.read_csv(output_path_tmp)
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'csv' or extension == 'CSV':
-            df_query = pd.read_csv(query_data)
+            df_query = pd.read_csv(query_data, sep='\t')
         unique_query_ids = df_query.iloc[:,0].unique()
 
     if reference_data is None:
@@ -477,12 +477,12 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
             output_path_tmp = reference_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
-            df_reference = pd.read_csv(output_path_tmp)
+            df_reference = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'csv' or extension == 'CSV':
-            df_reference = pd.read_csv(reference_data)
+            df_reference = pd.read_csv(reference_data, sep='\t')
             unique_reference_ids = df_reference.iloc[:,0].unique()
 
 
@@ -706,13 +706,13 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
     fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
     fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
-    fig.text(0.40, 0.08, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
+    fig.text(0.40, 0.11, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
     if print_url_spectrum1 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID1)
-        fig.text(0.40, 0.05, f'PubChem URL for Spectrum {spectrum_ID1}: {url_tmp}', fontsize=7)
+        fig.text(0.40, 0.08, f'PubChem URL for Spectrum {spectrum_ID1}: {url_tmp}', fontsize=7)
     if print_url_spectrum2 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID2)
-        fig.text(0.40, 0.02, f'PubChem URL for Spectrum {spectrum_ID2}: {url_tmp}', fontsize=7)
+        fig.text(0.40, 0.05, f'PubChem URL for Spectrum {spectrum_ID2}: {url_tmp}', fontsize=7)
 
     plt.savefig(output_path, format='pdf')
 
@@ -888,12 +888,12 @@ def convert_spec(spec, mzs):
 def get_reference_df(reference_data, likely_reference_IDs=None):
     extension = reference_data.rsplit('.',1)
     extension = extension[(len(extension)-1)]
-    if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+    if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
         output_path_tmp = reference_data[:-3] + 'csv'
         build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
-        df_reference = pd.read_csv(output_path_tmp)
+        df_reference = pd.read_csv(output_path_tmp, sep='\t')
     if extension == 'csv' or extension == 'CSV':
-        df_reference = pd.read_csv(reference_data)
+        df_reference = pd.read_csv(reference_data, sep='\t')
     if likely_reference_IDs is not None:
         likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
         df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
@@ -1285,12 +1285,12 @@ def tune_params_DE(query_data=None, reference_data=None, chromatography_platform
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            df_query = pd.read_csv(output_path_tmp)
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'csv' or extension == 'CSV':
-            df_query = pd.read_csv(query_data)
+            df_query = pd.read_csv(query_data, sep='\t')
         unique_query_ids = df_query.iloc[:,0].unique()
 
     if reference_data is None:
@@ -1426,12 +1426,12 @@ def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, grid=Non
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            df_query = pd.read_csv(output_path_tmp)
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'csv' or extension == 'CSV':
-            df_query = pd.read_csv(query_data)
+            df_query = pd.read_csv(query_data, sep='\t')
         unique_query_ids = df_query.iloc[:,0].unique()
 
     if reference_data is None:
@@ -1495,9 +1495,9 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, gr
         if extension in ('mgf','MGF','mzML','mzml','MZML','cdf','CDF'):
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            df_query = pd.read_csv(output_path_tmp)
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
         elif extension in ('csv','CSV'):
-            df_query = pd.read_csv(query_data)
+            df_query = pd.read_csv(query_data, sep='\t')
         else:
             print(f'\nError: Unsupported query_data extension: {extension}')
             sys.exit()
@@ -1585,12 +1585,12 @@ def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=Non
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            df_query = pd.read_csv(output_path_tmp)
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'csv' or extension == 'CSV':
-            df_query = pd.read_csv(query_data)
+            df_query = pd.read_csv(query_data, sep='\t')
         unique_query_ids = df_query.iloc[:,0].unique()
 
     if reference_data is None:
@@ -1652,9 +1652,9 @@ def tune_params_on_NRMS_data_grid_shiny(query_data=None, reference_data=None, gr
         if extension in ('mgf','MGF','mzML','mzml','MZML','cdf','CDF'):
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            df_query = pd.read_csv(output_path_tmp)
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
         elif extension in ('csv','CSV'):
-            df_query = pd.read_csv(query_data)
+            df_query = pd.read_csv(query_data, sep='\t')
         else:
             print(f'\nError: Unsupported query_data extension: {extension}')
             sys.exit()
@@ -1912,12 +1912,12 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, lik
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            df_query = pd.read_csv(output_path_tmp)
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'csv' or extension == 'CSV':
-            df_query = pd.read_csv(query_data)
+            df_query = pd.read_csv(query_data, sep='\t')
         unique_query_ids = df_query.iloc[:,0].unique()
 
     if reference_data is None:
@@ -2135,12 +2135,12 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP':
             output_path_tmp = query_data[:-3] + 'csv'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            df_query = pd.read_csv(output_path_tmp)
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'csv' or extension == 'CSV':
-            df_query = pd.read_csv(query_data)
+            df_query = pd.read_csv(query_data, sep='\t')
         unique_query_ids = df_query.iloc[:,0].unique()
 
     if reference_data is None:
@@ -2391,7 +2391,7 @@ def build_library(input_path=None, output_path=None):
     last_three_chars = input_path[(len(input_path)-3):len(input_path)]
     last_four_chars = input_path[(len(input_path)-4):len(input_path)]
     if last_three_chars == 'csv' or last_three_chars == 'CSV':
-        return pd.read_csv(input_path)
+        return pd.read_csv(input_path, sep='\t')
     else:
         if last_three_chars == 'mgf' or last_three_chars == 'MGF':
             input_file_type = 'mgf'
@@ -2481,7 +2481,7 @@ def extract_first_column_ids(file_path: str, max_ids: int = 20000):
     suffix = Path(file_path).suffix.lower()
 
     if suffix == ".csv":
-        df = pd.read_csv(file_path, usecols=[0])
+        df = pd.read_csv(file_path, usecols=[0], sep='\t')
         ids = df.iloc[:, 0].astype(str).dropna()
         ids = [x for x in ids if x.strip() != ""]
         seen = set()
@@ -2542,8 +2542,8 @@ def plot_spectra_ui(platform: str):
             multiple=False,
             options={"placeholder": "Upload a library..."},
         ),
-        ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1:', ['Yes', 'No']),
-        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2:', ['Yes', 'No']),
+        ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1:', ['No', 'Yes']),
+        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2:', ['No', 'Yes']),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
         ui.input_text('weights', 'Weights for mixture similarity measure (cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
         ui.input_select(
@@ -2643,8 +2643,8 @@ def run_spec_lib_matching_ui(platform: str):
             multiple=False,
             options={"placeholder": "Upload a library..."},
         ),
-        ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1 (only applicable for plotting):', ['Yes', 'No']),
-        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2 (only applicable for plotting):', ['Yes', 'No']),
+        ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1 (only applicable for plotting):', ['No', 'Yes']),
+        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2 (only applicable for plotting):', ['No', 'Yes']),
         ui.input_select(
             "high_quality_reference_library",
             "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.",

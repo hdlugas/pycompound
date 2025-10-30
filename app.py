@@ -2677,11 +2677,19 @@ def extract_first_column_ids(file_path: str, max_ids: int = 20000):
     return []
 
 
-def _open_plot_window(session, png_bytes: bytes, title: str = "plot.png"):
+'''
+def _open_plot_window(session, png_bytes: bytes, title: str = "plot.svg"):
     """Send PNG bytes to browser and open in a new window as a data URL."""
     b64 = base64.b64encode(png_bytes).decode("ascii")
     data_url = f"data:image/png;base64,{b64}"
     session.send_custom_message("open-plot-window", {"png": data_url, "title": title})
+'''
+
+def _open_plot_window(session, svg_bytes: bytes, title: str = "plot.svg"):
+    """Send SVG bytes to browser and open in a new window as a data URL."""
+    b64 = base64.b64encode(svg_bytes).decode("ascii")
+    data_url = f"data:image/svg;base64,{b64}"
+    session.send_custom_message("open-plot-window", {"svg": data_url, "title": title})
 
 
 def plot_spectra_ui(platform: str):
@@ -3553,7 +3561,7 @@ def server(input, output, session):
             raise
 
 
-    @render.download(filename=lambda: f"plot.png")
+    @render.download(filename=lambda: f"plot.svg")
     def run_btn_plot_spectra():
         spectrum_ID1 = input.spectrum_ID1() or None
         spectrum_ID2 = input.spectrum_ID2() or None
@@ -3572,7 +3580,7 @@ def server(input, output, session):
             fig = generate_plots_on_NRMS_data(query_data=input.query_data()[0]['datapath'], reference_data=input.reference_data()[0]['datapath'], spectrum_ID1=spectrum_ID1, spectrum_ID2=spectrum_ID2, print_url_spectrum1=input.print_url_spectrum1(), print_url_spectrum2=input.print_url_spectrum2(), similarity_measure=input.similarity_measure(), spectrum_preprocessing_order=input.spectrum_preprocessing_order(), high_quality_reference_library=high_quality_reference_library_tmp2, mz_min=input.mz_min(), mz_max=input.mz_max(), int_min=input.int_min(), int_max=input.int_max(), noise_threshold=input.noise_threshold(), wf_mz=input.wf_mz(), wf_intensity=input.wf_int(), LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(), y_axis_transformation=input.y_axis_transformation(), return_plot=True)
             plt.show()
         with io.BytesIO() as buf:
-            fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+            fig.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
             plt.close()
             yield buf.getvalue()
 
@@ -3748,7 +3756,7 @@ def server(input, output, session):
 
 
 
-    @render.download(filename="plot.png")
+    @render.download(filename="plot.svg")
     def run_btn_plot_spectra_within_spec_lib_matching():
         req(input.query_data(), input.reference_data())
 
@@ -3796,7 +3804,7 @@ def server(input, output, session):
             plt.show()
 
         with io.BytesIO() as buf:
-            fig.savefig(buf, format="png", dpi=150, bbox_inches="tight")
+            fig.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
             plt.close()
             yield buf.getvalue()
 

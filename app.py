@@ -3022,16 +3022,8 @@ def run_parameter_tuning_DE_ui(platform: str):
         ui.input_numeric("max_iterations", "Maximum number of iterations:", 5),
     ]
 
-    run_button_parameter_tuning_DE = ui.input_action_button(
-        "run_btn_parameter_tuning_DE",
-        "Tune parameters (differential evolution optimization)",
-        style="font-size:16px; padding:15px 30px; width:300px; height:100px",
-    )
-    back_button = ui.input_action_button(
-        "back",
-        "Back to main menu",
-        style="font-size:16px; padding:15px 30px; width:300px; height:100px",
-    )
+    run_button_parameter_tuning_DE = ui.input_action_button("run_btn_parameter_tuning_DE", "Tune parameters (differential evolution optimization)", style="font-size:16px; padding:15px 30px; width:300px; height:100px")
+    back_button = ui.input_action_button("back", "Back to main menu", style="font-size:16px; padding:15px 30px; width:300px; height:100px")
 
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
@@ -3068,8 +3060,9 @@ def run_parameter_tuning_DE_ui(platform: str):
             ui.div(
                 ui.h2("Tune parameters (differential evolution optimization)"),
                 inputs_columns,
-                run_button_parameter_tuning_DE,
-                back_button,
+                #run_button_parameter_tuning_DE,
+                #back_button,
+                ui.div(run_button_parameter_tuning_DE, back_button, style=("display:flex; flex-direction:row; gap:12px; align-items:center; flex-wrap:wrap;")),
                 ui.br(),
                 ui.card(
                     ui.card_header("Live log"),
@@ -3079,7 +3072,6 @@ def run_parameter_tuning_DE_ui(platform: str):
             ),
         )
     )
-
 
 
 

@@ -479,33 +479,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         plt.xticks([])
         plt.yticks([])
 
-
-    '''
-    plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-    plt.figlegend(loc = 'upper center')
-    fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
-    fig.text(0.05, 0.17, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
-    fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
-    fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
-    fig.text(0.05, 0.08, f'Window Size (Centroiding): {window_size_centroiding}', fontsize=7)
-    fig.text(0.05, 0.05, f'Window Size (Matching): {window_size_matching}', fontsize=7)
-    if similarity_measure == 'mixture':
-        fig.text(0.05, 0.02, f'Weights for mixture similarity: {weights}', fontsize=7)
-    fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]', fontsize=7)
-    fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
-    fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
-    fig.text(0.40, 0.11, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
-    fig.text(0.40, 0.08, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
-    if print_url_spectrum1 == 'Yes':
-        url_tmp = get_pubchem_url(query=spectrum_ID1)
-        fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp}', fontsize=7)
-    if print_url_spectrum2 == 'Yes':
-        url_tmp = get_pubchem_url(query=spectrum_ID2)
-        fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp}', fontsize=7)
-
-    plt.savefig(output_path, format='pdf')
-    '''
-
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
     plt.figlegend(loc='upper center')
 
@@ -781,31 +754,6 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         plt.xticks(fontsize=7)
         plt.yticks(fontsize=7)
         plt.title(f'Transformed Query and Reference Spectra', fontsize=10)
-
-
-    '''
-    plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-    plt.figlegend(loc = 'upper center')
-    fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
-    fig.text(0.05, 0.17, f'Similarity Score: {round(similarity_score,4)}', fontsize=7)
-    fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
-    fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
-    fig.text(0.05, 0.08, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
-    if similarity_measure == 'mixture':
-        fig.text(0.05, 0.05, f'Weights for mixture similarity: {weights}', fontsize=7)
-    fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
-    fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
-    fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
-    fig.text(0.40, 0.11, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
-    if print_url_spectrum1 == 'Yes':
-        url_tmp = get_pubchem_url(query=spectrum_ID1)
-        fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp}', fontsize=7)
-    if print_url_spectrum2 == 'Yes':
-        url_tmp = get_pubchem_url(query=spectrum_ID2)
-        fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp}', fontsize=7)
-
-    plt.savefig(output_path, format='pdf')
-    '''
 
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
     plt.figlegend(loc='upper center')
@@ -1901,7 +1849,7 @@ def get_acc_HRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
     df_scores = pd.DataFrame(all_similarity_scores, columns = unique_reference_ids)
     df_scores.index = unique_query_ids
-    df_scores.index.names = ['Query Spectrum ID']
+    df_scores.index.names = ['QUERY.SPECTRUM.ID']
 
     preds = []
     scores = []
@@ -1988,7 +1936,7 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
     df_scores = pd.DataFrame(all_similarity_scores, columns = unique_reference_ids)
     df_scores.index = unique_query_ids
-    df_scores.index.names = ['Query Spectrum ID']
+    df_scores.index.names = ['QUERY.SPECTRUM.ID']
 
     preds = []
     scores = []
@@ -2172,7 +2120,6 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
             q_spec = q_spec_tmp
             r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
             r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
-            print(r_spec)
 
             is_matched = False
             for transformation in spectrum_preprocessing_order:
@@ -2216,7 +2163,7 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
 
     df_scores = pd.DataFrame(all_similarity_scores, columns = unique_reference_ids)
     df_scores.index = unique_query_ids
-    df_scores.index.names = ['Query Spectrum ID']
+    df_scores.index.names = ['QUERY.SPECTRUM.ID']
 
     preds = []
     scores = []
@@ -2249,7 +2196,7 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
 
     df_top_ref_specs = pd.DataFrame(out, columns = [*cnames_preds, *cnames_scores])
     df_top_ref_specs.index = unique_query_ids
-    df_top_ref_specs.index.names = ['Query Spectrum ID']
+    df_top_ref_specs.index.names = ['QUERY.SPECTRUM.ID']
 
     df_scores.columns = ['Reference Spectrum ID: ' + col for col in  list(map(str,df_scores.columns.tolist()))]
 
@@ -2422,7 +2369,7 @@ def run_spec_lib_matching_on_NRMS_data_shiny(query_data=None, reference_data=Non
 
     df_scores = pd.DataFrame(all_similarity_scores, columns = unique_reference_ids)
     df_scores.index = unique_query_ids
-    df_scores.index.names = ['Query Spectrum ID']
+    df_scores.index.names = ['QUERY.SPECTRUM.ID']
 
     preds = []
     scores = []
@@ -2455,7 +2402,7 @@ def run_spec_lib_matching_on_NRMS_data_shiny(query_data=None, reference_data=Non
 
     df_top_ref_specs = pd.DataFrame(out, columns = [*cnames_preds, *cnames_scores])
     df_top_ref_specs.index = unique_query_ids
-    df_top_ref_specs.index.names = ['Query Spectrum ID']
+    df_top_ref_specs.index.names = ['QUERY.SPECTRUM.ID']
 
     if print_id_results == True:
         print(df_top_ref_specs.to_string())
@@ -2677,14 +2624,6 @@ def extract_first_column_ids(file_path: str, max_ids: int = 20000):
     return []
 
 
-'''
-def _open_plot_window(session, png_bytes: bytes, title: str = "plot.svg"):
-    """Send PNG bytes to browser and open in a new window as a data URL."""
-    b64 = base64.b64encode(png_bytes).decode("ascii")
-    data_url = f"data:image/png;base64,{b64}"
-    session.send_custom_message("open-plot-window", {"png": data_url, "title": title})
-'''
-
 def _open_plot_window(session, svg_bytes: bytes, title: str = "plot.svg"):
     """Send SVG bytes to browser and open in a new window as a data URL."""
     b64 = base64.b64encode(svg_bytes).decode("ascii")
@@ -2785,10 +2724,11 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
         ui.input_text('weights', 'Weights for mixture similarity measure (cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
-        ui.input_selectize("spectrum_ID1", "Select spectrum ID 1 (only applicable for plotting; default is the first spectrum in the query library):", choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
-        ui.input_selectize("spectrum_ID2", "Select spectrum ID 2 (only applicable for plotting; default is the first spectrum in the reference library):", choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
-        ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1 (only applicable for plotting):', ['No', 'Yes']),
-        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2 (only applicable for plotting):', ['No', 'Yes']),
+        ui.input_file('compound_ID_output_file', 'Upload output from spectral library matching to plot top matches (optional)'),
+        ui.input_selectize("q_spec", "Select query spectrum (only applicable for plotting; default is the first spectrum in the compound ID output):", choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
+        ui.input_selectize("r_spec", "Select reference spectrum (only applicable for plotting; default is the rank 1 reference spectrum):", choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
+        ui.input_select('print_url_spectrum1', 'Print PubChem URL for query spectrum (only applicable for plotting):', ['No', 'Yes']),
+        ui.input_select('print_url_spectrum2', 'Print PubChem URL for reference spectrum (only applicable for plotting):', ['No', 'Yes']),
         ui.input_select("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", [False, True])
     ]
 
@@ -2827,7 +2767,7 @@ def run_spec_lib_matching_ui(platform: str):
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
             ui.div([base_inputs[0:2], extra_inputs[0:4], base_inputs[2:4]], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[4:9]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[4:10]], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div([extra_inputs[4:7], numeric_inputs[0:3]], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[3:10], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3)
@@ -2835,7 +2775,7 @@ def run_spec_lib_matching_ui(platform: str):
     elif platform == "NRMS":
         inputs_columns = ui.layout_columns(
             ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:9], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[6:10], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[5:10], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3)
@@ -3046,12 +2986,7 @@ def run_parameter_tuning_DE_ui(platform: str):
         ui.layout_sidebar(
             ui.sidebar(
                 ui.h3("Select continuous parameters to optimize"),
-                ui.input_checkbox_group(
-                    "params",
-                    None,
-                    choices=list(PARAMS.keys()),
-                    selected=["noise_threshold", "LET_threshold"],
-                ),
+                ui.input_checkbox_group("params", None, choices=list(PARAMS.keys()), selected=["noise_threshold", "LET_threshold"]),
                 ui.hr(),
                 ui.h4("Bounds for selected parameters"),
                 ui.output_ui("bounds_inputs"),
@@ -3060,8 +2995,6 @@ def run_parameter_tuning_DE_ui(platform: str):
             ui.div(
                 ui.h2("Tune parameters (differential evolution optimization)"),
                 inputs_columns,
-                #run_button_parameter_tuning_DE,
-                #back_button,
                 ui.div(run_button_parameter_tuning_DE, back_button, style=("display:flex; flex-direction:row; gap:12px; align-items:center; flex-wrap:wrap;")),
                 ui.br(),
                 ui.card(
@@ -3081,6 +3014,7 @@ app_ui = ui.page_fluid(
     ui.output_ui("main_ui"),
     ui.output_text("status_output")
 )
+
 
 
 def server(input, output, session):
@@ -3116,6 +3050,107 @@ def server(input, output, session):
 
     converted_query_path_rv = reactive.Value(None)
     converted_reference_path_rv = reactive.Value(None)
+
+    df_rv = reactive.Value(None)
+
+
+    def _discover_rank_cols(df: pd.DataFrame):
+        pred_pat = re.compile(r"^RANK\.(\d+)\.PRED$")
+        score_pat = re.compile(r"^RANK\.(\d+)\.SIMILARITY\.SCORE$")
+        pred_map, score_map = {}, {}
+        for c in df.columns:
+            m = pred_pat.match(c)
+            if m: pred_map[int(m.group(1))] = c
+            m = score_pat.match(c)
+            if m: score_map[int(m.group(1))] = c
+        return [(k, pred_map[k], score_map.get(k)) for k in sorted(pred_map)]
+
+
+    def _rank_choices_for_query(df: pd.DataFrame, qid: str):
+        sub = df.loc[df["QUERY.SPECTRUM.ID"].astype(str) == str(qid)]
+        if sub.empty:
+            return {}, None
+        row = sub.iloc[0]
+        rank_cols = _discover_rank_cols(df)
+        if not rank_cols:
+            return {}, None
+
+        choices = {}
+        default_value = None
+        for (k, pred_col, score_col) in rank_cols:
+            pred = row.get(pred_col, None)
+            if pd.isna(pred):
+                continue
+            pred = str(pred)
+            score = row.get(score_col, None) if score_col else None
+            score_str = f"{float(score):.6f}" if (score is not None and pd.notna(score)) else "NA"
+            label = f"Rank {k} — {score_str} — {pred}"
+            choices[label] = pred                 # values are plain names
+            if k == 1:
+                default_value = pred              # default = Rank 1 name
+
+        if default_value is None and choices:
+            default_value = next(iter(choices.values()))
+        return choices, default_value
+
+
+    @reactive.effect
+    @reactive.event(input.compound_ID_output_file)
+    async def _populate_ids_from_compound_ID_output_upload():
+        files = input.compound_ID_output_file()
+        if not files:
+            return
+
+        in_path = Path(files[0]["datapath"])
+        try:
+            query_status_rv.set(f"Reading table from: {in_path.name} …")
+            await reactive.flush()
+
+            df = await asyncio.to_thread(pd.read_csv, in_path, sep="\t", header=0)
+
+            if "QUERY.SPECTRUM.ID" not in df.columns:
+                raise ValueError("Missing required column: QUERY.SPECTRUM.ID")
+            if not _discover_rank_cols(df):
+                raise ValueError("No columns matching RANK.<k>.PRED found.")
+
+            df_rv.set(df)
+
+            ids = df["QUERY.SPECTRUM.ID"].astype(str).tolist()
+            unique_ids_in_order = list(dict.fromkeys(ids))
+
+            choices_dict, default_rank_value = _rank_choices_for_query(df, ids[0])
+            choices_values = [str(v).strip() for v in choices_dict.values()]
+            default_rank_value = str(default_rank_value).strip() if default_rank_value is not None else None
+
+            ui.update_selectize("q_spec", choices=unique_ids_in_order, selected=ids[0])
+            await reactive.flush()
+
+            ui.update_selectize("r_spec", choices=choices_values, selected=choices_values[0])
+            #ui.update_selectize("r_spec", choices=unique_ids_in_order, selected=ids[0])
+            await reactive.flush()
+
+        except Exception as e:
+            query_status_rv.set(f"❌ Failed: {e}")
+            await reactive.flush()
+            raise
+
+
+    @reactive.effect
+    @reactive.event(input.q_spec)
+    async def _update_rank_choices_on_compound_ID_change():
+        df = df_rv.get()
+        if df is None:
+            return
+        qid = input.q_spec()
+        if not qid:
+            return
+
+        choices, default_rank_value = _rank_choices_for_query(df, qid)
+        choices = list(choices.values())
+        ui.update_selectize('r_spec', choices=choices, selected=default_rank_value)
+        await reactive.flush()
+
+
 
     @output
     @render.ui
@@ -3752,8 +3787,8 @@ def server(input, output, session):
     def run_btn_plot_spectra_within_spec_lib_matching():
         req(input.query_data(), input.reference_data())
 
-        spectrum_ID1 = input.spectrum_ID1() or None
-        spectrum_ID2 = input.spectrum_ID2() or None
+        spectrum_ID1 = input.q_spec() or None
+        spectrum_ID2 = input.r_spec() or None
 
         hq = input.high_quality_reference_library()
         if isinstance(hq, str):

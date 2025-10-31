@@ -498,10 +498,10 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
     fig.text(0.40, 0.08, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
     if print_url_spectrum1 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID1)
-        fig.text(0.40, 0.05, f'PubChem URL for Spectrum {spectrum_ID1}: {url_tmp}', fontsize=7)
+        fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp}', fontsize=7)
     if print_url_spectrum2 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID2)
-        fig.text(0.40, 0.02, f'PubChem URL for Spectrum {spectrum_ID2}: {url_tmp}', fontsize=7)
+        fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp}', fontsize=7)
 
     plt.savefig(output_path, format='pdf')
     '''
@@ -526,13 +526,13 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
     if print_url_spectrum1 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID1)
-        t1 = fig.text(0.40, 0.05, f'PubChem URL for Spectrum {spectrum_ID1}: {url_tmp}', fontsize=7)
+        t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp}', fontsize=7)
         if url_tmp:
             t1.set_url(url_tmp)
 
     if print_url_spectrum2 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID2)
-        t2 = fig.text(0.40, 0.02, f'PubChem URL for Spectrum {spectrum_ID2}: {url_tmp}', fontsize=7)
+        t2 = fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp}', fontsize=7)
         if url_tmp:
             t2.set_url(url_tmp)
 
@@ -799,10 +799,10 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     fig.text(0.40, 0.11, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
     if print_url_spectrum1 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID1)
-        fig.text(0.40, 0.08, f'PubChem URL for Spectrum {spectrum_ID1}: {url_tmp}', fontsize=7)
+        fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp}', fontsize=7)
     if print_url_spectrum2 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID2)
-        fig.text(0.40, 0.05, f'PubChem URL for Spectrum {spectrum_ID2}: {url_tmp}', fontsize=7)
+        fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp}', fontsize=7)
 
     plt.savefig(output_path, format='pdf')
     '''
@@ -825,13 +825,13 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
 
     if print_url_spectrum1 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID1)
-        t1 = fig.text(0.40, 0.08, f'PubChem URL for Spectrum {spectrum_ID1}: {url_tmp}', fontsize=7)
+        t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp}', fontsize=7)
         if url_tmp:
             t1.set_url(url_tmp)
 
     if print_url_spectrum2 == 'Yes':
         url_tmp = get_pubchem_url(query=spectrum_ID2)
-        t2 = fig.text(0.40, 0.05, f'PubChem URL for Spectrum {spectrum_ID2}: {url_tmp}', fontsize=7)
+        t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp}', fontsize=7)
         if url_tmp:
             t2.set_url(url_tmp)
 

@@ -49,11 +49,9 @@ def start_log_consumer():
 
 
 def start_log_consumer():
-    """Start a background task that drains _LOG_QUEUE and updates match_log_rv."""
-    # If you want to ensure single-start, you can memoize with an attribute
     if getattr(start_log_consumer, "_started", False):
         return
-    start_log_consumer._started = True  # type: ignore[attr-defined]
+    start_log_consumer._started = True
 
     async def _consume():
         while True:
@@ -83,6 +81,7 @@ def get_pubchem_url(query: str) -> str:
     return f"https://pubchem.ncbi.nlm.nih.gov/#query={q}"
 
 
+"""
 def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
     if input_path is None:
         print('Error: please specify input_path (i.e. the path to the input mgf, mzML, cdf, json, or msp file). Mandatory argument.')
@@ -194,6 +193,7 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
         ids = []
         mzs = []
         ints = []
+        precursor_mass_mzs = []
         for i in range(0,len(data)):
             spec_ID_tmp = data[i]['spectrum_id']
             tmp = data[i]['peaks_json']
@@ -205,8 +205,184 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
             ids.extend([spec_ID_tmp] * len(mzs_tmp))
             mzs.extend(mzs_tmp)
             ints.extend(ints_tmp)
+            precursor_mzs.extend([data[i]['Precursor_MZ']] * len(mzs_tmp))
 
-    df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
+    if len(precursor_mzs) > 0:
+        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_mz':precursor_mzs})
+    else:
+        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
+
+    df.to_csv(output_path, index=False, sep='\t')
+"""
+
+
+
+def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
+    if input_path is None:
+        print('Error: please specify input_path (i.e. the path to the input mgf, mzML, cdf, json, or msp file). Mandatory argument.')
+        sys.exit()
+
+    if output_path is None:
+        tmp = input_path.split('/')
+        tmp = tmp[(len(tmp)-1)]
+        basename = tmp.split('.')[0]
+        output_path = f'{Path.cwd()}/{basename}.csv'
+        print(f'Warning: no output_path specified, so library is written to {output_path}')
+
+    if is_reference not in [True,False]:
+        print('Error: is_reference must be either \'True\' or \'False\'.')
+        sys.exit()
+
+    last_three_chars = input_path[(len(input_path)-3):len(input_path)]
+    last_four_chars = input_path[(len(input_path)-4):len(input_path)]
+    if last_three_chars == 'mgf' or last_three_chars == 'MGF':
+        input_file_type = 'mgf'
+    elif last_four_chars == 'mzML' or last_four_chars == 'mzml' or last_four_chars == 'MZML':
+        input_file_type = 'mzML'
+    elif last_four_chars == 'json' or last_four_chars == 'JSON':
+        input_file_type = 'json'
+    elif last_three_chars == 'cdf' or last_three_chars == 'CDF':
+        input_file_type = 'cdf'
+    elif last_three_chars == 'msp' or last_three_chars == 'MSP':
+        input_file_type = 'msp'
+    else:
+        print('ERROR: either an \'mgf\', \'mzML\', \'cdf\', \'json\', or \'msp\' file must be passed to --input_path')
+        sys.exit()
+
+
+    spectra = []
+    if input_file_type == 'mgf':
+        #with mgf.read(input_path, index_by_scans = True) as reader:
+        with mgf.read(input_path, use_index=False) as reader:
+            for spec in reader:
+                spectra.append(spec)
+    if input_file_type == 'mzML':
+        with mzml.read(input_path) as reader:
+            for spec in reader:
+                spectra.append(spec)
+
+
+    if input_file_type == 'mgf' or input_file_type == 'mzML':
+        ids = []
+        mzs = []
+        ints = []
+        precursor_ion_mzs = []
+        for i in range(0,len(spectra)):
+            for j in range(0,len(spectra[i]['m/z array'])):
+                if input_file_type == 'mzML':
+                    if is_reference == False:
+                        ids.append(f'ID_{i+1}')
+                    else:
+                        ids.append(spectra[i]['id'])
+                elif input_file_type == 'mgf':
+                    precursor_ion_mzs.append(spectra[i]['params']['pepmass'][0])
+                    if is_reference == False:
+                        ids.append(f'ID_{i+1}')
+                    else:
+                        ids.append(spectra[i]['params']['name'])
+                mzs.append(spectra[i]['m/z array'][j])
+                ints.append(spectra[i]['intensity array'][j])
+
+
+    if input_file_type == 'cdf':
+        dataset = nc.Dataset(input_path, 'r')
+        all_mzs = dataset.variables['mass_values'][:]
+        all_ints = dataset.variables['intensity_values'][:]
+        scan_idxs = dataset.variables['scan_index'][:]
+        dataset.close()
+
+        ids = []
+        mzs = []
+        ints = []
+        for i in range(0,(len(scan_idxs)-1)):
+            if i % 1000 == 0:
+                print(f'analyzed {i} out of {len(scan_idxs)} scans')
+            s_idx = scan_idxs[i]
+            e_idx = scan_idxs[i+1]
+
+            mzs_tmp = all_mzs[s_idx:e_idx]
+            ints_tmp = all_ints[s_idx:e_idx]
+
+            for j in range(0,len(mzs_tmp)):
+                ids.append(f'ID_{i+1}')
+                mzs.append(mzs_tmp[j])
+                ints.append(ints_tmp[j])
+
+
+
+    if input_file_type == "msp":
+        ids = []
+        mzs = []
+        ints = []
+        precursor_ion_mzs = []
+
+        spectrum_id = None
+        precursor_mass_mz = None
+
+        with open(input_path, "r", encoding="utf-8", errors="ignore") as f:
+            i = 0
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+
+                if line.startswith("Name:"):
+                    i += 1
+                    if not is_reference:
+                        spectrum_id = f"ID_{i}"
+                    else:
+                        spectrum_id = line.replace("Name:", "", 1).strip()
+
+                elif line.startswith("PrecursorMZ:"):
+                    try:
+                        precursor_mass_mz = float(line.replace("PrecursorMZ:", "", 1).strip())
+                    except ValueError:
+                        precursor_mass_mz = None
+
+                elif line[0].isdigit():
+                    try:
+                        mz, intensity = map(float, line.split()[:2])
+                    except ValueError:
+                        continue
+
+                    if spectrum_id is None:
+                        continue
+
+                    ids.append(spectrum_id)
+                    mzs.append(mz)
+                    ints.append(intensity)
+                    precursor_ion_mzs.append(precursor_mass_mz)
+
+
+
+    if input_file_type == 'json':
+        data = json.load(open(input_path))
+        ids = []
+        mzs = []
+        ints = []
+        precursor_ion_mzs = []
+        for i in range(0,len(data)):
+            spec_ID_tmp = data[i]['spectrum_id']
+            tmp = data[i]['peaks_json']
+            tmp = tmp[1:-1].split(",")
+            tmp = [a.replace("[","") for a in tmp]
+            tmp = [a.replace("]","") for a in tmp]
+            mzs_tmp = tmp[0::2]
+            ints_tmp = tmp[1::2]
+            if is_reference == False:
+                ids.extend([f'ID_{i+1}'] * len(mzs_tmp))
+            elif is_reference == True:
+                ids.extend([spec_ID_tmp] * len(mzs_tmp))
+            mzs.extend(mzs_tmp)
+            ints.extend(ints_tmp)
+            precursor_ion_mzs.extend([data[i]['Precursor_MZ']] * len(mzs_tmp))
+
+
+    if len(precursor_ion_mzs) > 0:
+        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_ion_mz':precursor_ion_mzs})
+    else:
+        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
+
     df.to_csv(output_path, index=False, sep='\t')
 
 
@@ -1966,23 +2142,23 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
 
 
-def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=None, precursor_ion_mass=None, precursor_ion_mass_tolerance=None, ionization_mode=None, adduct=None, likely_reference_ids=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False, verbose=True):
+def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=None, precursor_ion_mass_tolerance=None, ionization_mode=None, adduct=None, likely_reference_ids=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False, verbose=True):
     if query_data is None:
-        print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
+        print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
-        unique_query_ids = df_query.iloc[:,0].unique()
+        unique_query_ids = df_query['id'].unique()
 
     if reference_data is None:
-        print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the TXT file of the reference data.')
+        print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the reference data.')
         sys.exit()
     else:
         if isinstance(reference_data,str):
@@ -1994,33 +2170,10 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
                 dfs.append(tmp)
             df_reference = pd.concat(dfs, axis=0, ignore_index=True)
 
-    '''
-    print('\n\n???????????????????????')
-    print(df_reference.columns.tolist())
-    print(precursor_ion_mass)
-    print(precursor_ion_mass_tolerance)
-    print(type(precursor_ion_mass))
-    print(type(precursor_ion_mass_tolerance))
-    print('???????????????????????\n\n')
-    '''
-
-    print(df_reference.shape)
-    if 'ionization.mode' in df_reference.columns.tolist() and ionization_mode != 'N/A':
-        df_reference = df_reference.loc[df_reference['ionization.mode']==ionization_mode]
-        print(df_reference.shape)
+    if 'ionization_mode' in df_reference.columns.tolist() and ionization_mode != 'N/A':
+        df_reference = df_reference.loc[df_reference['ionization_mode']==ionization_mode]
     if 'adduct' in df_reference.columns.tolist() and adduct != 'N/A':
         df_reference = df_reference.loc[df_reference['adduct']==adduct]
-        print(df_reference.shape)
-    if 'precursor.mz' in df_reference.columns.tolist() and precursor_ion_mass != 'N/A' and precursor_ion_mass_tolerance != 'N/A':
-        lb = precursor_ion_mass - precursor_ion_mass_tolerance
-        ub = precursor_ion_mass + precursor_ion_mass_tolerance
-        df_reference = df_reference.loc[(df_reference['precursor.mz'] > lb) & (df_reference['precursor.mz'] < ub)]
-        print(df_reference.shape)
-    if df_reference.empty: return pd.DataFrame()
-
-    df_reference = df_reference[['id','mz_ratio','intensity']]
-    unique_reference_ids = df_reference['id'].unique()
-
 
     if spectrum_preprocessing_order is not None:
         spectrum_preprocessing_order = list(spectrum_preprocessing_order)
@@ -2108,62 +2261,92 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
         print(f'Warning: writing similarity scores to {output_similarity_scores}')
 
 
-    all_similarity_scores =  []
-    for query_idx in range(0,len(unique_query_ids)):
-        if verbose is True:
-            print(f'query spectrum #{query_idx} is being identified')
-        q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
-        q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
+    unique_reference_ids = df_reference['id'].unique().tolist()
+    all_similarity_scores = []
 
-        similarity_scores = []
-        for ref_idx in range(0,len(unique_reference_ids)):
-            q_spec = q_spec_tmp
-            r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
-            r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+    for query_idx in range(len(unique_query_ids)):
+        if verbose:
+            print(f'query spectrum #{query_idx} is being identified')
+
+        q_mask = (df_query['id'] == unique_query_ids[query_idx])
+        q_idxs_tmp = np.where(q_mask)[0]
+        q_spec_tmp = np.asarray(pd.concat(
+            [df_query['mz_ratio'].iloc[q_idxs_tmp],
+             df_query['intensity'].iloc[q_idxs_tmp]], axis=1
+        ).reset_index(drop=True))
+
+        if 'precursor_ion_mz' in df_query.columns.tolist() and precursor_ion_mass_tolerance != None:
+            precursor_ion_mass_tmp = df_query['precursor_ion_mz'].iloc[q_idxs_tmp[0]]
+            df_reference_tmp = df_reference.loc[df_reference['precursor_mz'].between(precursor_ion_mass_tmp-precursor_ion_mass_tolerance, precursor_ion_mass_tmp+precursor_ion_mass_tolerance, inclusive='both'),['id','mz_ratio','intensity']].copy()
+        else:
+            df_reference_tmp = df_reference.copy()
+
+        ref_groups = dict(tuple(df_reference_tmp.groupby('id', sort=False)))
+        unique_reference_ids_tmp = list(ref_groups.keys())
+
+        similarity_by_ref = {}
+        for ref_id in unique_reference_ids_tmp:
+            q_spec = q_spec_tmp.copy()
+            r_df = ref_groups[ref_id]
+            r_spec = np.asarray(pd.concat([r_df['mz_ratio'], r_df['intensity']], axis=1).reset_index(drop=True))
 
             is_matched = False
+
             for transformation in spectrum_preprocessing_order:
-                if np.isinf(q_spec[:,1]).sum() > 0:
-                    q_spec[:,1] = np.zeros(q_spec.shape[0])
-                if np.isinf(r_spec[:,1]).sum() > 0:
-                    r_spec[:,1] = np.zeros(r_spec.shape[0])
-                if transformation == 'C' and q_spec.shape[0] > 1 and r_spec.shape[1] > 1:
-                    q_spec = centroid_spectrum(q_spec, window_size=window_size_centroiding) 
-                    r_spec = centroid_spectrum(r_spec, window_size=window_size_centroiding) 
-                if transformation == 'M' and q_spec.shape[0] > 1 and r_spec.shape[1] > 1:
+                if np.isinf(q_spec[:, 1]).sum() > 0:
+                    q_spec[:, 1] = np.zeros(q_spec.shape[0])
+                if np.isinf(r_spec[:, 1]).sum() > 0:
+                    r_spec[:, 1] = np.zeros(r_spec.shape[0])
+
+                if transformation == 'C' and q_spec.shape[0] > 1 and r_spec.shape[0] > 1:
+                    q_spec = centroid_spectrum(q_spec, window_size=window_size_centroiding)
+                    r_spec = centroid_spectrum(r_spec, window_size=window_size_centroiding)
+
+                if transformation == 'M' and q_spec.shape[0] > 1 and r_spec.shape[0] > 1:
                     m_spec = match_peaks_in_spectra(spec_a=q_spec, spec_b=r_spec, window_size=window_size_matching)
-                    q_spec = m_spec[:,0:2]
-                    r_spec = m_spec[:,[0,2]]
+                    q_spec = m_spec[:, 0:2]
+                    r_spec = m_spec[:, [0, 2]]
                     is_matched = True
-                if transformation == 'W' and q_spec.shape[0] > 1 and r_spec.shape[1] > 1:
-                    q_spec[:,1] = wf_transform(q_spec[:,0], q_spec[:,1], wf_mz, wf_intensity)
-                    r_spec[:,1] = wf_transform(r_spec[:,0], r_spec[:,1], wf_mz, wf_intensity)
-                if transformation == 'L' and q_spec.shape[0] > 1 and r_spec.shape[1] > 1:
-                    q_spec[:,1] = LE_transform(q_spec[:,1], LET_threshold, normalization_method=normalization_method)
-                    r_spec[:,1] = LE_transform(r_spec[:,1], LET_threshold, normalization_method=normalization_method)
-                if transformation == 'N' and q_spec.shape[0] > 1 and r_spec.shape[1] > 1:
-                    q_spec = remove_noise(q_spec, nr = noise_threshold)
-                    if high_quality_reference_library == False:
-                        r_spec = remove_noise(r_spec, nr = noise_threshold)
-                if transformation == 'F' and q_spec.shape[0] > 1 and r_spec.shape[1] > 1:
-                    q_spec = filter_spec_lcms(q_spec, mz_min = mz_min, mz_max = mz_max, int_min = int_min, int_max = int_max, is_matched = is_matched)
-                    if high_quality_reference_library == False:
-                        r_spec = filter_spec_lcms(r_spec, mz_min = mz_min, mz_max = mz_max, int_min = int_min, int_max = int_max, is_matched = is_matched)
 
-            q_ints = q_spec[:,1]
-            r_ints = r_spec[:,1]
+                if transformation == 'W' and q_spec.shape[0] > 1 and r_spec.shape[0] > 1:
+                    q_spec[:, 1] = wf_transform(q_spec[:, 0], q_spec[:, 1], wf_mz, wf_intensity)
+                    r_spec[:, 1] = wf_transform(r_spec[:, 0], r_spec[:, 1], wf_mz, wf_intensity)
 
-            if np.sum(q_ints) != 0 and np.sum(r_ints) != 0 and q_spec.shape[0] > 1 and r_spec.shape[1] > 1:
-                similarity_score = get_similarity(similarity_measure, q_ints, r_ints, weights, entropy_dimension)
+                if transformation == 'L' and q_spec.shape[0] > 1 and r_spec.shape[0] > 1:
+                    q_spec[:, 1] = LE_transform(q_spec[:, 1], LET_threshold, normalization_method=normalization_method)
+                    r_spec[:, 1] = LE_transform(r_spec[:, 1], LET_threshold, normalization_method=normalization_method)
+
+                if transformation == 'N' and q_spec.shape[0] > 1 and r_spec.shape[0] > 1:
+                    q_spec = remove_noise(q_spec, nr=noise_threshold)
+                    if not high_quality_reference_library:
+                        r_spec = remove_noise(r_spec, nr=noise_threshold)
+
+                if transformation == 'F' and q_spec.shape[0] > 1 and r_spec.shape[0] > 1:
+                    q_spec = filter_spec_lcms(
+                        q_spec, mz_min=mz_min, mz_max=mz_max, int_min=int_min, int_max=int_max, is_matched=is_matched
+                    )
+                    if not high_quality_reference_library:
+                        r_spec = filter_spec_lcms(
+                            r_spec, mz_min=mz_min, mz_max=mz_max, int_min=int_min, int_max=int_max, is_matched=is_matched
+                        )
+
+            q_ints = q_spec[:, 1]
+            r_ints = r_spec[:, 1]
+
+            if np.sum(q_ints) != 0 and np.sum(r_ints) != 0 and q_spec.shape[0] > 1 and r_spec.shape[0] > 1:
+                sim = get_similarity(similarity_measure, q_ints, r_ints, weights, entropy_dimension)
             else:
-                similarity_score = 0
+                sim = 0.0
 
-            similarity_scores.append(similarity_score)
-        all_similarity_scores.append(similarity_scores)
+            similarity_by_ref[ref_id] = sim
 
-    df_scores = pd.DataFrame(all_similarity_scores, columns = unique_reference_ids)
+        row_scores = [similarity_by_ref.get(ref_id, 0.0) for ref_id in unique_reference_ids]
+        all_similarity_scores.append(row_scores)
+
+    df_scores = pd.DataFrame(all_similarity_scores, index=unique_query_ids, columns=unique_reference_ids)
     df_scores.index = unique_query_ids
-    df_scores.index.names = ['QUERY.SPECTRUM.ID']
+    df_scores.index.names = ['Query Spectrum ID']
+
 
     preds = []
     scores = []
@@ -2196,7 +2379,7 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
 
     df_top_ref_specs = pd.DataFrame(out, columns = [*cnames_preds, *cnames_scores])
     df_top_ref_specs.index = unique_query_ids
-    df_top_ref_specs.index.names = ['QUERY.SPECTRUM.ID']
+    df_top_ref_specs.index.names = ['Query Spectrum ID']
 
     df_scores.columns = ['Reference Spectrum ID: ' + col for col in  list(map(str,df_scores.columns.tolist()))]
 
@@ -2208,7 +2391,6 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
         df_scores.to_csv(output_similarity_scores, sep='\t')
     else:
         return df_top_ref_specs
-
 
 
 
@@ -2734,7 +2916,6 @@ def run_spec_lib_matching_ui(platform: str):
 
     if platform == "HRMS":
         extra_inputs = [
-            ui.input_numeric("precursor_ion_mass", "Precursor ion mass (leave blank if not applicable):", None),
             ui.input_numeric("precursor_ion_mass_tolerance", "Precursor ion mass tolerance (leave blank if not applicable):", None),
             ui.input_select("ionization_mode", "Ionization mode:", ['Positive','Negative','N/A'], selected='N/A'),
             ui.input_select("adduct", "Adduct:", ['H','NH3','NH4','Na','K','N/A'], selected='N/A'),
@@ -2766,9 +2947,9 @@ def run_spec_lib_matching_ui(platform: str):
 
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
-            ui.div([base_inputs[0:2], extra_inputs[0:4], base_inputs[2:4]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[0:2], extra_inputs[0:3], base_inputs[2:4]], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div([base_inputs[4:10]], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([extra_inputs[4:7], numeric_inputs[0:3]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([extra_inputs[3:6], numeric_inputs[0:3]], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[3:10], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3)
         )
@@ -3613,71 +3794,6 @@ def server(input, output, session):
 
 
 
-    '''
-    @render.download(filename="identification_output.txt")
-    async def run_btn_spec_lib_matching():
-        match_log_rv.set("Running identification...\n")
-        await reactive.flush()
-
-        hq = input.high_quality_reference_library()
-        if isinstance(hq, str):
-            hq = hq.lower() == "true"
-        elif isinstance(hq, (int, float)):
-            hq = bool(hq)
-
-        weights = [float(weight.strip()) for weight in input.weights().split(",") if weight.strip()]
-        weights = {'Cosine':weights[0], 'Shannon':weights[1], 'Renyi':weights[2], 'Tsallis':weights[3]}
-
-        common_kwargs = dict(
-            query_data=input.query_data()[0]["datapath"],
-            reference_data=input.reference_data()[0]["datapath"],
-            likely_reference_ids=None,
-            similarity_measure=input.similarity_measure(),
-            weights=weights,
-            spectrum_preprocessing_order=input.spectrum_preprocessing_order(),
-            high_quality_reference_library=hq,
-            mz_min=input.mz_min(), mz_max=input.mz_max(),
-            int_min=input.int_min(), int_max=input.int_max(),
-            noise_threshold=input.noise_threshold(),
-            wf_mz=input.wf_mz(), wf_intensity=input.wf_int(),
-            LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(),
-            n_top_matches_to_save=input.n_top_matches_to_save(),
-            print_id_results=True,
-            output_identification=str(Path.cwd() / "identification_output.txt"),
-            output_similarity_scores=str(Path.cwd() / "similarity_scores.txt"),
-            return_ID_output=True,
-        )
-
-        loop = asyncio.get_running_loop()
-        rw = ReactiveWriter(loop)
-
-        try:
-            if input.chromatography_platform() == "HRMS":
-                print('\n&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\n')
-                df_out = await asyncio.to_thread(
-                    _run_with_redirects,
-                    run_spec_lib_matching_on_HRMS_data_shiny,
-                    rw,
-                    precursor_ion_mass=input.precursor_ion_mass(),
-                    precursor_ion_mass_tolerance=input.precursor_ion_mass_tolerance(),
-                    ionization_mode=input.ionization_mode(),
-                    adduct=input.adduct(),
-                    window_size_centroiding=input.window_size_centroiding(),
-                    window_size_matching=input.window_size_matching(),
-                    **common_kwargs
-                )
-            else:
-                df_out = await asyncio.to_thread(run_with_redirects, run_spec_lib_matching_on_NRMS_data_shiny, rw, **common_kwargs)
-            match_log_rv.set(match_log_rv.get() + "\n✅ Identification finished.\n")
-            await reactive.flush()
-        except Exception as e:
-            match_log_rv.set(match_log_rv.get() + f"\n❌ Error: {e}\n")
-            await reactive.flush()
-            raise
-
-        yield df_out.to_csv(index=True, sep='\t')
-    '''
-
 
     @render.download(filename="identification_output.txt")
     async def run_btn_spec_lib_matching():
@@ -3741,7 +3857,6 @@ def server(input, output, session):
                 # optional heartbeat
                 print(">> Starting HRMS identification ...", flush=True)
                 return run_spec_lib_matching_on_HRMS_data_shiny(
-                    precursor_ion_mass=input.precursor_ion_mass(),
                     precursor_ion_mass_tolerance=input.precursor_ion_mass_tolerance(),
                     ionization_mode=input.ionization_mode(),
                     adduct=input.adduct(),

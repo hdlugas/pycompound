@@ -81,141 +81,6 @@ def get_pubchem_url(query: str) -> str:
     return f"https://pubchem.ncbi.nlm.nih.gov/#query={q}"
 
 
-"""
-def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
-    if input_path is None:
-        print('Error: please specify input_path (i.e. the path to the input mgf, mzML, cdf, json, or msp file). Mandatory argument.')
-        sys.exit()
-
-    if output_path is None:
-        tmp = input_path.split('/')
-        tmp = tmp[(len(tmp)-1)]
-        basename = tmp.split('.')[0]
-        output_path = f'{Path.cwd()}/{basename}.txt'
-        print(f'Warning: no output_path specified, so library is written to {output_path}')
-
-    if is_reference not in [True,False]:
-        print('Error: is_reference must be either \'True\' or \'False\'.')
-        sys.exit()
-
-    last_three_chars = input_path[(len(input_path)-3):len(input_path)]
-    last_four_chars = input_path[(len(input_path)-4):len(input_path)]
-    if last_three_chars == 'mgf' or last_three_chars == 'MGF':
-        input_file_type = 'mgf'
-    elif last_four_chars == 'mzML' or last_four_chars == 'mzml' or last_four_chars == 'MZML':
-        input_file_type = 'mzML'
-    elif last_four_chars == 'json' or last_four_chars == 'JSON':
-        input_file_type = 'json'
-    elif last_three_chars == 'cdf' or last_three_chars == 'CDF':
-        input_file_type = 'cdf'
-    elif last_three_chars == 'msp' or last_three_chars == 'MSP':
-        input_file_type = 'msp'
-    else:
-        print('ERROR: either an \'mgf\', \'mzML\', \'cdf\', \'json\', or \'msp\' file must be passed to --input_path')
-        sys.exit()
-
-    spectra = []
-    if input_file_type == 'mgf':
-        with mgf.read(input_path, index_by_scans = True) as reader:
-            for spec in reader:
-                spectra.append(spec)
-    if input_file_type == 'mzML':
-        with mzml.read(input_path) as reader:
-            for spec in reader:
-                spectra.append(spec)
-
-    if input_file_type == 'mgf' or input_file_type == 'mzML':
-        ids = []
-        mzs = []
-        ints = []
-        for i in range(0,len(spectra)):
-            for j in range(0,len(spectra[i]['m/z array'])):
-                if input_file_type == 'mzML':
-                    ids.append(f'ID_{i+1}')
-                else:
-                    if is_reference == False:
-                        ids.append(f'ID_{i+1}')
-                    elif is_reference == True:
-                        ids.append(spectra[i]['params']['name'])
-                mzs.append(spectra[i]['m/z array'][j])
-                ints.append(spectra[i]['intensity array'][j])
-
-    if input_file_type == 'cdf':
-        dataset = nc.Dataset(input_path, 'r')
-        all_mzs = dataset.variables['mass_values'][:]
-        all_ints = dataset.variables['intensity_values'][:]
-        scan_idxs = dataset.variables['scan_index'][:]
-        dataset.close()
-
-        ids = []
-        mzs = []
-        ints = []
-        for i in range(0,(len(scan_idxs)-1)):
-            if i % 1000 == 0:
-                print(f'analyzed {i} out of {len(scan_idxs)} scans')
-            s_idx = scan_idxs[i]
-            e_idx = scan_idxs[i+1]
-
-            mzs_tmp = all_mzs[s_idx:e_idx]
-            ints_tmp = all_ints[s_idx:e_idx]
-
-            for j in range(0,len(mzs_tmp)):
-                ids.append(f'ID_{i+1}')
-                mzs.append(mzs_tmp[j])
-                ints.append(ints_tmp[j])
-
-
-    if input_file_type == 'msp':
-        ids = []
-        mzs = []
-        ints = []
-        with open(input_path, 'r') as f:
-            i = 0
-            for line in f:
-                line = line.strip()
-                if line.startswith('Name:'):
-                    i += 1
-                    if is_reference == False:
-                        spectrum_id = f'ID_{i+1}'
-                    elif is_reference == True:
-                        spectrum_id = line.replace('Name: ','')
-                elif line and line[0].isdigit():
-                    try:
-                        mz, intensity = map(float, line.split()[:2])
-                        ids.append(spectrum_id)
-                        mzs.append(mz)
-                        ints.append(intensity)
-                    except ValueError:
-                        continue
-
-    if input_file_type == 'json':
-        data = json.load(open(input_path))
-        ids = []
-        mzs = []
-        ints = []
-        precursor_mass_mzs = []
-        for i in range(0,len(data)):
-            spec_ID_tmp = data[i]['spectrum_id']
-            tmp = data[i]['peaks_json']
-            tmp = tmp[1:-1].split(",")
-            tmp = [a.replace("[","") for a in tmp]
-            tmp = [a.replace("]","") for a in tmp]
-            mzs_tmp = tmp[0::2]
-            ints_tmp = tmp[1::2]
-            ids.extend([spec_ID_tmp] * len(mzs_tmp))
-            mzs.extend(mzs_tmp)
-            ints.extend(ints_tmp)
-            precursor_mzs.extend([data[i]['Precursor_MZ']] * len(mzs_tmp))
-
-    if len(precursor_mzs) > 0:
-        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_mz':precursor_mzs})
-    else:
-        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
-
-    df.to_csv(output_path, index=False, sep='\t')
-"""
-
-
 
 def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
     if input_path is None:
@@ -397,11 +262,12 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         extension = extension[(len(extension)-1)]
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
-            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
+            #build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
-        unique_query_ids = df_query.iloc[:,0].unique().tolist()
+        unique_query_ids = df_query['id'].unique().tolist()
         unique_query_ids = [str(tmp) for tmp in unique_query_ids]
 
     if reference_data is None:
@@ -425,19 +291,19 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
                 if collision_energy is not None:
                     df_reference = df_reference.loc[df_reference['collision_energy'==collision_energy]]
                 df_reference = df_reference.drop(columns=['precursor_mass','ionization_mode','collision_energy'])
-        unique_reference_ids = df_reference.iloc[:,0].unique().tolist()
+        unique_reference_ids = df_reference['id'].unique().tolist()
         unique_reference_ids = [str(tmp) for tmp in unique_reference_ids]
 
     if spectrum_ID1 is not None:
         spectrum_ID1 = str(spectrum_ID1)
     else:
-        spectrum_ID1 = str(df_query.iloc[0,0])
+        spectrum_ID1 = str(df_query['id'].iloc[0])
         print('No argument passed to spectrum_ID1; using the first spectrum in query_data.')
 
     if spectrum_ID2 is not None:
         spectrum_ID2 = str(spectrum_ID2)
     else:
-        spectrum_ID2 = str(df_reference.iloc[0,0])
+        spectrum_ID2 = str(df_reference['id'].iloc[0])
         print('No argument passed to spectrum_ID2; using the first spectrum in reference_data.')
 
     if spectrum_preprocessing_order is not None:
@@ -513,8 +379,8 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         sys.exit()
 
     if output_path is None:
-        print(f'Warning: plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.')
-        output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.pdf'
+        print(f'Warning: plots will be saved to the svg ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.svg in the current working directory.')
+        output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.svg'
 
 
     if spectrum_ID1 in unique_query_ids and spectrum_ID2 in unique_query_ids:
@@ -538,10 +404,10 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             spectrum_ID2 = spec_tmp
         query_idx = unique_query_ids.index(spectrum_ID1)
         reference_idx = unique_reference_ids.index(spectrum_ID2)
-        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == unique_query_ids[query_idx])[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == unique_reference_ids[reference_idx])[0]
-        q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'].astype(str) == unique_query_ids[query_idx])[0]
+        r_idxs_tmp = np.where(df_reference['id'].astype(str) == unique_reference_ids[reference_idx])[0]
+        q_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
 
 
     q_spec_pre_trans = q_spec.copy()
@@ -673,17 +539,23 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
     fig.text(0.40, 0.11, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
     fig.text(0.40, 0.08, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
 
-    if print_url_spectrum1 == 'Yes':
-        url_tmp = get_pubchem_url(query=spectrum_ID1)
-        t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp}', fontsize=7)
-        if url_tmp:
-            t1.set_url(url_tmp)
+    if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
+        url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+        url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+        t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+        t2 = fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+        t1.set_url(url_tmp1)
+        t2.set_url(url_tmp2)
 
-    if print_url_spectrum2 == 'Yes':
-        url_tmp = get_pubchem_url(query=spectrum_ID2)
-        t2 = fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp}', fontsize=7)
-        if url_tmp:
-            t2.set_url(url_tmp)
+    if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
+        url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+        t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+        t1.set_url(url_tmp1)
+
+    if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
+        url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+        t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+        t2.set_url(url_tmp2)
 
     fig.savefig(output_path, format='svg')
 
@@ -707,7 +579,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
-        unique_query_ids = df_query.iloc[:,0].unique()
+        unique_query_ids = df_query['id'].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the TXT file of the reference data.')
@@ -721,7 +593,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             df_reference = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_reference = pd.read_csv(reference_data, sep='\t')
-            unique_reference_ids = df_reference.iloc[:,0].unique()
+            unique_reference_ids = df_reference['id'].unique()
 
 
     if spectrum_ID1 is not None:
@@ -795,15 +667,15 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         sys.exit()
 
     if output_path is None:
-        print(f'Warning: plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.')
-        output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.pdf'
+        print(f'Warning: plots will be saved to the svg ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.svg in the current working directory.')
+        output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.svg'
 
-    min_mz = np.min([np.min(df_query.iloc[:,1]), np.min(df_reference.iloc[:,1])])
-    max_mz = np.max([np.max(df_query.iloc[:,1]), np.max(df_reference.iloc[:,1])])
+    min_mz = np.min([df_query['mz_ratio'].min(), df_reference['mz_ratio'].min()])
+    max_mz = np.max([df_query['mz_ratio'].max(), df_reference['mz_ratio'].max()])
     mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
-    unique_query_ids = df_query.iloc[:,0].unique().tolist()
-    unique_reference_ids = df_reference.iloc[:,0].unique().tolist()
+    unique_query_ids = df_query['id'].unique().tolist()
+    unique_reference_ids = df_reference['id'].unique().tolist()
     unique_query_ids = [str(ID) for ID in unique_query_ids]
     unique_reference_ids = [str(ID) for ID in unique_reference_ids]
     common_IDs = np.intersect1d([str(ID) for ID in unique_query_ids], [str(ID) for ID in unique_reference_ids])
@@ -825,10 +697,10 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             spec_tmp = spectrum_ID1
             spectrum_ID1 = spectrum_ID2
             spectrum_ID2 = spec_tmp
-        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == spectrum_ID1)[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == spectrum_ID2)[0]
-        q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'].astype(str) == spectrum_ID1)[0]
+        r_idxs_tmp = np.where(df_reference['id'].astype(str) == spectrum_ID2)[0]
+        q_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
 
     q_spec = convert_spec(q_spec,mzs)
     r_spec = convert_spec(r_spec,mzs)
@@ -947,17 +819,23 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
     fig.text(0.40, 0.11, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
 
-    if print_url_spectrum1 == 'Yes':
-        url_tmp = get_pubchem_url(query=spectrum_ID1)
-        t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp}', fontsize=7)
-        if url_tmp:
-            t1.set_url(url_tmp)
+    if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
+        url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+        url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+        t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+        t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+        t1.set_url(url_tmp1)
+        t2.set_url(url_tmp2)
 
-    if print_url_spectrum2 == 'Yes':
-        url_tmp = get_pubchem_url(query=spectrum_ID2)
-        t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp}', fontsize=7)
-        if url_tmp:
-            t2.set_url(url_tmp)
+    if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
+        url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+        t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+        t1.set_url(url_tmp1)
+
+    if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
+        url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+        t2 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+        t2.set_url(url_tmp2)
 
     fig.savefig(output_path, format='svg')
 
@@ -2152,6 +2030,7 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            #build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
@@ -2345,7 +2224,7 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
 
     df_scores = pd.DataFrame(all_similarity_scores, index=unique_query_ids, columns=unique_reference_ids)
     df_scores.index = unique_query_ids
-    df_scores.index.names = ['Query Spectrum ID']
+    df_scores.index.names = ['QUERY.SPECTRUM.ID']
 
 
     preds = []
@@ -2379,7 +2258,7 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
 
     df_top_ref_specs = pd.DataFrame(out, columns = [*cnames_preds, *cnames_scores])
     df_top_ref_specs.index = unique_query_ids
-    df_top_ref_specs.index.names = ['Query Spectrum ID']
+    df_top_ref_specs.index.names = ['QUERY.SPECTRUM.ID']
 
     df_scores.columns = ['Reference Spectrum ID: ' + col for col in  list(map(str,df_scores.columns.tolist()))]
 

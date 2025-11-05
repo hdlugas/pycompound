@@ -379,7 +379,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         sys.exit()
 
     if output_path is None:
-        print(f'Warning: plots will be saved to the svg ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.svg in the current working directory.')
+        print(f'Warning: plots will be saved to the svg ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.svg in the current working directory.')
         output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.svg'
 
 
@@ -560,7 +560,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
     fig.savefig(output_path, format='svg')
 
     if return_plot == True:
-        return plt
+        return fig
 
 
 
@@ -667,7 +667,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         sys.exit()
 
     if output_path is None:
-        print(f'Warning: plots will be saved to the svg ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.svg in the current working directory.')
+        print(f'Warning: plots will be saved to the svg ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.svg in the current working directory.')
         output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.svg'
 
     min_mz = np.min([df_query['mz_ratio'].min(), df_reference['mz_ratio'].min()])

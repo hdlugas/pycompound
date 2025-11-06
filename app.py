@@ -115,144 +115,8 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
         sys.exit()
 
 
-    spectra = []
-    if input_file_type == 'mgf':
-        #with mgf.read(input_path, index_by_scans = True) as reader:
-        with mgf.read(input_path, use_index=False) as reader:
-            for spec in reader:
-                spectra.append(spec)
-    if input_file_type == 'mzML':
-        with mzml.read(input_path) as reader:
-            for spec in reader:
-                spectra.append(spec)
 
-
-    if input_file_type == 'mgf' or input_file_type == 'mzML':
-        ids = []
-        mzs = []
-        ints = []
-        precursor_ion_mzs = []
-        for i in range(0,len(spectra)):
-            for j in range(0,len(spectra[i]['m/z array'])):
-                if input_file_type == 'mzML':
-                    if is_reference == False:
-                        ids.append(f'ID_{i+1}')
-                    else:
-                        ids.append(spectra[i]['id'])
-                elif input_file_type == 'mgf':
-                    precursor_ion_mzs.append(spectra[i]['params']['pepmass'][0])
-                    if is_reference == False:
-                        ids.append(f'ID_{i+1}')
-                    else:
-                        ids.append(spectra[i]['params']['name'])
-                mzs.append(spectra[i]['m/z array'][j])
-                ints.append(spectra[i]['intensity array'][j])
-
-
-    if input_file_type == 'cdf':
-        dataset = nc.Dataset(input_path, 'r')
-        all_mzs = dataset.variables['mass_values'][:]
-        all_ints = dataset.variables['intensity_values'][:]
-        scan_idxs = dataset.variables['scan_index'][:]
-        dataset.close()
-
-        ids = []
-        mzs = []
-        ints = []
-        for i in range(0,(len(scan_idxs)-1)):
-            if i % 1000 == 0:
-                print(f'analyzed {i} out of {len(scan_idxs)} scans')
-            s_idx = scan_idxs[i]
-            e_idx = scan_idxs[i+1]
-
-            mzs_tmp = all_mzs[s_idx:e_idx]
-            ints_tmp = all_ints[s_idx:e_idx]
-
-            for j in range(0,len(mzs_tmp)):
-                ids.append(f'ID_{i+1}')
-                mzs.append(mzs_tmp[j])
-                ints.append(ints_tmp[j])
-
-
-
-    if input_file_type == "msp":
-        ids = []
-        mzs = []
-        ints = []
-        precursor_ion_mzs = []
-
-        spectrum_id = None
-        precursor_mass_mz = None
-
-        with open(input_path, "r", encoding="utf-8", errors="ignore") as f:
-            i = 0
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-
-                if line.startswith("Name:"):
-                    i += 1
-                    if not is_reference:
-                        spectrum_id = f"ID_{i}"
-                    else:
-                        spectrum_id = line.replace("Name:", "", 1).strip()
-
-                elif line.startswith("PrecursorMZ:"):
-                    try:
-                        precursor_mass_mz = float(line.replace("PrecursorMZ:", "", 1).strip())
-                    except ValueError:
-                        precursor_mass_mz = None
-
-                elif line[0].isdigit():
-                    try:
-                        mz, intensity = map(float, line.split()[:2])
-                    except ValueError:
-                        continue
-
-                    if spectrum_id is None:
-                        continue
-
-                    ids.append(spectrum_id)
-                    mzs.append(mz)
-                    ints.append(intensity)
-                    precursor_ion_mzs.append(precursor_mass_mz)
-
-
-
-    if input_file_type == 'json':
-        data = json.load(open(input_path))
-        ids = []
-        mzs = []
-        ints = []
-        precursor_ion_mzs = []
-        for i in range(0,len(data)):
-            spec_ID_tmp = data[i]['spectrum_id']
-            tmp = data[i]['peaks_json']
-            tmp = tmp[1:-1].split(",")
-            tmp = [a.replace("[","") for a in tmp]
-            tmp = [a.replace("]","") for a in tmp]
-            mzs_tmp = tmp[0::2]
-            ints_tmp = tmp[1::2]
-            if is_reference == False:
-                ids.extend([f'ID_{i+1}'] * len(mzs_tmp))
-            elif is_reference == True:
-                ids.extend([spec_ID_tmp] * len(mzs_tmp))
-            mzs.extend(mzs_tmp)
-            ints.extend(ints_tmp)
-            precursor_ion_mzs.extend([data[i]['Precursor_MZ']] * len(mzs_tmp))
-
-
-    if len(precursor_ion_mzs) > 0:
-        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_ion_mz':precursor_ion_mzs})
-    else:
-        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
-
-    df.to_csv(output_path, index=False, sep='\t')
-
-
-
-def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_mass=None, precursor_mass_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='No', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
+def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='No', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -283,14 +147,14 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         if extension == 'txt' or extension == 'TXT':
             df_reference = pd.read_csv(reference_data, sep='\t')
             cols_tmp = df_reference.columns.tolist()
-            if 'precursor_mass' in cols_tmp and 'ionization_mode' in cols_tmp and 'collision_energy' in cols_tmp:
-                if precursor_mass is not None and precursor_mass_tolerance is not None:
-                    df_reference = df_reference.loc[(df_reference['precursor_mass'] > (precursor_mass-precursor_mass_tolerance) & df_reference['precursor_mass'] < (precursor_mass+precursor_mass_tolerance))]
+            if 'precursor_ion_mz' in cols_tmp and 'ionization_mode' in cols_tmp and 'collision_energy' in cols_tmp:
+                if precursor_ion_mz is not None and precursor_ion_mz_tolerance is not None:
+                    df_reference = df_reference.loc[(df_reference['precursor_ion_mz'] > (precursor_ion_mz-precursor_ion_mz_tolerance) & df_reference['precursor_ion_mz'] < (precursor_ion_mz+precursor_ion_mz_tolerance))]
                 if ionization_mode is not None:
                     df_reference = df_reference.loc[df_reference['ionization_mode'==ionization_mode]]
                 if collision_energy is not None:
                     df_reference = df_reference.loc[df_reference['collision_energy'==collision_energy]]
-                df_reference = df_reference.drop(columns=['precursor_mass','ionization_mode','collision_energy'])
+                df_reference = df_reference.drop(columns=['precursor_ion_mz','ionization_mode','collision_energy'])
         unique_reference_ids = df_reference['id'].unique().tolist()
         unique_reference_ids = [str(tmp) for tmp in unique_reference_ids]
 
@@ -2020,7 +1884,7 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
 
 
-def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=None, precursor_ion_mass_tolerance=None, ionization_mode=None, adduct=None, likely_reference_ids=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False, verbose=True):
+def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=None, precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, likely_reference_ids=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False, verbose=True):
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
@@ -2049,10 +1913,13 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
                 dfs.append(tmp)
             df_reference = pd.concat(dfs, axis=0, ignore_index=True)
 
+    print(df_reference.shape)
     if 'ionization_mode' in df_reference.columns.tolist() and ionization_mode != 'N/A':
         df_reference = df_reference.loc[df_reference['ionization_mode']==ionization_mode]
+        print(df_reference.shape)
     if 'adduct' in df_reference.columns.tolist() and adduct != 'N/A':
         df_reference = df_reference.loc[df_reference['adduct']==adduct]
+        print(df_reference.shape)
 
     if spectrum_preprocessing_order is not None:
         spectrum_preprocessing_order = list(spectrum_preprocessing_order)
@@ -2149,14 +2016,11 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
 
         q_mask = (df_query['id'] == unique_query_ids[query_idx])
         q_idxs_tmp = np.where(q_mask)[0]
-        q_spec_tmp = np.asarray(pd.concat(
-            [df_query['mz_ratio'].iloc[q_idxs_tmp],
-             df_query['intensity'].iloc[q_idxs_tmp]], axis=1
-        ).reset_index(drop=True))
+        q_spec_tmp = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
 
-        if 'precursor_ion_mz' in df_query.columns.tolist() and precursor_ion_mass_tolerance != None:
-            precursor_ion_mass_tmp = df_query['precursor_ion_mz'].iloc[q_idxs_tmp[0]]
-            df_reference_tmp = df_reference.loc[df_reference['precursor_mz'].between(precursor_ion_mass_tmp-precursor_ion_mass_tolerance, precursor_ion_mass_tmp+precursor_ion_mass_tolerance, inclusive='both'),['id','mz_ratio','intensity']].copy()
+        if 'precursor_ion_mz' in df_query.columns.tolist() and 'precursor_ion_mz' in df_reference.columns.tolist() and precursor_ion_mz_tolerance != None:
+            precursor_ion_mz_tmp = df_query['precursor_ion_mz'].iloc[q_idxs_tmp[0]]
+            df_reference_tmp = df_reference.loc[df_reference['precursor_ion_mz'].between(precursor_ion_mz_tmp-precursor_ion_mz_tolerance, precursor_ion_mz_tmp+precursor_ion_mz_tolerance, inclusive='both'),['id','mz_ratio','intensity']].copy()
         else:
             df_reference_tmp = df_reference.copy()
 
@@ -2795,7 +2659,7 @@ def run_spec_lib_matching_ui(platform: str):
 
     if platform == "HRMS":
         extra_inputs = [
-            ui.input_numeric("precursor_ion_mass_tolerance", "Precursor ion mass tolerance (leave blank if not applicable):", None),
+            ui.input_numeric("precursor_ion_mz_tolerance", "Precursor ion mass tolerance (leave blank if not applicable):", None),
             ui.input_select("ionization_mode", "Ionization mode:", ['Positive','Negative','N/A'], selected='N/A'),
             ui.input_select("adduct", "Adduct:", ['H','NH3','NH4','Na','K','N/A'], selected='N/A'),
             #ui.input_numeric("collision_energy", "Collision energy (leave blank if not applicable):", None),
@@ -3736,7 +3600,7 @@ def server(input, output, session):
                 # optional heartbeat
                 print(">> Starting HRMS identification ...", flush=True)
                 return run_spec_lib_matching_on_HRMS_data_shiny(
-                    precursor_ion_mass_tolerance=input.precursor_ion_mass_tolerance(),
+                    precursor_ion_mz_tolerance=input.precursor_ion_mz_tolerance(),
                     ionization_mode=input.ionization_mode(),
                     adduct=input.adduct(),
                     window_size_centroiding=input.window_size_centroiding(),

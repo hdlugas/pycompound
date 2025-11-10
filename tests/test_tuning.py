@@ -60,7 +60,6 @@ tune_params_DE(query_data=f'{Path.cwd()}/data/lcms_query_library_tuning.txt',
                default_params={"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1},
                maxiters=2,
                de_workers=-1)
-"""
 
 print('\n\ntest #7:')
 tune_params_DE(query_data=f'{Path.cwd()}/data/gcms_query_library_tuning.txt',
@@ -71,4 +70,5 @@ tune_params_DE(query_data=f'{Path.cwd()}/data/gcms_query_library_tuning.txt',
                param_bounds={"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0,5),"entropy_dimension":(1.01,3)},
                default_params={"noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1},
                de_workers=-1)
+"""
 

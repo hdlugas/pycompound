@@ -21,7 +21,7 @@ PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Py
 ```
 conda create -n pycompound_env python=3.12
 conda activate pycompound_env
-pip install pycompound==0.1.2
+pip install pycompound==0.1.7
 ```
 
 <a name="functionality"></a>
@@ -159,9 +159,9 @@ Additionally, the plethora of binary similarity measures considered in https://d
 <a name="usage"></a>
 ## 3. Usage
 PyCompound has three main capabilities:
-1. Converting raw data to the necessary format for spectral library matching
+1. Plotting a query spectrum vs. a reference spectrum before and after preprocessing transformations.
 2. Running spectral library matching to identify compounds based on their mass spectrometry data
-3. Plotting a query spectrum vs. a reference spectrum before and after preprocessing transformations.
+3. Tuning parameters to maximize accuracy given a query dataset with known compuond IDs (e.g. from targeted metabolomics experiments).
 
 These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in NRMS vs HRMS data. Example scripts which implement these tasks can be found in the pycompound/tests directory.
 
@@ -170,9 +170,9 @@ These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS d
 
 For the function build_library_from_raw_data:
 ```
---input_path: Path to input file (must be either mgf, mzMZ, msp, cdf file). Mandatory argument.
+--input_path: Path to input file (must be either mgf, mzMZ, msp, cdf, or json file). Mandatory argument.
 
---output_path: Path to output CSV file. Default: current working directory.
+--output_path: Path to output text file. Default: current working directory.
 
 --is_reference: Boolean flag indicating whether IDs of spectra should be written to output. Only pass True if building a library with known compound IDs. Only applicable to MGF files. Options: \'True\', \'False\'. Optional argument. Default: False.
 ```
@@ -180,12 +180,18 @@ For the function build_library_from_raw_data:
 Common parameters:
 ```
 --query_data (mandatory argument):
-  * HRMS case: mgf, mzML, msp, or csv file of query mass spectrum/spectra to be identified. If csv file, must have 3 columns with each row corresponding to a single ion fragment of a mass spectrum, the left-most column containing an identifier, the middle columns corresponding to the mass to charge (m/z) ratios, and the right-most column containing the intensities. For example, if spectrum A has 3 ion fragments, then there would be three rows in this CSV file corresponding to spectrum A.
-  * NRMS case: cdf or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum with the left-most column containing an identifier and each of the other columns containing the intensity with respect to a single m/z ratio.
+  * HRMS case: mgf, mzML, msp, json, or txt file of query mass spectrum/spectra to be identified. If txt file, must have at least 3 columns with each row corresponding to a single ion fragment of a mass spectrum, one 'id' column containing an identifier, one 'mz_ratio' column corresponding to the mass to charge (m/z) ratios, and one 'intensity' column containing the intensities. For example, if spectrum A has 3 ion fragments, then there would be three rows in this text file corresponding to spectrum A. Optional columns for the text file are 'precursor_ion_mz', 'ionization_mode', and 'adduct'.
+  * NRMS case: cdf or txt file of query mass spectrum/spectra to be identified. If txt file, same format as in HRMS case is required.
 
---reference_data (mandatory argument): Same format csv file as query_data except of reference library spectra.
+--reference_data (mandatory argument): Same format text file as query_data except of reference library spectra. We recommend using the reference libraries from our Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324); stored on Zenodo due to file size limitations on GitHub).
 
---likely_reference_IDs: CSV file with one column containing the IDs of a subset of all compounds in the reference_data to be used in spectral library matching. Each ID in this file must be an ID in the reference library. Default: None (i.e. default is to use entire reference library)
+--precursor_ion_mz_tolerance (only applicable to HRMS): positive float representing a window size around each query spectrum's precursor ion mass:charge ratio in which candidate reference spectra must lie to be considered in compound identification. Default: None. 
+
+--ionization_mode (only applicable to HRMS): Positive, Negative, or None. Default: None.
+
+--adduct (only applicable to HRMS): Options: H, NH3, NH4, Na, K, N/A. Default: N/A.
+
+--likely_reference_IDs: text file with one column containing the IDs of a subset of all compounds in the reference_data to be used in spectral library matching. Each ID in this file must be an ID in the reference library. Default: None (i.e. default is to use entire reference library)
 
 --similarity_measure: cosine, shannon, renyi, tsallis, mixture, jaccard, dice, 3w_jaccard, sokal_sneath, binary_cosine, mountford, mcconnaughey, driver_kroeber, simpson, braun_banquet, fager_mcgowan, kulczynski, intersection, hamming, hellinger. Default: cosine.
 
@@ -225,16 +231,27 @@ Parameters specific to run_spec_lib_matching_on_HRMS_data and run_spec_lib_match
 
 --print_id_results: Flag that prints identification results if True. Default: False
 
---output_identification: Output CSV file containing the most-similar reference spectra for each query spectrum along with the corresponding similarity scores. Default is to save identification output in current working directory with filename 'output_identification.csv'.
+--output_identification: Output text file containing the most-similar reference spectra for each query spectrum along with the corresponding similarity scores. Default is to save identification output in current working directory with filename 'output_identification.txt'.
 
---output_similarity_scores: Output CSV file containing similarity scores between all query spectrum/spectra and all reference spectra. Each row corresponds to a query spectrum, the left-most column contains the query spectrum/spectra identifier, and the remaining column contain the similarity scores with respect to all reference library spectra. If no argument passed, then this CSV file is written to the current working directory with filename output_all_similarity_scores.csv.
+--output_similarity_scores: Output text file containing similarity scores between all query spectrum/spectra and all reference spectra. Each row corresponds to a query spectrum, the left-most column contains the query spectrum/spectra identifier, and the remaining column contain the similarity scores with respect to all reference library spectra. If no argument passed, then this text file is written to the current working directory with filename output_all_similarity_scores.txt.
 ```
 
-Parameters specific to tune_params_on_HRMS_data and tune_params_on_NRMS_data:
+Parameters specific to tune_params_on_HRMS_data_grid and tune_params_on_NRMS_data_grid:
 ```
 `` grid: dict object such as {'similarity_measure':['cosine','shannon'], 'spectrum_preprocessing_order':['FCNMWL'], 'mz_min':[0], 'mz_max':[9999999], 'int_min':[0], 'int_max':[99999999], 'window_size_centroiding':[0.5], 'window_size_matching':[0.5], 'noise_threshold':[0.0,0.1], 'wf_mz':[0.0], 'wf_int':[1.0], 'LET_threshold':[0.0], 'entropy_dimension':[1.1], 'high_quality_reference_library':[False]} with all possible combinations of parameters being utilized.
 
---output_path: path to output CSV file containing the accuracies for each possible combination of parameters. If no argument is passed, then the plots will be saved to ./tuning_param_output.csv in the current working directory.
+--output_path: path to output text file containing the accuracies for each possible combination of parameters. If no argument is passed, then the plots will be saved to ./tuning_param_output.txt in the current working directory.
+```
+
+Parameters specific to tune_params_DE:
+```
+-- optimize_params: list of continuous parameters (i.e. window_size_centroiding, window_size_matching, noise_threshold, wf_mz, wf_int, LET_threshold; window_size parameters only applicable to HRMS data) to optimize via differential evolution.
+
+-- param_bounds: dict with keys being the parameters to optimize and values being a tuple of length 2 of the lower and upper bounds of acceptable parameter values. 
+
+-- maxiters: maximum number of iterations of differential evolution.
+
+-- de_workers: number of CPUs to utilize.
 ```
 
 Parameters specific to generate_plots_on_HRMS_data and generate_plots_on_NRMS_data:
@@ -250,21 +267,21 @@ Parameters specific to generate_plots_on_HRMS_data and generate_plots_on_NRMS_da
 
 
 <a name="process-data"></a>
-### 3.2 Obtain LC-MS/MS or GC-MS library from MGF, mzML, or cdf file
-To obtain a CSV file of LC-MS/MS spectra in the format necessary for spectral library matching from raw data in the form of an mgf, mzML, or cdf file inside Python, one can run:
+### 3.2 Obtain LC-MS/MS or GC-MS library from MGF, mzML, cdf, msp, or json file
+To obtain a text file of LC-MS/MS spectra in the format necessary for spectral library matching from raw data in the form of an mgf, mzML, msp, json, or cdf file inside Python, one can run:
 ```
 from pycompound.build_library import build_library_from_raw_data
 
 build_library_from_raw_data(input_path='path_to_input_file', output_path='path_to_output_file', is_reference=False)
 ```
 
-Since the other functionality provided by pycompound is capable of being directly run on MGF, mzML, MSP, and CDF files, you may not need to directly build a library yourself. Some example MGF files one can use to build an LC-MS/MS library can be found from the Global Natural Products Social Molecular Networking (GNPS) databases here: [https://external.gnps2.org/gnpslibrary](https://external.gnps2.org/gnpslibrary). Some example mzML files one can use to build an LC-MS/MS library can be found in this repository: [https://github.com/HUPO-PSI/mzML](https://github.com/HUPO-PSI/mzML). Some example MSP files can be found here: [https://mona.fiehnlab.ucdavis.edu/downloads](https://mona.fiehnlab.ucdavis.edu/downloads). The script tests/test_build_libraries.py demonstrates this usage.
+Since the other functionality provided by pycompound is capable of being directly run on mgf, mzML, msp, json, and cdf files, you may not need to directly build a library yourself. Some example mgf and json files one can use to build an LC-MS/MS library can be found from the Global Natural Products Social Molecular Networking (GNPS) databases here: [https://external.gnps2.org/gnpslibrary](https://external.gnps2.org/gnpslibrary). Some example mzML files one can use to build an LC-MS/MS library can be found in this repository: [https://github.com/HUPO-PSI/mzML](https://github.com/HUPO-PSI/mzML). Some example MSP files can be found here: [https://mona.fiehnlab.ucdavis.edu/downloads](https://mona.fiehnlab.ucdavis.edu/downloads). The mgf, mzML, msp, and json files provided in this repository are trimmed versions of files found in these referenced repositories. The script tests/test_build_libraries.py demonstrates this usage.
 
-LC-MS/MS and GC-MS reference libraries are available at the Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324)). The reference libraries available in PyCompound's GitHub repository are shortened versions of these reference libraries due to GitHub's limited storage.
+Full LC-MS/MS and GC-MS reference libraries are available at the Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324)). 
 
 <a name="run-spec-lib-matching"></a>
 ### 3.3 Run spectral library matching
-The files tests/test_spec_lib_matching.py, tests/test_spec_lib_matching_CLI, and tests/example_code_for_python_use.py demonstrate how some of the spectrum preprocessing functionality and similarity measures can be implemented. The two main functions - one for HRMS data and one for NRMS data - can be implemented as inside Python:
+The files tests/test_spec_lib_matching.py, tests/test_spec_lib_matching_CLI, and tests/example_code_for_python_use.py demonstrate how some of the spectrum preprocessing functionality and similarity measures can be implemented either directly in Python or in the CLI wrapper. The two main functions - one for HRMS data and one for NRMS data - can be implemented as shown below inside Python:
 ```
 from pycompound.spec_lib_matching import run_spec_lib_matching_on_HRMS_data
 from pycompound.spec_lib_matching import run_spec_lib_matching_on_NRMS_data
@@ -314,11 +331,11 @@ run_spec_lib_matching_on_NRMS_data(
         output_similarity_scores=None)
 ```
 
-To use the command line version, one can run the following from the terminal:
+To use the CLI version, one can run the following from the terminal:
 ```
 python spec_lib_matching_CLI.py \
-        --query_data data/lcms_query_library.csv \
-        --reference_data data/lcms_reference_library.csv \
+        --query_data ${PWD}/../tests/data/lcms_query_library.txt \
+        --reference_data ${PWD}/../tests/data/full_GNPS_reference_library.txt \
         --chromatography_platform HRMS \
         --likely_reference_IDs None \
         --similarity_measure cosine \
@@ -337,12 +354,12 @@ python spec_lib_matching_CLI.py \
         --entropy_dimension 1.1 \
         --n_top_matches_to_save 1 \
         --print_id_results False \
-        --output_identification ${PWD}/../../tests/output_identification_HRMS.csv \
-        --output_similarity_scores ${PWD}/../../tests/output_similarity_scores_HRMS.csv
+        --output_identification ${PWD}/../tests/output_identification_HRMS.txt \
+        --output_similarity_scores ${PWD}/../tests/output_similarity_scores_HRMS.txt
 
 python spec_lib_matching_CLI.py \
-        --query_data data/lcms_query_library.csv \
-        --reference_data data/lcms_reference_library.csv \
+        --query_data ${PWD}/../tests/data/lcms_query_library.txt \
+        --reference_data ${PWD}/../tests/data/full_GNPS_reference_library.txt \
         --chromatography_platform NRMS \
         --likely_reference_IDs None \
         --similarity_measure cosine \
@@ -359,8 +376,8 @@ python spec_lib_matching_CLI.py \
         --entropy_dimension 1.1 \
         --n_top_matches_to_save 1 \
         --print_id_results False \
-        --output_identification ${PWD}/../../tests/output_identification_NRMS.csv \
-        --output_similarity_scores ${PWD}/../../tests/output_similarity_scores_NRMS.csv
+        --output_identification ${PWD}/../tests/output_identification_NRMS.txt \
+        --output_similarity_scores ${PWD}/../tests/output_similarity_scores_NRMS.txt
 ```
 
 For a user who may wish to incorporate our transformations and similarity measures directly in their python code similar to the example script tests/example_code_for_python_use.py, the available transformations and similarity measures are:
@@ -514,66 +531,128 @@ Returns:
 
 <a name="tuning"></a>
 ### 3.4 Tune parameters
-Note that in order to tune parameters such as similarity_measure, noise_threshold, etc., one must have a query library with compounds whose ground truth ID is known. The usage of the functions to tune parameters (i.e. perform a grid search with many combinations of parameters with accuracy of each possible combination of parameter set saved) within Python is:
+Note that in order to tune parameters such as noise_threshold, LET_threshold etc., one must have a query library with compounds whose ground truth ID is known (e.g. from targeted metabolomics experiments). PyCompound offers two different methods of tuning parameters: one being an exhaustive grid search of pre-specified values, and the other being an optimization approach using differential evolution to optimize continuous parameters with respect to accuracy. The usage of the functions to tune parameters within Python is:
 ```
-from pycompound.spec_lib_matching import tune_params_on_HRMS_data
-from pycompound.spec_lib_matching import tune_params_on_NRMS_data
+from pycompound.spec_lib_matching import tune_params_on_HRMS_data_grid
+from pycompound.spec_lib_matching import tune_params_on_NRMS_data_grid
+from pycompound.spec_lib_matching import tune_params_DE
 from pathlib import Path
 
-tune_params_on_HRMS_data(
-    query_data=f'{Path.cwd()}/data/tuning/lcms_query_library.csv',
-    reference_data=f'{Path.cwd()}/data/lcms_reference_library.csv',
+tune_params_on_HRMS_data_grid(
+    query_data=f'{Path.cwd()}/tests/data/lcms_query_library_tuning.txt',
+    reference_data=f'{Path.cwd()}/tests/data/full_GNPS_reference_library.txt',
+    precursor_ion_mz_tolerance=0.5,
+    ionization_mode='Positive',
+    adduct='H',
     grid={'similarity_measure':['cosine'], 'spectrum_preprocessing_order':['FCNMWL'], 'mz_min':[0], 'mz_max':[9999999], 'int_min':[0], 'int_max':[99999999], 'window_size_centroiding':[0.5], 'window_size_matching':[0.1,0.5], 'noise_threshold':[0.0], 'wf_mz':[0.0], 'wf_int':[1.0], 'LET_threshold':[0.0], 'entropy_dimension':[1.1], 'high_quality_reference_library':[False]},
-    output_path=f'{Path.cwd()}/tuning_param_output_HRMS.csv'
+    output_path=f'{Path.cwd()}/tuning_param_output_HRMS.txt'
 )
 
-tune_params_on_NRMS_data(
-    query_data=f'{Path.cwd()}/data/tuning/gcms_query_library.csv',
-    reference_data=f'{Path.cwd()}/data/gcms_reference_library.csv',
+tune_params_on_NRMS_data_grid(
+    query_data=f'{Path.cwd()}/tests/data/gcms_query_library_tuning.txt',
+    reference_data=f'{Path.cwd()}/tests/data/gcms_reference_library.txt',
     grid={'similarity_measure':['cosine','shannon'], 'spectrum_preprocessing_order':['FNLW'], 'mz_min':[0], 'mz_max':[9999999], 'int_min':[0], 'int_max':[99999999], 'noise_threshold':[0.0,0.1], 'wf_mz':[0.0], 'wf_int':[1.0], 'LET_threshold':[0.0,3.0], 'entropy_dimension':[1.1], 'high_quality_reference_library':[False]},
-    output_path=f'{Path.cwd()}/tuning_param_output_NRMS.csv'
+    output_path=f'{Path.cwd()}/tuning_param_output_NRMS.txt'
+)
+
+tune_params_DE(
+    query_data=f'{Path.cwd()}/tests/data/lcms_query_library_tuning.txt',
+    reference_data=f'{Path.cwd()}/tests/data/full_GNPS_reference_library.txt',
+    precursor_ion_mz_tolerance=0.1,
+    ionization_mode='Positive',
+    adduct='H',
+    chromatography_platform='HRMS',
+    similarity_measure='shannon',
+    optimize_params=["wf_mz","wf_int"],
+    param_bounds={"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0)},
+    default_params={"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1},
+    maxiters=2,
+    de_workers=-1
+)
+
+tune_params_DE(
+    query_data=f'{Path.cwd()}/tests/data/gcms_query_library_tuning.txt',
+    reference_data=f'{Path.cwd()}/tests/data/gcms_reference_library.txt',
+    chromatography_platform='NRMS',
+    similarity_measure='renyi',
+    optimize_params=["wf_mz","wf_int","LET_threshold","entropy_dimension"],
+    param_bounds={"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0,5),"entropy_dimension":(1.01,3)},
+    default_params={"noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1},
+    de_workers=-1
 )
 ```
 
-The command-line version can be run with:
+The CLI version can be run with:
 ```
-python ../src/pycompound/tuning_CLI.py \
-        --query_data ${PWD}/data/tuning/lcms_query_library.csv \
-        --reference_data ${PWD}/data/lcms_reference_library.csv \
-        --chromatography_platform HRMS \
-        --similarity_measure cosine \
-        --spectrum_preprocessing_order FCNMWL \
-        --high_quality_reference_library False \
-        --mz_min 0 \
-        --mz_max 9999999 \
-        --int_min 0 \
-        --int_max 9999999 \
-        --window_size_centroiding 0.5 \
-        --window_size_matching 0.1,0.5 \
-        --noise_threshold 0.0 \
-        --wf_mz 2,3 \
-        --wf_intensity 1.0 \
-        --LET_threshold 0.0 \
-        --entropy_dimension 1.1 \
-        --output_path ${PWD}/output_tuning_HRMS.csv \
+python ../src/tuning_CLI_grid.py \
+  --query_data ${PWD}/tests/data/lcms_query_library_tuning.txt \
+  --reference_data ${PWD}/tests/data/full_GNPS_reference_library.txt \
+  --precursor_ion_mz_tolerance 0.1 \
+  --ionization_mode Positive \
+  --adduct H \
+  --chromatography_platform HRMS \
+  --similarity_measure cosine \
+  --spectrum_preprocessing_order FCNMWL \
+  --high_quality_reference_library False \
+  --mz_min 0 \
+  --mz_max 9999999 \
+  --int_min 0 \
+  --int_max 9999999 \
+  --window_size_centroiding 0.5 \
+  --window_size_matching 0.1,0.5 \
+  --noise_threshold 0.0 \
+  --wf_mz 2,3 \
+  --wf_intensity 1.0 \
+  --LET_threshold 0.0 \
+  --entropy_dimension 1.1 \
+  --output_path ${PWD}/output_tuning_HRMS_grid.txt \
 
-python ../src/pycompound/tuning_CLI.py \
-        --query_data ${PWD}/data/tuning/lcms_query_library.csv \
-        --reference_data ${PWD}/data/lcms_reference_library.csv \
-        --chromatography_platform NRMS \
-        --similarity_measure cosine,shannon \
-        --spectrum_preprocessing_order FCNMWL \
-        --high_quality_reference_library False \
-        --mz_min 0 \
-        --mz_max 9999999 \
-        --int_min 0 \
-        --int_max 9999999 \
-        --noise_threshold 0.0,0.1 \
-        --wf_mz 0 \
-        --wf_intensity 1.0 \
-        --LET_threshold 0.0 \
-        --entropy_dimension 1.1 \
-        --output_path ${PWD}/output_tuning_NRMS.csv \
+python ../src/pycompound/tuning_CLI_grid.py \
+  --query_data ${PWD}/tests/data/gcms_query_library_tuning.txt \
+  --reference_data ${PWD}/tests/data/gcms_reference_library.txt \
+  --chromatography_platform NRMS \
+  --similarity_measure cosine,shannon \
+  --spectrum_preprocessing_order FCNMWL \
+  --high_quality_reference_library False \
+  --mz_min 0 \
+  --mz_max 9999999 \
+  --int_min 0 \
+  --int_max 9999999 \
+  --noise_threshold 0.0,0.1 \
+  --wf_mz 0 \
+  --wf_intensity 1.0 \
+  --LET_threshold 0.0 \
+  --entropy_dimension 1.1 \
+  --output_path ${PWD}/output_tuning_NRMS_grid.txt \
+
+python ../src/pycompound/tuning_CLI_DE.py \
+  --chromatography_platform HRMS \
+  --query_data ${PWD}/data/lcms_query_library_tuning.txt \
+  --reference_data ${PWD}/data/full_GNPS_reference_library.txt \
+  --precursor_ion_mz_tolerance 0.1 \
+  --ionization_mode Positive \
+  --adduct H \
+  --similarity_measure cosine \
+  --opt window_size_centroiding noise_threshold wf_mz \
+  --bound window_size_centroiding=0.0:0.4 \
+  --bound noise_threshold=0.0:0.20 \
+  --bound wf_mz=0.0:5.0 \
+  --maxiter 3 \
+  --seed 1 \
+  --workers 5
+
+python ../src/pycompound/tuning_CLI_DE.py \
+  --query_data ${PWD}/tests/data/gcms_query_library_tuning.txt \
+  --reference_data ${PWD}/tests/data/gcms_reference_library.txt \
+  --chromatography_platform NRMS \
+  --similarity_measure cosine \
+  --opt noise_threshold wf_mz \
+  --bound noise_threshold=0.0:0.20 \
+  --bound wf_mz=0.0:5.0 \
+  --maxiter 3 \
+  --seed 1 \
+  --workers 4
+
 ```
 
 
@@ -604,7 +683,8 @@ generate_plots_on_HRMS_data(
         LET_threshold=0.0,
         entropy_dimension=1.1,
         y_axis_transformation='normalized',
-        output_path=None)
+        output_path=None
+)
 
 generate_plots_on_NRMS_data(
         query_data='path_to_query_library',
@@ -624,52 +704,53 @@ generate_plots_on_NRMS_data(
         LET_threshold=0.0,
         entropy_dimension=1.1,
         y_axis_transformation='normalized',
-        output_path=None)
+        output_path=None
+)
 ```
 
 To use the command line version, one can run the following from the terminal:
 ```
 python plot_spectra_CLI.py \
-        --query_data ${PWD}/data/gcms_query_library.csv \
-        --reference_data ${PWD}/data/gcms_reference_library.csv \
-        --spectrum_ID1 463514 \
-        --spectrum_ID2 112312 \
-        --chromatography_platform HRMS \
-        --similarity_measure cosine \
-        --spectrum_preprocessing_order FCNMWL \
-        --high_quality_reference_library False \
-        --mz_min 0 \
-        --mz_max 9999999 \
-        --int_min 0 \
-        --int_max 9999999 \
-        --window_size_centroiding 0.5 \
-        --window_size_matching 0.5 \
-        --noise_threshold 0.0 \
-        --wf_mz 0.0 \
-        --wf_intensity 1.0 \
-        --LET_threshold 0.0 \
-        --entropy_dimension 1.1 \
-        --output_path ${PWD}/output_plotting_HRMS.pdf \
+  --query_data ${PWD}/tests/data/lcms_query_library.txt \
+  --reference_data ${PWD}/tests/data/full_GNPS_reference_library.txt \
+  --spectrum_ID1 463514 \
+  --spectrum_ID2 112312 \
+  --chromatography_platform HRMS \
+  --similarity_measure cosine \
+  --spectrum_preprocessing_order FCNMWL \
+  --high_quality_reference_library False \
+  --mz_min 0 \
+  --mz_max 9999999 \
+  --int_min 0 \
+  --int_max 9999999 \
+  --window_size_centroiding 0.5 \
+  --window_size_matching 0.5 \
+  --noise_threshold 0.0 \
+  --wf_mz 0.0 \
+  --wf_intensity 1.0 \
+  --LET_threshold 0.0 \
+  --entropy_dimension 1.1 \
+  --output_path ${PWD}/output_plotting_HRMS.pdf \
 
 python plot_spectra_CLI.py \
-        --query_data ${PWD}/data/gcms_query_library.csv \
-        --reference_data ${PWD}/data/gcms_reference_library.csv \
-        --spectrum_ID1 463514 \
-        --spectrum_ID2 112312 \
-        --chromatography_platform NRMS \
-        --similarity_measure tsallis \
-        --spectrum_preprocessing_order FCNMWL \
-        --high_quality_reference_library False \
-        --mz_min 0 \
-        --mz_max 9999999 \
-        --int_min 0 \
-        --int_max 9999999 \
-        --noise_threshold 0.0 \
-        --wf_mz 0.0 \
-        --wf_intensity 1.0 \
-        --LET_threshold 0.0 \
-        --entropy_dimension 1.1 \
-        --output_path ${PWD}/output_plotting_NRMS.pdf \
+  --query_data ${PWD}/data/gcms_query_library.txt \
+  --reference_data ${PWD}/data/gcms_reference_library.txt \
+  --spectrum_ID1 463514 \
+  --spectrum_ID2 112312 \
+  --chromatography_platform NRMS \
+  --similarity_measure tsallis \
+  --spectrum_preprocessing_order FCNMWL \
+  --high_quality_reference_library False \
+  --mz_min 0 \
+  --mz_max 9999999 \
+  --int_min 0 \
+  --int_max 9999999 \
+  --noise_threshold 0.0 \
+  --wf_mz 0.0 \
+  --wf_intensity 1.0 \
+  --LET_threshold 0.0 \
+  --entropy_dimension 1.1 \
+  --output_path ${PWD}/output_plotting_NRMS.pdf \
 ```
 
 An example of such a generated plot is seen below.
@@ -709,7 +790,7 @@ This plot compares two MS/MS spectra: Spectrum ID 1 (unknown, in blue) and Spect
 
 <a name="shiny"></a>
 ### 3.6 Shiny application
-PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script src/pycompound_shiny.py with a command such as <shiny run --launch-browser pycompound_shiny.py> to launch the Shiny application.
+PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script src/pycompound_shiny.py with a command such as <shiny run --launch-browser pycompound_shiny.py> to launch the Shiny application. Alternatively, one can you the publicly available web version at [https://0199ee0c-c2ce-4fdc-5ade-623633df1622.share.connect.posit.cloud/](https://0199ee0c-c2ce-4fdc-5ade-623633df1622.share.connect.posit.cloud/). If you plan to perform some heavy computations such as parameter tuning on large datasets, we recommend either using the Python package, its CLI wrapper, or running the Shiny app on your local machine to take advantage of multithreading (which isn't offered on the POSIT-hosted Shiny app).
 
 
 <a name="bugs-questions"></a>

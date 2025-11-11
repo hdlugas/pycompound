@@ -8,32 +8,6 @@ import matplotlib.pyplot as plt
 
 
 def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
-    '''
-    plots two spectra against each other before and after preprocessing transformations for high-resolution mass spectrometry data
-
-    --query_data: mgf, mzML, or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: mgf, mzML, or csv file of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --spectrum_ID1: ID of one spectrum to be plotted. Default is first spectrum in the query library. Optional argument.
-    --spectrum_ID2: ID of another spectrum to be plotted. Default is first spectrum in the reference library. Optional argument.
-    --similarity_measure: cosine, shannon, renyi, tsallis, mixture, jaccard, dice, 3w_jaccard, sokal_sneath, binary_cosine, mountford, mcconnaughey, driver_kroeber, simpson, braun_banquet, fager_mcgowan, kulczynski, intersection, hamming, hellinger. Default: cosine.
-    --weights: dict of weights to give to each non-binary similarity measure (i.e. cosine, shannon, renyi, and tsallis) when the mixture similarity measure is specified. Default: 0.25 for each of the four non-binary similarity measures.
-    --spectrum_preprocessing_order: The spectrum preprocessing transformations and the order in which they are to be applied. Note that these transformations are applied prior to computing similarity scores. Format must be a string with 2-6 characters chosen from C, F, M, N, L, W representing centroiding, filtering based on mass/charge and intensity values, matching, noise removal, low-entropy trannsformation, and weight-factor-transformation, respectively. For example, if \'WCM\' is passed, then each spectrum will undergo a weight factor transformation, then centroiding, and then matching. Note that if an argument is passed, then \'M\' must be contained in the argument, since matching is a required preprocessing step in spectral library matching of HRMS data. Furthermore, \'C\' must be performed before matching since centroiding can change the number of ion fragments in a given spectrum. Default: FCNMWL')
-    --high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False')
-    --mz_min: Remove all peaks with mass/charge value less than mz_min in each spectrum. Default: 0
-    --mz_max: Remove all peaks with mass/charge value greater than mz_max in each spectrum. Default: 9999999
-    --int_min: Remove all peaks with intensity value less than int_min in each spectrum. Default: 0
-    --int_max: Remove all peaks with intensity value greater than int_max in each spectrum. Default: 9999999
-    --window_size_centroiding: Window size parameter used in centroiding a given spectrum. Default: 0.5
-    --window_size_matching: Window size parameter used in matching a query spectrum and a reference library spectrum. Default: 0.5
-    --noise_threshold: Ion fragments (i.e. points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.0
-    --wf_mz: Mass/charge weight factor parameter. Default: 0.0
-    --wf_intensity: Intensity weight factor parameter. Default: 0.0
-    --LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy less than LET_threshold are transformed according to intensitiesNew=intensitiesOriginal^{(1+S)/(1+LET_threshold)}. Default: 0.0
-    --entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
-    --y_axis_transformation: transformation to apply to y-axis (i.e. intensity axis) of plots. Options: \'normalized\', \'none\', \'log10\', and \'sqrt\'. Default: normalized.')
-    --output_path: path to output PDF file containing the plots of the spectra before and after preprocessing transformations. If no argument is passed, then the plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.
-    '''
-
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
@@ -41,12 +15,12 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
-            output_path_tmp = query_data[:-3] + 'csv'
+            output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
-            df_query = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
-            df_query = pd.read_csv(query_data)
-        unique_query_ids = df_query.iloc[:,0].unique().tolist()
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
+        if extension == 'txt' or extension == 'TXT':
+            df_query = pd.read_csv(query_data, sep='\t')
+        unique_query_ids = df_query['id'].unique().tolist()
         unique_query_ids = [str(tmp) for tmp in unique_query_ids]
 
     if reference_data is None:
@@ -56,25 +30,25 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
-            output_path_tmp = reference_data[:-3] + 'csv'
+            output_path_tmp = reference_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
-            df_reference = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
-            df_reference = pd.read_csv(reference_data)
-        unique_reference_ids = df_reference.iloc[:,0].unique().tolist()
+            df_reference = pd.read_csv(output_path_tmp, sep='\t')
+        if extension == 'txt' or extension == 'TXT':
+            df_reference = pd.read_csv(reference_data, sep='\t')
+        unique_reference_ids = df_reference['id'].unique().tolist()
         unique_reference_ids = [str(tmp) for tmp in unique_reference_ids]
 
 
     if spectrum_ID1 is not None:
         spectrum_ID1 = str(spectrum_ID1)
     else:
-        spectrum_ID1 = str(df_query.iloc[0,0])
+        spectrum_ID1 = str(df_query['id'].iloc[0])
         print('No argument passed to spectrum_ID1; using the first spectrum in query_data.')
 
     if spectrum_ID2 is not None:
         spectrum_ID2 = str(spectrum_ID2)
     else:
-        spectrum_ID2 = str(df_reference.iloc[0,0])
+        spectrum_ID2 = str(df_reference['id'].iloc[0])
         print('No argument passed to spectrum_ID2; using the first spectrum in reference_data.')
 
     if spectrum_preprocessing_order is not None:
@@ -157,17 +131,17 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     if spectrum_ID1 in unique_query_ids and spectrum_ID2 in unique_query_ids:
         query_idx = unique_query_ids.index(spectrum_ID1)
         reference_idx = unique_query_ids.index(spectrum_ID2)
-        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == unique_query_ids[query_idx])[0]
-        r_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == unique_query_ids[reference_idx])[0]
-        q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_query.iloc[r_idxs_tmp,1], df_query.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'].astype(str) == unique_query_ids[query_idx])[0]
+        r_idxs_tmp = np.where(df_query['id'].astype(str) == unique_query_ids[reference_idx])[0]
+        q_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[r_idxs_tmp], df_query['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
     elif spectrum_ID1 in unique_reference_ids and spectrum_ID2 in unique_reference_ids:
         query_idx = unique_reference_ids.index(spectrum_ID1)
         reference_idx = unique_reference_ids.index(spectrum_ID2)
-        q_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == unique_reference_ids[query_idx])[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == unique_reference_ids[reference_idx])[0]
-        q_spec = np.asarray(pd.concat([df_reference.iloc[q_idxs_tmp,1], df_reference.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_reference['id'].astype(str) == unique_reference_ids[query_idx])[0]
+        r_idxs_tmp = np.where(df_reference['id'].astype(str) == unique_reference_ids[reference_idx])[0]
+        q_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[q_idxs_tmp], df_reference['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
     else:
         if spectrum_ID1 in unique_reference_ids and spectrum_ID2 in unique_query_ids:
             spec_tmp = spectrum_ID1
@@ -175,10 +149,10 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
             spectrum_ID2 = spec_tmp
         query_idx = unique_query_ids.index(spectrum_ID1)
         reference_idx = unique_reference_ids.index(spectrum_ID2)
-        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == unique_query_ids[query_idx])[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == unique_reference_ids[reference_idx])[0]
-        q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'].astype(str) == unique_query_ids[query_idx])[0]
+        r_idxs_tmp = np.where(df_reference['id'].astype(str) == unique_reference_ids[reference_idx])[0]
+        q_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
 
 
     q_spec_pre_trans = q_spec.copy()
@@ -293,9 +267,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
         plt.yticks([])
 
 
-    print('\n\n\n')
-    print(high_quality_reference_library)
-    print('\n\n\n')
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
     plt.figlegend(loc = 'upper center')
     fig.text(0.05, 0.18, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
@@ -321,28 +292,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
 
 
 def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
-    '''
-    plots two spectra against each other before and after preprocessing transformations for high-resolution mass spectrometry data
-
-    --query_data: cdf or csv file of query mass spectrum/spectra to be identified. If csv file, each row should correspond to a mass spectrum, the left-most column should contain an identifier, and each of the other columns should correspond to a single mass/charge ratio. Mandatory argument.
-    --reference_data: cdf of csv file of the reference mass spectra. If csv file, each row should correspond to a mass spectrum, the left-most column should contain in identifier (i.e. the CAS registry number or the compound name), and the remaining column should correspond to a single mass/charge ratio. Mandatory argument.
-    --similarity_measure: cosine, shannon, renyi, tsallis, mixture, jaccard, dice, 3w_jaccard, sokal_sneath, binary_cosine, mountford, mcconnaughey, driver_kroeber, simpson, braun_banquet, fager_mcgowan, kulczynski, intersection, hamming, hellinger. Default: cosine.
-    --weights: dict of weights to give to each non-binary similarity measure (i.e. cosine, shannon, renyi, and tsallis) when the mixture similarity measure is specified. Default: 0.25 for each of the four non-binary similarity measures.
-    --spectrum_preprocessing_order: The spectrum preprocessing transformations and the order in which they are to be applied. Note that these transformations are applied prior to computing similarity scores. Format must be a string with 2-4 characters chosen from F, N, L, W representing filtering based on mass/charge and intensity values, noise removal, low-entropy trannsformation, and weight-factor-transformation, respectively. For example, if \'WN\' is passed, then each spectrum will undergo a weight factor transformation and then noise removal. Default: FNLW')
-    --high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False')
-    --mz_min: Remove all peaks with mass/charge value less than mz_min in each spectrum. Default: 0
-    --mz_max: Remove all peaks with mass/charge value greater than mz_max in each spectrum. Default: 9999999
-    --int_min: Remove all peaks with intensity value less than int_min in each spectrum. Default: 0
-    --int_max: Remove all peaks with intensity value greater than int_max in each spectrum. Default: 9999999
-    --noise_threshold: Ion fragments (i.e. points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.0
-    --wf_mz: Mass/charge weight factor parameter. Default: 0.0
-    --wf_intensity: Intensity weight factor parameter. Default: 0.0
-    --LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy less than LET_threshold are transformed according to intensitiesNew=intensitiesOriginal^{(1+S)/(1+LET_threshold)}. Default: 0.0
-    --entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
-    --y_axis_transformation: transformation to apply to y-axis (i.e. intensity axis) of plots. Options: \'normalized\', \'none\', \'log10\', and \'sqrt\'. Default: normalized.')
-    --output_path: path to output PDF file containing the plots of the spectra before and after preprocessing transformations. If no argument is passed, then the plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.
-    '''
-
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
@@ -350,12 +299,12 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
-            output_path_tmp = query_data[:-3] + 'csv'
+            output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            df_query = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
-            df_query = pd.read_csv(query_data)
-        unique_query_ids = df_query.iloc[:,0].unique()
+            df_query = pd.read_csv(output_path_tmp, sep='\t')
+        if extension == 'txt' or extension == 'TXT':
+            df_query = pd.read_csv(query_data, sep='\t')
+        unique_query_ids = df_query['id'].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
@@ -364,24 +313,24 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
-            output_path_tmp = reference_data[:-3] + 'csv'
+            output_path_tmp = reference_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
-            df_reference = pd.read_csv(output_path_tmp)
-        if extension == 'csv' or extension == 'CSV':
-            df_reference = pd.read_csv(reference_data)
-            unique_reference_ids = df_reference.iloc[:,0].unique()
+            df_reference = pd.read_csv(output_path_tmp, sep='\t')
+        if extension == 'txt' or extension == 'TXT':
+            df_reference = pd.read_csv(reference_data, sep='\t')
+            unique_reference_ids = df_reference['id'].unique()
 
 
     if spectrum_ID1 is not None:
         spectrum_ID1 = str(spectrum_ID1)
     else:
-        spectrum_ID1 = str(df_query.iloc[0,0])
+        spectrum_ID1 = str(df_query['id'].iloc[0])
         print('No argument passed to spectrum_ID1; using the first spectrum in query_data.')
 
     if spectrum_ID2 is not None:
         spectrum_ID2 = str(spectrum_ID2)
     else:
-        spectrum_ID2 = str(df_reference.iloc[0,0])
+        spectrum_ID2 = str(df_reference['id'].iloc[0])
         print('No argument passed to spectrum_ID2; using the first spectrum in reference_data.')
 
     if spectrum_preprocessing_order is not None:
@@ -446,12 +395,12 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         print(f'Warning: plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.')
         output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.pdf'
 
-    min_mz = np.min([np.min(df_query.iloc[:,1]), np.min(df_reference.iloc[:,1])])
-    max_mz = np.max([np.max(df_query.iloc[:,1]), np.max(df_reference.iloc[:,1])])
+    min_mz = np.min([np.min(df_query['mz_ratio'].tolist()), np.min(df_reference['mz_ratio'].tolist())])
+    max_mz = np.max([np.max(df_query['mz_ratio'].tolist()), np.max(df_reference['mz_ratio'].tolist())])
     mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
-    unique_query_ids = df_query.iloc[:,0].unique().tolist()
-    unique_reference_ids = df_reference.iloc[:,0].unique().tolist()
+    unique_query_ids = df_query['id'].unique().tolist()
+    unique_reference_ids = df_reference['id'].unique().tolist()
     unique_query_ids = [str(ID) for ID in unique_query_ids]
     unique_reference_ids = [str(ID) for ID in unique_reference_ids]
     common_IDs = np.intersect1d([str(ID) for ID in unique_query_ids], [str(ID) for ID in unique_reference_ids])
@@ -459,35 +408,48 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         print(f'Warning: the query and reference library have overlapping IDs: {common_IDs}')
 
     if spectrum_ID1 in unique_query_ids and spectrum_ID2 in unique_query_ids:
-        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == spectrum_ID1)[0]
-        r_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == spectrum_ID2)[0]
-        q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_query.iloc[r_idxs_tmp,1], df_query.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'].astype(str) == spectrum_ID1)[0]
+        r_idxs_tmp = np.where(df_query['id'].astype(str) == spectrum_ID2)[0]
+        q_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[r_idxs_tmp], df_query['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
     elif spectrum_ID1 in unique_reference_ids and spectrum_ID2 in unique_reference_ids:
-        q_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == spectrum_ID1)[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == spectrum_ID2)[0]
-        q_spec = np.asarray(pd.concat([df_reference.iloc[q_idxs_tmp,1], df_reference.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_reference['id'].astype(str) == spectrum_ID1)[0]
+        r_idxs_tmp = np.where(df_reference['id'].astype(str) == spectrum_ID2)[0]
+        q_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[q_idxs_tmp], df_reference['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
     else:
         if spectrum_ID1 in unique_reference_ids and spectrum_ID2 in unique_query_ids:
             spec_tmp = spectrum_ID1
             spectrum_ID1 = spectrum_ID2
             spectrum_ID2 = spec_tmp
-        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == spectrum_ID1)[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == spectrum_ID2)[0]
-        q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'].astype(str) == spectrum_ID1)[0]
+        r_idxs_tmp = np.where(df_reference['id'].astype(str) == spectrum_ID2)[0]
+        q_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
 
     q_spec = convert_spec(q_spec,mzs)
     r_spec = convert_spec(r_spec,mzs)
 
-    int_min_tmp_q = min(q_spec[q_spec[:,1].nonzero(),1][0])
-    int_min_tmp_r = min(r_spec[r_spec[:,1].nonzero(),1][0])
-    int_max_tmp_q = max(q_spec[q_spec[:,1].nonzero(),1][0])
-    int_max_tmp_r = max(r_spec[r_spec[:,1].nonzero(),1][0])
-    int_min_tmp = int(min([int_min_tmp_q,int_min_tmp_r]))
-    int_max_tmp = int(max([int_max_tmp_q,int_max_tmp_r]))
-    
+    nz_q = q_spec[:, 1] != 0
+    nz_r = r_spec[:, 1] != 0
+
+    if np.any(nz_q):
+        int_min_tmp_q = q_spec[nz_q, 1].min()
+        int_max_tmp_q = q_spec[nz_q, 1].max()
+    else:
+        int_min_tmp_q = 0.0
+        int_max_tmp_q = 0.0
+
+    if np.any(nz_r):
+        int_min_tmp_r = r_spec[nz_r, 1].min()
+        int_max_tmp_r = r_spec[nz_r, 1].max()
+    else:
+        int_min_tmp_r = 0.0
+        int_max_tmp_r = 0.0
+
+    int_min_tmp = int(min(int_min_tmp_q, int_min_tmp_r))
+    int_max_tmp = int(max(int_max_tmp_q, int_max_tmp_r))
+
     fig, axes = plt.subplots(nrows=2, ncols=1)
 
     plt.subplot(2,1,1)

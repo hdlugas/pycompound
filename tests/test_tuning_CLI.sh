@@ -1,10 +1,9 @@
 #!/bin/bash
 
-
 echo $'\n\n\ntest #1'
 python ../src/pycompound/tuning_CLI_grid.py \
         --query_data ${PWD}/data/lcms_query_library_tuning.txt \
-        --reference_data ${PWD}/data/full_GNPS_reference_library.txt \
+        --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --precursor_ion_mz_tolerance 0.1 \
         --ionization_mode Positive \
         --adduct H \
@@ -15,7 +14,7 @@ python ../src/pycompound/tuning_CLI_grid.py \
 echo $'\n\n\ntest #2'
 python ../src/pycompound/tuning_CLI_grid.py \
         --query_data ${PWD}/data/lcms_query_library_tuning.txt \
-        --reference_data ${PWD}/data/full_GNPS_reference_library.txt \
+        --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --precursor_ion_mz_tolerance 0.2 \
         --ionization_mode Positive \
         --adduct H \
@@ -26,7 +25,7 @@ python ../src/pycompound/tuning_CLI_grid.py \
 echo $'\n\n\ntest #3'
 python ../src/pycompound/tuning_CLI_grid.py \
         --query_data ${PWD}/data/lcms_query_library_tuning.txt \
-        --reference_data ${PWD}/data/lcms_reference_library.txt \
+        --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --window_size_matching 0.5 \
         --chromatography_platform HRMS \
         --output_path ${PWD}/output_tuning_HRMS_CLI_3.txt \
@@ -34,7 +33,7 @@ python ../src/pycompound/tuning_CLI_grid.py \
 echo $'\n\n\ntest #4'
 python ../src/pycompound/tuning_CLI_grid.py \
         --query_data ${PWD}/data/gcms_query_library_tuning.txt \
-        --reference_data ${PWD}/data/gcms_reference_library.txt \
+        --reference_data ${PWD}/data/trimmed_gcms_reference_library.txt \
         --similarity_measure cosine,shannon,renyi \
         --wf_mz 0,2,3 \
         --noise_threshold 0,0.1 \
@@ -45,20 +44,21 @@ echo $'\n\n\ntest #5'
 python ../src/pycompound/tuning_CLI_DE.py \
   --chromatography_platform NRMS \
   --query_data ${PWD}/data/gcms_query_library_tuning.txt \
-  --reference_data ${PWD}/data/gcms_reference_library.txt \
+  --reference_data ${PWD}/data/trimmed_gcms_reference_library.txt \
   --similarity_measure cosine \
-  --opt noise_threshold wf_mz \
-  --bound noise_threshold=0.0:0.20 \
-  --bound wf_mz=0.0:5.0 \
-  --maxiter 3 \
+  --opt noise_threshold wf_mz wf_int \
+  --bound noise_threshold=0.05:0.10 \
+  --bound wf_mz=0.5:1.5 \
+  --bound wf_int=0.5:1.5 \
+  --maxiter 10 \
   --seed 1 \
-  --workers 4
+  --workers 6
 
 echo $'\n\n\ntest #6'
 python ../src/pycompound/tuning_CLI_DE.py \
   --chromatography_platform HRMS \
   --query_data ${PWD}/data/lcms_query_library_tuning.txt \
-  --reference_data ${PWD}/data/full_GNPS_reference_library.txt \
+  --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
   --precursor_ion_mz_tolerance 0.1 \
   --ionization_mode Positive \
   --adduct H \
@@ -67,8 +67,7 @@ python ../src/pycompound/tuning_CLI_DE.py \
   --bound window_size_centroiding=0.0:0.4 \
   --bound noise_threshold=0.0:0.20 \
   --bound wf_mz=0.0:5.0 \
-  --maxiter 3 \
+  --maxiter 10 \
   --seed 1 \
   --workers 5
-
 

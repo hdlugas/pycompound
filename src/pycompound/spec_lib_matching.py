@@ -24,8 +24,7 @@ def objective_function_HRMS(X, ctx):
     acc = get_acc_HRMS(
         ctx["df_query"],
         ctx["df_reference"],
-        ctx["precursor_ion_mz_tolerance"],
-        ctx["ionization_mode"], ctx["adduct"],
+        ctx["precursor_ion_mz_tolerance"], ctx["ionization_mode"], ctx["adduct"],
         ctx["similarity_measure"], ctx["weights"], ctx["spectrum_preprocessing_order"],
         ctx["mz_min"], ctx["mz_max"], ctx["int_min"], ctx["int_max"],
         p["window_size_centroiding"], p["window_size_matching"], p["noise_threshold"],
@@ -443,11 +442,9 @@ def get_acc_HRMS(df_query, df_reference, precursor_ion_mz_tolerance, ionization_
     top_idx = df_scores.values.argmax(axis=1)
     top_scores = df_scores.values[np.arange(df_scores.shape[0]), top_idx]
     top_ids = [df_scores.columns[i] for i in top_idx]
-
     df_tmp = pd.DataFrame({'TRUE.ID': df_scores.index.to_list(), 'PREDICTED.ID': top_ids, 'SCORE': top_scores})
-    if verbose:
-        print(df_tmp)
-
+    #if verbose:
+    #    print(df_tmp)
     acc = (df_tmp['TRUE.ID'] == df_tmp['PREDICTED.ID']).mean()
     return acc
 
@@ -456,23 +453,23 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
     n_top_matches_to_save = 1
 
-    min_mz = int(np.min([np.min(df_query.iloc[:,1]), np.min(df_reference.iloc[:,1])]))
-    max_mz = int(np.max([np.max(df_query.iloc[:,1]), np.max(df_reference.iloc[:,1])]))
+    min_mz = int(np.min([np.min(df_query['mz_ratio']), np.min(df_reference['mz_ratio'])]))
+    max_mz = int(np.max([np.max(df_query['mz_ratio']), np.max(df_reference['mz_ratio'])]))
     mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
     all_similarity_scores =  []
     for query_idx in range(0,len(unique_query_ids)):
-        q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
-        q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'] == unique_query_ids[query_idx])[0]
+        q_spec_tmp = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
         q_spec_tmp = convert_spec(q_spec_tmp,mzs)
 
         similarity_scores = []
         for ref_idx in range(0,len(unique_reference_ids)):
             q_spec = q_spec_tmp
-            if verbose is True and ref_idx % 1000 == 0:
-                print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
-            r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
-            r_spec_tmp = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+            #if verbose is True and ref_idx % 1000 == 0:
+            #    print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
+            r_idxs_tmp = np.where(df_reference['id'] == unique_reference_ids[ref_idx])[0]
+            r_spec_tmp = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
             r_spec = convert_spec(r_spec_tmp,mzs)
 
             for transformation in spectrum_preprocessing_order:
@@ -533,6 +530,8 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
     scores = np.array(scores)
     out = np.c_[unique_query_ids,preds,scores]
     df_tmp = pd.DataFrame(out, columns=['TRUE.ID','PREDICTED.ID','SCORE'])
+    #if verbose:
+    #    print(df_tmp)
     acc = (df_tmp['TRUE.ID']==df_tmp['PREDICTED.ID']).mean()
     return acc
 
@@ -570,8 +569,6 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, pre
         df_reference = df_reference.loc[df_reference['ionization_mode']==ionization_mode]
     if 'adduct' in df_reference.columns.tolist() and adduct != 'N/A' and adduct != None:
         df_reference = df_reference.loc[df_reference['adduct']==adduct]
-
-    print(df_reference.loc[df_reference['id']=='Hectochlorin M+H'])
 
     if spectrum_preprocessing_order is not None:
         spectrum_preprocessing_order = list(spectrum_preprocessing_order)
@@ -806,7 +803,7 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
-        unique_query_ids = df_query.iloc[:,0].unique()
+        unique_query_ids = df_query['id'].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the CSV file of the reference data.')
@@ -814,14 +811,14 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
     else:
         if isinstance(reference_data,str):
             df_reference = get_reference_df(reference_data,likely_reference_ids)
-            unique_reference_ids = df_reference.iloc[:,0].unique()
+            unique_reference_ids = df_reference['id'].unique()
         else:
             dfs = []
             unique_reference_ids = []
             for f in reference_data:
                 tmp = get_reference_df(f,likely_reference_ids)
                 dfs.append(tmp)
-                unique_reference_ids.extend(tmp.iloc[:,0].unique())
+                unique_reference_ids.extend(tmp['id'].unique())
             df_reference = pd.concat(dfs, axis=0, ignore_index=True)
 
 
@@ -897,23 +894,23 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
 
 
 
-    min_mz = int(np.min([np.min(df_query.iloc[:,1]), np.min(df_reference.iloc[:,1])]))
-    max_mz = int(np.max([np.max(df_query.iloc[:,1]), np.max(df_reference.iloc[:,1])]))
+    min_mz = int(np.min([np.min(df_query['mz_ratio']), np.min(df_reference['mz_ratio'])]))
+    max_mz = int(np.max([np.max(df_query['mz_ratio']), np.max(df_reference['mz_ratio'])]))
     mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
     all_similarity_scores =  []
     for query_idx in range(0,len(unique_query_ids)):
-        q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
-        q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'] == unique_query_ids[query_idx])[0]
+        q_spec_tmp = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
         q_spec_tmp = convert_spec(q_spec_tmp,mzs)
 
         similarity_scores = []
         for ref_idx in range(0,len(unique_reference_ids)):
-            if verbose is True and ref_idx % 1000 == 0:
-                print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
+            #if verbose is True and ref_idx % 1000 == 0:
+            #    print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
             q_spec = q_spec_tmp
-            r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
-            r_spec_tmp = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+            r_idxs_tmp = np.where(df_reference['id'] == unique_reference_ids[ref_idx])[0]
+            r_spec_tmp = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
             r_spec = convert_spec(r_spec_tmp,mzs)
 
             for transformation in spectrum_preprocessing_order:

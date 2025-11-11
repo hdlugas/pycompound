@@ -2544,7 +2544,7 @@ def plot_spectra_ui(platform: str):
         ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1:', ['No', 'Yes']),
         ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2:', ['No', 'Yes']),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.input_text('weights', 'Weights for mixture similarity measure (cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
+        ui.input_text('weights', 'Weights for mixture similarity measure (only applicable for \'mixture\' similarity measure; order: cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
         ui.input_select(
             "high_quality_reference_library",
             "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.",
@@ -2615,7 +2615,7 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.input_text('weights', 'Weights for mixture similarity measure (cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
+        ui.input_text('weights', 'Weights for mixture similarity measure (only applicable for \'mixture\' similarity measure; order: cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
         ui.input_file('compound_ID_output_file', 'Upload output from spectral library matching to plot top matches (optional)'),
         ui.input_selectize("q_spec", "Select query spectrum (only applicable for plotting; default is the first spectrum in the compound ID output):", choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
         ui.input_selectize("r_spec", "Select reference spectrum (only applicable for plotting; default is the rank 1 reference spectrum):", choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
@@ -2695,7 +2695,7 @@ def run_parameter_tuning_grid_ui(platform: str):
         ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_selectize("similarity_measure", "Select similarity measure(s):", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"], multiple=True, selected='cosine'),
-        ui.input_text('weights', 'Weights for mixture similarity measure (cosine, shannon, renyi, tsallis):', '((0.25, 0.25, 0.25, 0.25))'),
+        ui.input_text('weights', 'Weights for mixture similarity measure (only applicable for \'mixture\' similarity measure; order: cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
         ui.input_text("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", '[True]')
     ]
 
@@ -2798,7 +2798,7 @@ def run_parameter_tuning_DE_ui(platform: str):
         ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.input_text("weights", "Weights for mixture similarity measure (cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25"),
+        ui.input_text('weights', 'Weights for mixture similarity measure (only applicable for \'mixture\' similarity measure; order: cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
         ui.input_select("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", [False, True])]
 
     if platform == "HRMS":

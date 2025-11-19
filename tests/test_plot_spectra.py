@@ -8,7 +8,7 @@ os.makedirs(f'{Path.cwd()}/plots', exist_ok=True)
 
 print('\n\ntest #1:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         high_quality_reference_library=True,
         noise_threshold=0.1,
@@ -17,7 +17,7 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #2:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         noise_threshold=0.1,
         similarity_measure='shannon',
@@ -25,7 +25,7 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #3:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         similarity_measure='renyi',
         entropy_dimension=1.2,
@@ -33,7 +33,7 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #4:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         similarity_measure='tsallis',
         entropy_dimension=1.2,
@@ -41,7 +41,7 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #5:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         similarity_measure='tsallis',
         entropy_dimension=1.2,
@@ -49,7 +49,7 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #6:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         wf_intensity=0.8,
         wf_mz=1.1,
@@ -57,21 +57,21 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #7:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         window_size_centroiding=0.1,
         output_path=f'{Path.cwd()}/plots/test7.pdf')
 
 print('\n\ntest #8:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         window_size_matching=0.25,
         output_path=f'{Path.cwd()}/plots/test8.pdf')
 
 print('\n\ntest #9:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         spectrum_preprocessing_order='WCM',
         wf_mz=0.8,
@@ -80,14 +80,14 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #10:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         LET_threshold=3,
         output_path=f'{Path.cwd()}/plots/test10.pdf')
 
 print('\n\ntest #11:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         spectrum_ID1 = 212,
         spectrum_ID2 = 100,
@@ -96,7 +96,7 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #12:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         spectrum_ID1 = 'Jamaicamide A M+H',
         spectrum_ID2 = 'Malyngamide J M+H',
@@ -105,7 +105,7 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #13:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         spectrum_ID1 = 'Jamaicamide A M+H',
         spectrum_ID2 = 'Jamaicamide A M+H',
@@ -114,13 +114,13 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #14:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         output_path=f'{Path.cwd()}/plots/test14.pdf')
 
 print('\n\ntest #15:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         spectrum_ID1 = 463514,
         spectrum_ID2 = 112312,
@@ -128,40 +128,40 @@ generate_plots_on_NRMS_data(
 
 print('\n\ntest #17:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         output_path=f'{Path.cwd()}/plots/test17.pdf')
 
 print('\n\ntest #18:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         y_axis_transformation='none',
         output_path=f'{Path.cwd()}/plots/test18.pdf')
 
 print('\n\ntest #19:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         y_axis_transformation='log10',
         output_path=f'{Path.cwd()}/plots/test19.pdf')
 
 print('\n\ntest #20:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         y_axis_transformation='sqrt',
         output_path=f'{Path.cwd()}/plots/test20.pdf')
 
 print('\n\ntest #21:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         output_path=f'{Path.cwd()}/plots/test_no_wf_normalized_y_axis_no_mz_zoom.pdf')
 
 print('\n\ntest #22:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         wf_mz=2,
         wf_intensity=0.5,
@@ -169,21 +169,21 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #23:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         y_axis_transformation='log10',
         output_path=f'{Path.cwd()}/plots/test_no_wf_log10_y_axis_no_mz_zoom.pdf')
 
 print('\n\ntest #24:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         y_axis_transformation='sqrt',
         output_path=f'{Path.cwd()}/plots/test_no_wf_sqrt_y_axis_no_mz_zoom.pdf')
 
 print('\n\ntest #25:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         mz_min = 400,
         mz_max = 650,
@@ -192,49 +192,49 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #26:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         high_quality_reference_library=False,
         output_path=f'{Path.cwd()}/plots/test_HRMS.pdf')
 
 print('\n\ntest #27:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         high_quality_reference_library=False,
         output_path=f'{Path.cwd()}/plots/test_NRMS.pdf')
 
 print('\n\ntest #28:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         similarity_measure='jaccard',
         output_path=f'{Path.cwd()}/plots/test28.pdf')
 
 print('\n\ntest #28:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         similarity_measure='hamming',
         output_path=f'{Path.cwd()}/plots/test28.pdf')
 
 print('\n\ntest #29:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         similarity_measure='sokal_sneath',
         output_path=f'{Path.cwd()}/plots/test29.pdf')
 
 print('\n\ntest #30:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         similarity_measure='simpson',
         output_path=f'{Path.cwd()}/plots/test30.pdf')
 
 print('\n\ntest #31:')
 generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/gcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
         similarity_measure='mixture',
         weights={'Cosine':0.5, 'Shannon':0.3, 'Renyi':0.1, 'Tsallis':0.1},
@@ -242,7 +242,7 @@ generate_plots_on_NRMS_data(
 
 print('\n\ntest #32:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+        query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         similarity_measure='mixture',
         weights={'Cosine':0.1, 'Shannon':0.2, 'Renyi':0.3, 'Tsallis':0.4},

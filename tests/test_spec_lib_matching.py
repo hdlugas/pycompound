@@ -6,52 +6,52 @@ import os
 
 """
 print('\n\ntest #1:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    similarity_measure='cosine')
 
 print('\n\ntest #2:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    spectrum_preprocessing_order='MAB')
 
 print('\n\ntest #3:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    window_size_centroiding='small')
 
 print('\n\ntest #4:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    mz_min='hello')
 
 print('\n\ntest #5:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    window_size_matching='big')
 
 print('\n\ntest #6:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    noise_threshold='world')
 
 print('\n\ntest #7:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    noise_threshold=-0.5)
 
 print('\n\ntest #8:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    wf_intensity='a')
 
 print('\n\ntest #9:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    entropy_dimension=-1)
 
 print('\n\ntest #10:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    similarity_measure='renyi',
                                    wf_mz=2,
@@ -61,7 +61,7 @@ run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_lib
                                    print_id_results='asdf')
 
 print('\n\ntest #11:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    similarity_measure='tsallis',
                                    wf_mz=2,
@@ -71,7 +71,7 @@ run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_lib
                                    print_id_results=True)
 
 print('\n\ntest #12:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    similarity_measure='shannon',
                                    wf_intensity=0.5,
@@ -79,7 +79,7 @@ run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_lib
                                    print_id_results=True)
 
 print('\n\ntest #13:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    similarity_measure='renyi',
                                    wf_mz=2,
@@ -90,7 +90,7 @@ run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_lib
 
 
 print('\n\ntest #14:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    similarity_measure='cosine',
                                    wf_mz=2,
@@ -98,13 +98,13 @@ run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_lib
                                    n_top_matches_to_save=3)
 
 print('\n\ntest #15:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    similarity_measure='cosine',
                                    spectrum_preprocessing_order='LFWNCM')
 
 print('\n\ntest #16:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    similarity_measure='cosine',
                                    mz_min=100,
@@ -113,79 +113,79 @@ run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_lib
                                    int_max=150000)
 
 print('\n\ntest #17:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    window_size_centroiding=0.1,
                                    window_size_matching=0.05)
 
 print('\n\ntest #18:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    noise_threshold=0.1)
 
 print('\n\ntest #19:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    LET_threshold=3)
 
 print('\n\ntest #20:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    spectrum_preprocessing_order='WMC')
 
 print('\n\ntest #21:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    spectrum_preprocessing_order='ML')
 
 print('\n\ntest #22:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    noise_threshold=0.1,
                                    spectrum_preprocessing_order='MNL')
 
 print('\n\ntest #23:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library_tuning.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_tuning.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    print_id_results=True)
 
 print('\n\ntest #24:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    spectrum_preprocessing_order='MAB')
 
 print('\n\ntest #25:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    mz_min='hello')
 
 print('\n\ntest #26:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    noise_threshold='world')
 
 print('\n\ntest #27:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    noise_threshold=-0.5)
 
 print('\n\ntest #28:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    wf_intensity='a')
 
 print('\n\ntest #29:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    entropy_dimension=-1)
 
 print('\n\ntest #30:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    similarity_measure='shannon')
 
 print('\n\ntest #31:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    spectrum_preprocessing_order='NF',
                                    mz_min=50,
@@ -193,7 +193,7 @@ run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_lib
                                    noise_threshold=0.1)
 
 print('\n\ntest #32:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    spectrum_preprocessing_order='FN',
                                    mz_min=50,
@@ -201,7 +201,7 @@ run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_lib
                                    noise_threshold=0.1)
 
 print('\n\ntest #33:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    spectrum_preprocessing_order='FNW',
                                    wf_mz=1.5,
@@ -210,7 +210,7 @@ run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_lib
                                    noise_threshold=0.1)
 
 print('\n\ntest #34:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    spectrum_preprocessing_order='FNW',
                                    similarity_measure='renyi',
@@ -221,24 +221,24 @@ run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_lib
                                    noise_threshold=0.1)
 
 print('\n\ntest #35:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    high_quality_reference_library=True,
                                    noise_threshold=0.1)
 
 print('\n\ntest #36:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    high_quality_reference_library=False,
                                    noise_threshold=0.1)
 
 print('\n\ntest #37:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    likely_reference_ids=f'{Path.cwd()}/data/likely_gcms_ids.txt')
 
 print('\n\ntest #38:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    likely_reference_ids=f'{Path.cwd()}/data/likely_lcms_ids.txt')
 
@@ -247,38 +247,38 @@ run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_lib
 #                                   reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt')
 
 print('\n\ntest #40:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt')
 
 print('\n\ntest #41:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=[f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',f'{Path.cwd()}/data/GNPS-SELLECKCHEM-FDA-PART1.mgf'])
 
 print('\n\ntest #42:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt')
 
 print('\n\ntest #43:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=[f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt'])
 
 print('\n\ntest #44:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query_library.txt',
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
                                    similarity_measure='jaccard')
 
 print('\n\ntest #45:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    similarity_measure='hellinger')
 
 print('\n\ntest #46:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    similarity_measure='mixture')
 
 print('\n\ntest #47:')
-run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query_library.txt',
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                                    similarity_measure='mixture',
                                    weights={'Cosine':0.7, 'Shannon':0.1, 'Renyi':0.1, 'Tsallis':0.1})

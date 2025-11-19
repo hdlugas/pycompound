@@ -2,7 +2,7 @@
 
 echo $'\n\n\ntest #1'
 python ../src/pycompound/tuning_CLI_grid.py \
-        --query_data ${PWD}/data/lcms_query_library_tuning.txt \
+        --query_data ${PWD}/data/lcms_query_tuning.txt \
         --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --precursor_ion_mz_tolerance 0.1 \
         --ionization_mode Positive \
@@ -13,7 +13,7 @@ python ../src/pycompound/tuning_CLI_grid.py \
 
 echo $'\n\n\ntest #2'
 python ../src/pycompound/tuning_CLI_grid.py \
-        --query_data ${PWD}/data/lcms_query_library_tuning.txt \
+        --query_data ${PWD}/data/lcms_query_tuning.txt \
         --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --precursor_ion_mz_tolerance 0.2 \
         --ionization_mode Positive \
@@ -24,7 +24,7 @@ python ../src/pycompound/tuning_CLI_grid.py \
 
 echo $'\n\n\ntest #3'
 python ../src/pycompound/tuning_CLI_grid.py \
-        --query_data ${PWD}/data/lcms_query_library_tuning.txt \
+        --query_data ${PWD}/data/lcms_query_tuning.txt \
         --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --window_size_matching 0.5 \
         --chromatography_platform HRMS \
@@ -32,7 +32,7 @@ python ../src/pycompound/tuning_CLI_grid.py \
 
 echo $'\n\n\ntest #4'
 python ../src/pycompound/tuning_CLI_grid.py \
-        --query_data ${PWD}/data/gcms_query_library_tuning.txt \
+        --query_data ${PWD}/data/gcms_query_tuning.txt \
         --reference_data ${PWD}/data/trimmed_gcms_reference_library.txt \
         --similarity_measure cosine,shannon,renyi \
         --wf_mz 0,2,3 \
@@ -43,7 +43,7 @@ python ../src/pycompound/tuning_CLI_grid.py \
 echo $'\n\n\ntest #5'
 python ../src/pycompound/tuning_CLI_DE.py \
   --chromatography_platform NRMS \
-  --query_data ${PWD}/data/gcms_query_library_tuning.txt \
+  --query_data ${PWD}/data/gcms_query_tuning.txt \
   --reference_data ${PWD}/data/trimmed_gcms_reference_library.txt \
   --similarity_measure cosine \
   --opt noise_threshold wf_mz wf_int \
@@ -57,7 +57,7 @@ python ../src/pycompound/tuning_CLI_DE.py \
 echo $'\n\n\ntest #6'
 python ../src/pycompound/tuning_CLI_DE.py \
   --chromatography_platform HRMS \
-  --query_data ${PWD}/data/lcms_query_library_tuning.txt \
+  --query_data ${PWD}/data/lcms_query_tuning.txt \
   --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
   --precursor_ion_mz_tolerance 0.1 \
   --ionization_mode Positive \

@@ -116,7 +116,7 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
 
 
 
-def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='No', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
+def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -250,17 +250,17 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
     if spectrum_ID1 in unique_query_ids and spectrum_ID2 in unique_query_ids:
         query_idx = unique_query_ids.index(spectrum_ID1)
         reference_idx = unique_query_ids.index(spectrum_ID2)
-        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == unique_query_ids[query_idx])[0]
-        r_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == unique_query_ids[reference_idx])[0]
-        q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_query.iloc[r_idxs_tmp,1], df_query.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'].astype(str) == unique_query_ids[query_idx])[0]
+        r_idxs_tmp = np.where(df_query['id'].astype(str) == unique_query_ids[reference_idx])[0]
+        q_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[r_idxs_tmp], df_query['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
     elif spectrum_ID1 in unique_reference_ids and spectrum_ID2 in unique_reference_ids:
         query_idx = unique_reference_ids.index(spectrum_ID1)
         reference_idx = unique_reference_ids.index(spectrum_ID2)
-        q_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == unique_reference_ids[query_idx])[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == unique_reference_ids[reference_idx])[0]
-        q_spec = np.asarray(pd.concat([df_reference.iloc[q_idxs_tmp,1], df_reference.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_reference['id'].astype(str) == unique_reference_ids[query_idx])[0]
+        r_idxs_tmp = np.where(df_reference['id'].astype(str) == unique_reference_ids[reference_idx])[0]
+        q_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[q_idxs_tmp], df_reference['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
     else:
         if spectrum_ID1 in unique_reference_ids and spectrum_ID2 in unique_query_ids:
             spec_tmp = spectrum_ID1
@@ -429,7 +429,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
 
 
-def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='No', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
+def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -463,13 +463,13 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     if spectrum_ID1 is not None:
         spectrum_ID1 = str(spectrum_ID1)
     else:
-        spectrum_ID1 = str(df_query.iloc[0,0])
+        spectrum_ID1 = str(df_query['id'].iloc[0])
         print('No argument passed to spectrum_ID1; using the first spectrum in query_data.')
 
     if spectrum_ID2 is not None:
         spectrum_ID2 = str(spectrum_ID2)
     else:
-        spectrum_ID2 = str(df_reference.iloc[0,0])
+        spectrum_ID2 = str(df_reference['id'].iloc[0])
         print('No argument passed to spectrum_ID2; using the first spectrum in reference_data.')
 
     if spectrum_preprocessing_order is not None:
@@ -547,15 +547,15 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         print(f'Warning: the query and reference library have overlapping IDs: {common_IDs}')
 
     if spectrum_ID1 in unique_query_ids and spectrum_ID2 in unique_query_ids:
-        q_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == spectrum_ID1)[0]
-        r_idxs_tmp = np.where(df_query.iloc[:,0].astype(str) == spectrum_ID2)[0]
-        q_spec = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_query.iloc[r_idxs_tmp,1], df_query.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'].astype(str) == spectrum_ID1)[0]
+        r_idxs_tmp = np.where(df_query['id'].astype(str) == spectrum_ID2)[0]
+        q_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_query['mz_ratio'].iloc[r_idxs_tmp], df_query['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
     elif spectrum_ID1 in unique_reference_ids and spectrum_ID2 in unique_reference_ids:
-        q_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == spectrum_ID1)[0]
-        r_idxs_tmp = np.where(df_reference.iloc[:,0].astype(str) == spectrum_ID2)[0]
-        q_spec = np.asarray(pd.concat([df_reference.iloc[q_idxs_tmp,1], df_reference.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
-        r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_reference['id'].astype(str) == spectrum_ID1)[0]
+        r_idxs_tmp = np.where(df_reference['id'].astype(str) == spectrum_ID2)[0]
+        q_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[q_idxs_tmp], df_reference['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        r_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
     else:
         if spectrum_ID1 in unique_reference_ids and spectrum_ID2 in unique_query_ids:
             spec_tmp = spectrum_ID1
@@ -883,7 +883,7 @@ def get_reference_df(reference_data, likely_reference_IDs=None):
         df_reference = pd.read_csv(reference_data, sep='\t')
     if likely_reference_IDs is not None:
         likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
-        df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
+        df_reference = df_reference.loc[df_reference['id'].isin(likely_reference_IDs.iloc[:,0].tolist())]
     return df_reference
 
 
@@ -1269,7 +1269,7 @@ def tune_params_DE(query_data=None, reference_data=None, precursor_ion_mz_tolera
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
-        unique_query_ids = df_query.iloc[:,0].unique()
+        unique_query_ids = df_query['id'].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the TXT file of the reference data.')
@@ -1277,14 +1277,14 @@ def tune_params_DE(query_data=None, reference_data=None, precursor_ion_mz_tolera
     else:
         if isinstance(reference_data,str):
             df_reference = get_reference_df(reference_data=reference_data)
-            unique_reference_ids = df_reference.iloc[:,0].unique()
+            unique_reference_ids = df_reference['id'].unique()
         else:
             dfs = []
             unique_reference_ids = []
             for f in reference_data:
                 tmp = get_reference_df(reference_data=f)
                 dfs.append(tmp)
-                unique_reference_ids.extend(tmp.iloc[:,0].unique())
+                unique_reference_ids.extend(tmp['id'].unique())
             df_reference = pd.concat(dfs, axis=0, ignore_index=True)
 
     if 'ionization_mode' in df_reference.columns.tolist() and ionization_mode != None and ionization_mode != 'N/A':
@@ -1421,7 +1421,7 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, pr
         else:
             print(f'\nError: Unsupported query_data extension: {extension}')
             sys.exit()
-        unique_query_ids = df_query.iloc[:, 0].unique()
+        unique_query_ids = df_query['id'].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the data file(s).')
@@ -1429,14 +1429,14 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, pr
     else:
         if isinstance(reference_data, str):
             df_reference = get_reference_df(reference_data=reference_data)
-            unique_reference_ids = df_reference.iloc[:, 0].unique()
+            unique_reference_ids = df_reference['id'].unique()
         else:
             dfs = []
             unique_reference_ids = []
             for f in reference_data:
                 tmp = get_reference_df(reference_data=f)
                 dfs.append(tmp)
-                unique_reference_ids.extend(tmp.iloc[:, 0].unique())
+                unique_reference_ids.extend(tmp['id'].unique())
             df_reference = pd.concat(dfs, axis=0, ignore_index=True)
 
     print(f'\nNote that there are {len(unique_query_ids)} unique query spectra, '
@@ -1517,7 +1517,7 @@ def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=Non
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
-        unique_query_ids = df_query.iloc[:,0].unique()
+        unique_query_ids = df_query['id'].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the TXT file of the reference data.')
@@ -1525,14 +1525,14 @@ def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=Non
     else:
         if isinstance(reference_data,str):
             df_reference = get_reference_df(reference_data=reference_data)
-            unique_reference_ids = df_reference.iloc[:,0].unique()
+            unique_reference_ids = df_reference['id'].unique()
         else:
             dfs = []
             unique_reference_ids = []
             for f in reference_data:
                 tmp = get_reference_df(reference_data=f)
                 dfs.append(tmp)
-                unique_reference_ids.extend(tmp.iloc[:,0].unique())
+                unique_reference_ids.extend(tmp['id'].unique())
             df_reference = pd.concat(dfs, axis=0, ignore_index=True)
 
     print(f'\nNote that there are {len(unique_query_ids)} unique query spectra, {len(unique_reference_ids)} unique reference spectra, and {len(set(unique_query_ids) & set(unique_reference_ids))} of the query and reference spectra IDs are in common.\n')
@@ -1584,7 +1584,7 @@ def tune_params_on_NRMS_data_grid_shiny(query_data=None, reference_data=None, gr
         else:
             print(f'\nError: Unsupported query_data extension: {extension}')
             sys.exit()
-        unique_query_ids = df_query.iloc[:, 0].unique()
+        unique_query_ids = df_query['id'].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the data file(s).')
@@ -1592,14 +1592,14 @@ def tune_params_on_NRMS_data_grid_shiny(query_data=None, reference_data=None, gr
     else:
         if isinstance(reference_data, str):
             df_reference = get_reference_df(reference_data=reference_data)
-            unique_reference_ids = df_reference.iloc[:, 0].unique()
+            unique_reference_ids = df_reference['id'].unique()
         else:
             dfs = []
             unique_reference_ids = []
             for f in reference_data:
                 tmp = get_reference_df(reference_data=f)
                 dfs.append(tmp)
-                unique_reference_ids.extend(tmp.iloc[:, 0].unique())
+                unique_reference_ids.extend(tmp['id'].unique())
             df_reference = pd.concat(dfs, axis=0, ignore_index=True)
 
     print(f'\nNote that there are {len(unique_query_ids)} unique query spectra, '
@@ -1772,14 +1772,14 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
     n_top_matches_to_save = 1
 
-    min_mz = int(np.min([np.min(df_query.iloc[:,1]), np.min(df_reference.iloc[:,1])]))
-    max_mz = int(np.max([np.max(df_query.iloc[:,1]), np.max(df_reference.iloc[:,1])]))
+    min_mz = int(np.min([df_query['mz_ratio'].min(), df_reference['intensity'].min()]))
+    max_mz = int(np.max([df_query['mz_ratio'].max(), df_reference['intensity'].max()]))
     mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
     all_similarity_scores =  []
     for query_idx in range(0,len(unique_query_ids)):
-        q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
-        q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'] == unique_query_ids[query_idx])[0]
+        q_spec_tmp = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
         q_spec_tmp = convert_spec(q_spec_tmp,mzs)
 
         similarity_scores = []
@@ -1787,8 +1787,8 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
             q_spec = q_spec_tmp
             if verbose is True and ref_idx % 1000 == 0:
                 print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
-            r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
-            r_spec_tmp = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+            r_idxs_tmp = np.where(df_reference['id'] == unique_reference_ids[ref_idx])[0]
+            r_spec_tmp = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
             r_spec = convert_spec(r_spec_tmp,mzs)
 
             for transformation in spectrum_preprocessing_order:
@@ -2118,7 +2118,7 @@ def run_spec_lib_matching_on_NRMS_data_shiny(query_data=None, reference_data=Non
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
-        unique_query_ids = df_query.iloc[:,0].unique()
+        unique_query_ids = df_query['id'].unique()
 
     if reference_data is None:
         print('\nError: No argument passed to the mandatory reference_data. Please pass the path to the TXT file of the reference data.')
@@ -2126,14 +2126,14 @@ def run_spec_lib_matching_on_NRMS_data_shiny(query_data=None, reference_data=Non
     else:
         if isinstance(reference_data,str):
             df_reference = get_reference_df(reference_data,likely_reference_ids)
-            unique_reference_ids = df_reference.iloc[:,0].unique()
+            unique_reference_ids = df_reference['id'].unique()
         else:
             dfs = []
             unique_reference_ids = []
             for f in reference_data:
                 tmp = get_reference_df(f,likely_reference_ids)
                 dfs.append(tmp)
-                unique_reference_ids.extend(tmp.iloc[:,0].unique())
+                unique_reference_ids.extend(tmp.iloc['id'].unique())
             df_reference = pd.concat(dfs, axis=0, ignore_index=True)
 
 
@@ -2209,14 +2209,14 @@ def run_spec_lib_matching_on_NRMS_data_shiny(query_data=None, reference_data=Non
 
 
 
-    min_mz = int(np.min([np.min(df_query.iloc[:,1]), np.min(df_reference.iloc[:,1])]))
-    max_mz = int(np.max([np.max(df_query.iloc[:,1]), np.max(df_reference.iloc[:,1])]))
+    min_mz = int(np.min([df_query['mz_ratio'].min(), df_reference['mz_ratio'].min()]))
+    max_mz = int(np.max([df_query['mz_ratio'].max(), df_reference['mz_ratio'].max()]))
     mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
     all_similarity_scores =  []
     for query_idx in range(0,len(unique_query_ids)):
-        q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
-        q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        q_idxs_tmp = np.where(df_query['id'] == unique_query_ids[query_idx])[0]
+        q_spec_tmp = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
         q_spec_tmp = convert_spec(q_spec_tmp,mzs)
 
         similarity_scores = []
@@ -2224,8 +2224,8 @@ def run_spec_lib_matching_on_NRMS_data_shiny(query_data=None, reference_data=Non
             if verbose is True and ref_idx % 1000 == 0:
                 print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
             q_spec = q_spec_tmp
-            r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
-            r_spec_tmp = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+            r_idxs_tmp = np.where(df_reference['id'] == unique_reference_ids[ref_idx])[0]
+            r_spec_tmp = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
             r_spec = convert_spec(r_spec_tmp,mzs)
 
             for transformation in spectrum_preprocessing_order:
@@ -2481,7 +2481,7 @@ def extract_first_column_ids(file_path: str, max_ids: int = 20000):
         if 'id' in df.columns.tolist():
             ids = df['id'].astype(str).dropna()
         else:
-            ids = df.iloc[:, 0].astype(str).dropna()
+            ids = df['id'].astype(str).dropna()
         ids = [x for x in ids if x.strip() != ""]
         seen = set()
         uniq = []
@@ -2527,30 +2527,15 @@ def plot_spectra_ui(platform: str):
     base_inputs = [
         ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
-        ui.input_selectize(
-            "spectrum_ID1",
-            "Select spectrum ID 1 (default is the first spectrum in the library):",
-            choices=[],
-            multiple=False,
-            options={"placeholder": "Upload a library..."},
-        ),
-        ui.input_selectize(
-            "spectrum_ID2",
-            "Select spectrum ID 2 (default is the first spectrum in the library):",
-            choices=[],
-            multiple=False,
-            options={"placeholder": "Upload a library..."},
-        ),
+        ui.input_selectize("spectrum_ID1", "Select spectrum ID 1 (default is the first spectrum in the library):", choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
+        ui.input_selectize("spectrum_ID2", "Select spectrum ID 2 (default is the first spectrum in the library):", choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
         ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1:', ['No', 'Yes']),
-        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2:', ['No', 'Yes']),
+        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2:', ['No', 'Yes'], selected='Yes'),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.input_text('weights', 'Weights for mixture similarity measure (only applicable for \'mixture\' similarity measure; order: cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
-        ui.input_select(
-            "high_quality_reference_library",
-            "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.",
-            [False, True],
-        ),
+        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
+        ui.input_select("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", [False, True]),
     ]
+
 
     if platform == "HRMS":
         extra_inputs = [
@@ -2559,9 +2544,7 @@ def plot_spectra_ui(platform: str):
             ui.input_numeric("window_size_matching", "Matching window-size:", 0.5),
         ]
     else:
-        extra_inputs = [
-            ui.input_text("spectrum_preprocessing_order", "Sequence of characters for preprocessing order (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation)).", "FNLW",)
-        ]
+        extra_inputs = [ui.input_text("spectrum_preprocessing_order", "Sequence of characters for preprocessing order (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation)).", "FNLW")]
 
     numeric_inputs = [
         ui.input_numeric("mz_min", "Minimum m/z for filtering:", 0),
@@ -2614,27 +2597,49 @@ def run_spec_lib_matching_ui(platform: str):
     base_inputs = [
         ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
-        ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.input_text('weights', 'Weights for mixture similarity measure (only applicable for \'mixture\' similarity measure; order: cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
-        ui.input_file('compound_ID_output_file', 'Upload output from spectral library matching to plot top matches (optional)'),
+        ui.input_select("similarity_measure", "Select similarity measure:", ["cosine", "shannon", "renyi", "tsallis", "mixture", "jaccard", "dice", "3w_jaccard", "sokal_sneath", "binary_cosine", "mountford", "mcconnaughey", "driver_kroeber", "simpson", "braun_banquet", "fager_mcgowan", "kulczynski", "intersection", "hamming", "hellinger"]),
+        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights", "Weights for mixture similarity measure " "(only applicable for 'mixture' similarity measure; " "order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25"),),
+        ui.input_file( "compound_ID_output_file", "Upload output from spectral library matching " "to plot top matches (optional)"),
         ui.input_selectize("q_spec", "Select query spectrum (only applicable for plotting; default is the first spectrum in the compound ID output):", choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
-        ui.input_selectize("r_spec", "Select reference spectrum (only applicable for plotting; default is the rank 1 reference spectrum):", choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
-        ui.input_select('print_url_spectrum1', 'Print PubChem URL for query spectrum (only applicable for plotting):', ['No', 'Yes']),
-        ui.input_select('print_url_spectrum2', 'Print PubChem URL for reference spectrum (only applicable for plotting):', ['No', 'Yes']),
-        ui.input_select("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", [False, True])
+        ui.input_selectize( "r_spec", "Select reference spectrum (only applicable for plotting; default is the rank 1 reference spectrum):", choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
+        ui.input_select("print_url_spectrum1", "Print PubChem URL for query spectrum (only applicable for plotting):", ["No", "Yes"]),
+        ui.input_select("print_url_spectrum2", "Print PubChem URL for reference spectrum (only applicable for plotting):", ["No", "Yes"], selected="Yes"),
+        ui.input_select( "high_quality_reference_library", "Indicate whether the reference library is considered high quality. " "If True, filtering and noise removal are only applied to the query spectra.", [False, True])
+    ]
+
+    plot_controls = [
+        base_inputs[4],
+        base_inputs[5],
+        base_inputs[6],
+        base_inputs[7],
+        base_inputs[8],
     ]
 
     if platform == "HRMS":
         extra_inputs = [
             ui.input_numeric("precursor_ion_mz_tolerance", "Precursor ion mass tolerance (leave blank if not applicable):", None),
-            ui.input_select("ionization_mode", "Ionization mode:", ['Positive','Negative','N/A'], selected='N/A'),
-            ui.input_select("adduct", "Adduct:", ['H','NH3','NH4','Na','K','N/A'], selected='N/A'),
-            ui.input_text("spectrum_preprocessing_order","Sequence of characters for preprocessing order (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used.","FCNMWL"),
+            ui.input_select("ionization_mode", "Ionization mode:", ["Positive", "Negative", "N/A"], selected="N/A"),
+            ui.input_select("adduct", "Adduct:", ["H", "NH3", "NH4", "Na", "K", "N/A"], selected="N/A"),
+            ui.input_text("spectrum_preprocessing_order",
+                "Sequence of characters for preprocessing order "
+                "(C (centroiding), F (filtering), M (matching), N (noise removal), "
+                "L (low-entropy transformation), W (weight factor transformation)). "
+                "M must be included, C before M if used.",
+                "FCNMWL",
+            ),
             ui.input_numeric("window_size_centroiding", "Centroiding window-size:", 0.5),
             ui.input_numeric("window_size_matching", "Matching window-size:", 0.5),
         ]
     else:
-        extra_inputs = [ui.input_text("spectrum_preprocessing_order","Sequence of characters for preprocessing order (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation)).","FNLW")]
+        extra_inputs = [
+            ui.input_text(
+                "spectrum_preprocessing_order",
+                "Sequence of characters for preprocessing order "
+                "(F (filtering), N (noise removal), L (low-entropy transformation), "
+                "W (weight factor transformation)).",
+                "FNLW",
+            )
+        ]
 
     numeric_inputs = [
         ui.input_numeric("mz_min", "Minimum m/z for filtering:", 0),
@@ -2649,32 +2654,84 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_numeric("n_top_matches_to_save", "Number of top matches to save:", 3),
     ]
 
-
     run_button_spec_lib_matching = ui.download_button("run_btn_spec_lib_matching", "Run Spectral Library Matching", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
-    run_button_plot_spectra_within_spec_lib_matching = ui.download_button("run_btn_plot_spectra_within_spec_lib_matching", "Plot Spectra", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
+    run_button_plot_spectra_within_spec_lib_matching = ui.download_button("run_btn_plot_spectra_within_spec_lib_matching", "Plot Spectra", style="font-size:16px; padding:10px 20px; width:180px; height:60px")
     back_button = ui.input_action_button("back", "Back to main menu", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
+
+    plot_panel = ui.div(
+        [ui.h4("Plotting functionality for compound identification output", style="font-size:20px; margin-top:0; margin-bottom:8px;"),
+            *plot_controls,
+            ui.div(run_button_plot_spectra_within_spec_lib_matching, style="margin-top:8px; display:flex; justify-content:center;")],
+        style=("background-color:#f0f0f0; border:1px solid #ccc; border-radius:8px; padding:6px 8px 4px 8px; display:inline-block; width:auto; max-width:420px;"),
+    )
 
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
-            ui.div([base_inputs[0:2], extra_inputs[0:3], base_inputs[2:4]], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[4:10]], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([extra_inputs[3:6], numeric_inputs[0:3]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(
+                [
+                    base_inputs[0],
+                    base_inputs[1],
+                    extra_inputs[0],
+                    extra_inputs[1],
+                    extra_inputs[2],
+                    base_inputs[2],
+                    base_inputs[3],
+                ],
+                style="display:flex; flex-direction:column; gap:10px;",
+            ),
+            ui.div(
+                [
+                    base_inputs[9],
+                    extra_inputs[3],
+                    extra_inputs[4],
+                    extra_inputs[5],
+                    numeric_inputs[0],
+                    numeric_inputs[1],
+                    numeric_inputs[2],
+                ],
+                style="display:flex; flex-direction:column; gap:10px;"
+            ),
             ui.div(numeric_inputs[3:10], style="display:flex; flex-direction:column; gap:10px;"),
-            col_widths=(3,3,3,3)
+            ui.div(plot_panel, style="display:flex; justify-content:flex-start;"),
+            col_widths=(3, 3, 3, 3),
         )
-    elif platform == "NRMS":
+    else:
         inputs_columns = ui.layout_columns(
-            ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:10], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(numeric_inputs[5:10], style="display:flex; flex-direction:column; gap:10px;"),
-            col_widths=(3,3,3,3)
+            ui.div(
+                [
+                    base_inputs[0],
+                    base_inputs[1],
+                    base_inputs[2],
+                    base_inputs[3],
+                    extra_inputs[0],
+                ],
+                style="display:flex; flex-direction:column; gap:10px;",
+            ),
+            ui.div(
+                [
+                    base_inputs[9],
+                    numeric_inputs[0],
+                    numeric_inputs[1],
+                    numeric_inputs[2],
+                    numeric_inputs[3],
+                ],
+                style="display:flex; flex-direction:column; gap:10px;",
+            ),
+            ui.div(
+                numeric_inputs[4:10],
+                style="display:flex; flex-direction:column; gap:10px;",
+            ),
+            ui.div(
+                plot_panel,
+                style="display:flex; justify-content:flex-start;",
+            ),
+            col_widths=(3, 3, 3, 3),
         )
 
     log_panel = ui.card(
         ui.card_header("Identification log"),
         ui.output_text_verbatim("match_log"),
-        style="max-height:300px; overflow:auto"
+        style="max-height:300px; overflow:auto",
     )
 
     return ui.div(
@@ -2682,9 +2739,8 @@ def run_spec_lib_matching_ui(platform: str):
             ui.h2("Run Spectral Library Matching"),
             inputs_columns,
             run_button_spec_lib_matching,
-            run_button_plot_spectra_within_spec_lib_matching,
             back_button,
-            log_panel
+            log_panel,
         ),
     )
 
@@ -2695,7 +2751,7 @@ def run_parameter_tuning_grid_ui(platform: str):
         ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_selectize("similarity_measure", "Select similarity measure(s):", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"], multiple=True, selected='cosine'),
-        ui.input_text('weights', 'Weights for mixture similarity measure (only applicable for \'mixture\' similarity measure; order: cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
+        ui.panel_conditional("input.similarity_measure && input.similarity_measure.indexOf('mixture') !== -1", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
         ui.input_text("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", '[True]')
     ]
 
@@ -2798,7 +2854,7 @@ def run_parameter_tuning_DE_ui(platform: str):
         ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.input_text('weights', 'Weights for mixture similarity measure (only applicable for \'mixture\' similarity measure; order: cosine, shannon, renyi, tsallis):', '0.25, 0.25, 0.25, 0.25'),
+        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
         ui.input_select("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", [False, True])]
 
     if platform == "HRMS":

@@ -1,6 +1,6 @@
 
-from pycompound_fy7392.processing import *
-from pycompound_fy7392.similarity_measures import *
+from pycompound.processing import *
+from pycompound.similarity_measures import *
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -21,12 +21,12 @@ pd.set_option('display.max_columns', None)
 print('\n\n\nLC-MS/MS example:\n')
 
 # import query and reference libraries
-df_query = pd.read_csv(f'{Path.cwd()}/data/lcms_query_library.csv')
-df_reference = pd.read_csv(f'{Path.cwd()}/data/lcms_reference_library.csv')
+df_query = pd.read_csv(f'{Path.cwd()}/data/lcms_query.txt', sep='\t')
+df_reference = pd.read_csv(f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt', sep='\t')
 
 # get unique spectrum IDs
-unique_query_ids = df_query.iloc[:,0].unique()
-unique_reference_ids = df_reference.iloc[:,0].unique()
+unique_query_ids = df_query['id'].unique()
+unique_reference_ids = df_reference['id'].unique()
 
 # compute the similarity score between each query spectrum/spectra and all reference spectra and record the predicted compound for each query along with its corresponding similarity score
 preds_cosine = []
@@ -36,8 +36,8 @@ scores_cosine = []
 scores_shannon = []
 scores_tsallis = []
 for query_idx in range(0,len(unique_query_ids)): 
-    q_idxs_tmp = np.where(df_query.iloc[:,0] == unique_query_ids[query_idx])[0]
-    q_spec_tmp = np.asarray(pd.concat([df_query.iloc[q_idxs_tmp,1], df_query.iloc[q_idxs_tmp,2]], axis=1).reset_index(drop=True))
+    q_idxs_tmp = np.where(df_query['id'] == unique_query_ids[query_idx])[0]
+    q_spec_tmp = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
     q_spec = q_spec_tmp
 
     scores_cosine_tmp = []
@@ -46,8 +46,8 @@ for query_idx in range(0,len(unique_query_ids)):
     for ref_idx in range(0,len(unique_reference_ids)):
         if ref_idx % 100 == 0:
             print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
-        r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
-        r_spec = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        r_idxs_tmp = np.where(df_reference['id'] == unique_reference_ids[ref_idx])[0]
+        r_spec = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
 
         # perform weight factor transformation
         q_spec[:,1] = wf_transform(spec_mzs=q_spec[:,0], spec_ints=q_spec[:,1], wf_mz=1.1, wf_int=0.9)
@@ -107,16 +107,16 @@ print(df_lcms)
 print('\n\n\nGC-MS example:\n')
 
 # import query and reference libraries
-df_query = pd.read_csv(f'{Path.cwd()}/data/gcms_query_library.csv')
-df_reference = pd.read_csv(f'{Path.cwd()}/data/gcms_reference_library.csv')
+df_query = pd.read_csv(f'{Path.cwd()}/data/gcms_query.txt', sep='\t')
+df_reference = pd.read_csv(f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt', sep='\t')
 
 # get unique spectrum IDs
-unique_query_ids = df_query.iloc[:,0].unique()
-unique_reference_ids = df_reference.iloc[:,0].unique()
+unique_query_ids = df_query['id'].unique()
+unique_reference_ids = df_reference['id'].unique()
 
 # get the range of m/z values
-min_mz = np.min([np.min(df_query.iloc[:,1]), np.min(df_reference.iloc[:,1])])
-max_mz = np.max([np.max(df_query.iloc[:,1]), np.max(df_reference.iloc[:,1])])
+min_mz = np.min([np.min(df_query['mz_ratio']), np.min(df_reference['mz_ratio'])])
+max_mz = np.max([np.max(df_query['mz_ratio']), np.max(df_reference['mz_ratio'])])
 mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
 # compute the similarity score between each query spectrum/spectra and all reference spectra and record the predicted compound for each query along with its corresponding similarity score
@@ -138,8 +138,8 @@ for query_idx in range(0,len(unique_query_ids)):
         q_spec = q_spec_tmp
         if ref_idx % 1000 == 0:
             print(f'Query spectrum #{query_idx} has had its similarity with {ref_idx} reference library spectra computed')
-        r_idxs_tmp = np.where(df_reference.iloc[:,0] == unique_reference_ids[ref_idx])[0]
-        r_spec_tmp = np.asarray(pd.concat([df_reference.iloc[r_idxs_tmp,1], df_reference.iloc[r_idxs_tmp,2]], axis=1).reset_index(drop=True))
+        r_idxs_tmp = np.where(df_reference['id'] == unique_reference_ids[ref_idx])[0]
+        r_spec_tmp = np.asarray(pd.concat([df_reference['mz_ratio'].iloc[r_idxs_tmp], df_reference['intensity'].iloc[r_idxs_tmp]], axis=1).reset_index(drop=True))
         r_spec = convert_spec(r_spec_tmp,mzs)
 
         # perform weight factor transformation
@@ -181,7 +181,5 @@ df_gcms = pd.DataFrame({'QUERY_ID':unique_query_ids, 'PREDICTED_COMPOUND_COSINE'
 
 print('\n Example GC-MS/MS results:')
 print(df_gcms)
-
-
 
 

@@ -31,7 +31,8 @@ def objective_function_HRMS(X, ctx):
         p["wf_mz"], p["wf_int"], p["LET_threshold"],
         p["entropy_dimension"],
         ctx["high_quality_reference_library"],
-        verbose=False
+        verbose=False,
+        exact_match_required=ctx["exact_match_required"]
     )
     print(f"\nparams({ctx['optimize_params']}) = {np.array(X)}\naccuracy: {acc*100}%")
     return 1.0 - acc
@@ -45,7 +46,8 @@ def objective_function_NRMS(X, ctx):
         ctx["mz_min"], ctx["mz_max"], ctx["int_min"], ctx["int_max"],
         p["noise_threshold"], p["wf_mz"], p["wf_int"], p["LET_threshold"], p["entropy_dimension"],
         ctx["high_quality_reference_library"],
-        verbose=False
+        verbose=False,
+        exact_match_required=ctx["exact_match_required"]
     )
     print(f"\nparams({ctx['optimize_params']}) = {np.array(X)}\naccuracy: {acc*100}%")
     return 1.0 - acc
@@ -53,7 +55,7 @@ def objective_function_NRMS(X, ctx):
 
 
 
-def tune_params_DE(query_data=None, reference_data=None, chromatography_platform='HRMS', precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, similarity_measure='cosine', weights=None, spectrum_preprocessing_order='CNMWL', mz_min=0, mz_max=999999999, int_min=0, int_max=999999999, high_quality_reference_library=False, optimize_params=["window_size_centroiding","window_size_matching","noise_threshold","wf_mz","wf_int","LET_threshold","entropy_dimension"], param_bounds={"window_size_centroiding":(0.0,0.5),"window_size_matching":(0.0,0.5),"noise_threshold":(0.0,0.25),"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0.0,5.0),"entropy_dimension":(1.0,3.0)}, default_params={"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1}, maxiters=3, de_workers=1):
+def tune_params_DE(query_data=None, reference_data=None, chromatography_platform='HRMS', precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, similarity_measure='cosine', weights=None, spectrum_preprocessing_order='CNMWL', mz_min=0, mz_max=999999999, int_min=0, int_max=999999999, high_quality_reference_library=False, optimize_params=["window_size_centroiding","window_size_matching","noise_threshold","wf_mz","wf_int","LET_threshold","entropy_dimension"], param_bounds={"window_size_centroiding":(0.0,0.5),"window_size_matching":(0.0,0.5),"noise_threshold":(0.0,0.25),"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0.0,5.0),"entropy_dimension":(1.0,3.0)}, default_params={"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1}, maxiters=3, de_workers=1, exact_match_required=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -106,6 +108,7 @@ def tune_params_DE(query_data=None, reference_data=None, chromatography_platform
         high_quality_reference_library=high_quality_reference_library,
         default_params=default_params,
         optimize_params=optimize_params,
+        exact_match_required=exact_match_required
     )
 
     bounds = [param_bounds[p] for p in optimize_params]
@@ -136,14 +139,7 @@ default_HRMS_grid = {'similarity_measure':['cosine'], 'weight':[{'Cosine':0.25,'
 default_NRMS_grid = {'similarity_measure':['cosine'], 'weight':[{'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}], 'spectrum_preprocessing_order':['FCNMWL'], 'mz_min':[0], 'mz_max':[9999999], 'int_min':[0], 'int_max':[99999999], 'noise_threshold':[0.0], 'wf_mz':[0.0], 'wf_int':[1.0], 'LET_threshold':[0.0], 'entropy_dimension':[1.1], 'high_quality_reference_library':[False]}
 
 
-def _eval_one_HRMS(df_query, df_reference,
-              precursor_ion_mz_tolerance_tmp, ionization_mode_tmp, adduct_tmp,
-              similarity_measure_tmp, weight,
-              spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp,
-              int_min_tmp, int_max_tmp, noise_threshold_tmp,
-              window_size_centroiding_tmp, window_size_matching_tmp,
-              wf_mz_tmp, wf_int_tmp, LET_threshold_tmp,
-              entropy_dimension_tmp, high_quality_reference_library_tmp):
+def _eval_one_HRMS(df_query, df_reference, precursor_ion_mz_tolerance_tmp, ionization_mode_tmp, adduct_tmp, similarity_measure_tmp, weight, spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp, int_min_tmp, int_max_tmp, noise_threshold_tmp, window_size_centroiding_tmp, window_size_matching_tmp, wf_mz_tmp, wf_int_tmp, LET_threshold_tmp, entropy_dimension_tmp, high_quality_reference_library_tmp, exact_match_required_tmp):
 
     acc = get_acc_HRMS(
         df_query=df_query, df_reference=df_reference,
@@ -160,7 +156,8 @@ def _eval_one_HRMS(df_query, df_reference,
         LET_threshold=LET_threshold_tmp,
         entropy_dimension=entropy_dimension_tmp,
         high_quality_reference_library=high_quality_reference_library_tmp,
-        verbose=False
+        verbose=False,
+        exact_match_required=exact_match_required_tmp
     )
 
     return (
@@ -172,12 +169,7 @@ def _eval_one_HRMS(df_query, df_reference,
     )
 
 
-def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
-              similarity_measure_tmp, weight,
-              spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp,
-              int_min_tmp, int_max_tmp, noise_threshold_tmp,
-              wf_mz_tmp, wf_int_tmp, LET_threshold_tmp,
-              entropy_dimension_tmp, high_quality_reference_library_tmp):
+def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, similarity_measure_tmp, weight, spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp, int_min_tmp, int_max_tmp, noise_threshold_tmp, wf_mz_tmp, wf_int_tmp, LET_threshold_tmp, entropy_dimension_tmp, high_quality_reference_library_tmp, exact_match_required):
 
     acc = get_acc_NRMS(
         df_query=df_query, df_reference=df_reference,
@@ -191,7 +183,8 @@ def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_id
         LET_threshold=LET_threshold_tmp,
         entropy_dimension=entropy_dimension_tmp,
         high_quality_reference_library=high_quality_reference_library_tmp,
-        verbose=False
+        verbose=False,
+        exact_match_required=exact_match_required_tmp
     )
 
     return (
@@ -202,7 +195,7 @@ def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_id
 
 
 
-def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, grid=None, output_path=None, return_output=False):
+def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, grid=None, output_path=None, return_output=False, exact_match_required=False):
     grid = {**default_HRMS_grid, **(grid or {})}
     for key, value in grid.items():
         globals()[key] = value
@@ -251,7 +244,9 @@ def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, precurso
 
     param_grid = product(similarity_measure, weight, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, noise_threshold,
                          window_size_centroiding, window_size_matching, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library)
-    results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_HRMS)(df_query, df_reference, precursor_ion_mz_tolerance, ionization_mode, adduct,  *params) for params in param_grid)
+    #results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_HRMS)(df_query, df_reference, precursor_ion_mz_tolerance, ionization_mode, adduct, (*params for params in param_grid), exact_match_required))
+    results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_HRMS)(df_query, df_reference, precursor_ion_mz_tolerance, ionization_mode, adduct, *params, exact_match_required) for params in param_grid)
+
 
     df_out = pd.DataFrame(results, columns=[
         'ACC','SIMILARITY.MEASURE','WEIGHT','SPECTRUM.PROCESSING.ORDER', 'MZ.MIN','MZ.MAX','INT.MIN','INT.MAX','NOISE.THRESHOLD',
@@ -275,7 +270,7 @@ def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, precurso
 
 
 
-def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
+def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False, exact_match_required=False):
     grid = {**default_NRMS_grid, **(grid or {})}
     for key, value in grid.items():
         globals()[key] = value
@@ -318,7 +313,8 @@ def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=Non
 
     param_grid = product(similarity_measure, weight, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max,
                          noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library)
-    results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_NRMS)(df_query, df_reference, unique_query_ids, unique_reference_ids, *params) for params in param_grid)
+    #results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_NRMS)(df_query, df_reference, unique_query_ids, unique_reference_ids, *params) for params in param_grid, exact_match_required)
+    results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_NRMS)(df_query, df_reference, unique_query_ids, unique_reference_ids, *params, exact_match_required) for params in param_grid)
 
     df_out = pd.DataFrame(results, columns=['ACC','SIMILARITY.MEASURE','WEIGHT','SPECTRUM.PROCESSING.ORDER', 'MZ.MIN','MZ.MAX','INT.MIN','INT.MAX',
                                             'NOISE.THRESHOLD','WF.MZ','WF.INT','LET.THRESHOLD','ENTROPY.DIMENSION', 'HIGH.QUALITY.REFERENCE.LIBRARY'])
@@ -339,7 +335,7 @@ def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=Non
 
 
 
-def get_acc_HRMS(df_query, df_reference, precursor_ion_mz_tolerance, ionization_mode, adduct, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, window_size_centroiding, window_size_matching, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library, verbose=True):
+def get_acc_HRMS(df_query, df_reference, precursor_ion_mz_tolerance, ionization_mode, adduct, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, window_size_centroiding, window_size_matching, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library, verbose=True, exact_match_required=False):
 
     n_top_matches_to_save = 1
     unique_reference_ids = df_reference['id'].dropna().astype(str).unique().tolist()
@@ -445,11 +441,17 @@ def get_acc_HRMS(df_query, df_reference, precursor_ion_mz_tolerance, ionization_
     df_tmp = pd.DataFrame({'TRUE.ID': df_scores.index.to_list(), 'PREDICTED.ID': top_ids, 'SCORE': top_scores})
     #if verbose:
     #    print(df_tmp)
-    acc = (df_tmp['TRUE.ID'] == df_tmp['PREDICTED.ID']).mean()
+    if exact_match_required == True:
+        acc = (df_tmp['TRUE.ID'] == df_tmp['PREDICTED.ID']).mean()
+    else:
+        true_lower = df_tmp['TRUE.ID'].str.lower()
+        pred_lower = df_tmp['PREDICTED.ID'].str.lower()
+        matches = [t in p for t, p in zip(true_lower, pred_lower)]
+        acc = sum(matches) / len(matches)
     return acc
 
 
-def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library, verbose=True):
+def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library, verbose=True, exact_match_required=False):
 
     n_top_matches_to_save = 1
 
@@ -532,7 +534,13 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
     df_tmp = pd.DataFrame(out, columns=['TRUE.ID','PREDICTED.ID','SCORE'])
     #if verbose:
     #    print(df_tmp)
-    acc = (df_tmp['TRUE.ID']==df_tmp['PREDICTED.ID']).mean()
+    if exact_match_required == True:
+        acc = (df_tmp['TRUE.ID'] == df_tmp['PREDICTED.ID']).mean()
+    else:
+        true_lower = df_tmp['TRUE.ID'].str.lower()
+        pred_lower = df_tmp['PREDICTED.ID'].str.lower()
+        matches = [t in p for t, p in zip(true_lower, pred_lower)]
+        acc = sum(matches) / len(matches)
     return acc
 
 

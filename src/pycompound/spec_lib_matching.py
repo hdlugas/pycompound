@@ -65,7 +65,7 @@ def tune_params_DE(query_data=None, reference_data=None, chromatography_platform
         extension = extension[(len(extension)-1)]
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
-            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
@@ -805,7 +805,7 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp, sep='\t')

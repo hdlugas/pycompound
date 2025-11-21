@@ -316,5 +316,15 @@ run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/MoNA-export-Hu
                                    adduct='H',
                                    precursor_ion_mz_tolerance=0.5,
                                    print_id_results=True)
+
+print('\n\ntest #53:')
+run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.msp',
+                                   reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
+                                   similarity_measure='cosine')
+print('\n\ntest #54:')
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/gcms_query.msp',
+                                   reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
+                                   similarity_measure='cosine')
+
 """
 

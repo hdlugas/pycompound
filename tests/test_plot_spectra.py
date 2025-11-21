@@ -248,3 +248,36 @@ generate_plots_on_HRMS_data(
         weights={'Cosine':0.1, 'Shannon':0.2, 'Renyi':0.3, 'Tsallis':0.4},
         output_path=f'{Path.cwd()}/plots/test32.pdf')
 
+print('\n\ntest #33:')
+generate_plots_on_HRMS_data(
+        query_data=f'{Path.cwd()}/data/lcms_query.msp',
+        reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
+        high_quality_reference_library=True,
+        noise_threshold=0.1,
+        mz_min=100,
+        output_path=f'{Path.cwd()}/plots/test33.pdf')
+
+print('\n\ntest #34:')
+generate_plots_on_HRMS_data(
+        query_data=f'{Path.cwd()}/data/lcms_query_tuning.msp',
+        reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
+        high_quality_reference_library=True,
+        noise_threshold=0.1,
+        mz_min=100,
+        output_path=f'{Path.cwd()}/plots/test34.pdf')
+
+print('\n\ntest #35:')
+generate_plots_on_NRMS_data(
+        query_data=f'{Path.cwd()}/data/gcms_query.msp',
+        reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
+        similarity_measure='shannon',
+        weights={'Cosine':0.5, 'Shannon':0.3, 'Renyi':0.1, 'Tsallis':0.1},
+        output_path=f'{Path.cwd()}/plots/test35.pdf')
+
+print('\n\ntest #36:')
+generate_plots_on_NRMS_data(
+        query_data=f'{Path.cwd()}/data/gcms_query.msp',
+        reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
+        similarity_measure='cosine',
+        output_path=f'{Path.cwd()}/plots/test36.pdf')
+

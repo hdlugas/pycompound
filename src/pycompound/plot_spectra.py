@@ -14,7 +14,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
@@ -29,7 +29,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = reference_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
             df_reference = pd.read_csv(output_path_tmp, sep='\t')
@@ -298,7 +298,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
@@ -312,7 +312,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         extension = reference_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = reference_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
             df_reference = pd.read_csv(output_path_tmp, sep='\t')
@@ -395,8 +395,8 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         print(f'Warning: plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.')
         output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.pdf'
 
-    min_mz = np.min([np.min(df_query['mz_ratio'].tolist()), np.min(df_reference['mz_ratio'].tolist())])
-    max_mz = np.max([np.max(df_query['mz_ratio'].tolist()), np.max(df_reference['mz_ratio'].tolist())])
+    min_mz = int(np.min([np.min(df_query['mz_ratio'].tolist()), np.min(df_reference['mz_ratio'].tolist())]))
+    max_mz = int(np.max([np.max(df_query['mz_ratio'].tolist()), np.max(df_reference['mz_ratio'].tolist())]))
     mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
     unique_query_ids = df_query['id'].unique().tolist()

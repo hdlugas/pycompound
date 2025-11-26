@@ -2525,8 +2525,20 @@ def _open_plot_window(session, svg_bytes: bytes, title: str = "plot.svg"):
 
 def plot_spectra_ui(platform: str):
     base_inputs = [
-        ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
-        ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
+            ui.div({"class":"form-control",
+                    "style": "max-width: 320px; padding: 10px; background:#f8f9fa;"},
+                   ui.p("Detailed descriptions found on GitHub:"),
+                   ui.HTML("<br>"),
+                   ui.HTML('Spectrum preprocessing transformations: '
+                           '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations".'
+                           'target="_blank" rel="noopener noreferrer">README → Spectrum Preprocessing Transformations</a>'),
+                   ui.HTML("<br>"),
+                   ui.HTML("<br>"),
+                   ui.HTML('Parameters: '
+                           '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions".'
+                           'target="_blank" rel="noopener noreferrer">README → Parameter Descriptions</a>')),
+        ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
+        ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_selectize("spectrum_ID1", "Select spectrum ID 1 (default is the first spectrum in the library):", choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
         ui.input_selectize("spectrum_ID2", "Select spectrum ID 2 (default is the first spectrum in the library):", choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
         ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1:', ['No', 'Yes']),
@@ -2551,7 +2563,7 @@ def plot_spectra_ui(platform: str):
         ui.input_numeric("mz_max", "Maximum m/z for filtering:", 99999999),
         ui.input_numeric("int_min", "Minimum intensity for filtering:", 0),
         ui.input_numeric("int_max", "Maximum intensity for filtering:", 999999999),
-        ui.input_numeric("noise_threshold", "Noise removal threshold:", 0.0),
+        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), 0.0),
         ui.input_numeric("wf_mz", "Mass/charge weight factor:", 0.0),
         ui.input_numeric("wf_int", "Intensity weight factor:", 1.0),
         ui.input_numeric("LET_threshold", "Low-entropy threshold:", 0.0),
@@ -2565,16 +2577,16 @@ def plot_spectra_ui(platform: str):
 
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
-            ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:9], extra_inputs[0]], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(extra_inputs[1:3], numeric_inputs[0:3], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([numeric_inputs[3:10], select_input], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(base_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[5:10], extra_inputs[0]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(extra_inputs[1:3], numeric_inputs[0:4], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([numeric_inputs[4:10], select_input], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3),
         )
     elif platform == "NRMS":
         inputs_columns = ui.layout_columns(
-            ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:9], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(base_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[5:10], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div([numeric_inputs[5:10], select_input], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3),
@@ -2595,8 +2607,8 @@ def plot_spectra_ui(platform: str):
 
 def run_spec_lib_matching_ui(platform: str):
     base_inputs = [
-        ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
-        ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
+        ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
+        ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine", "shannon", "renyi", "tsallis", "mixture", "jaccard", "dice", "3w_jaccard", "sokal_sneath", "binary_cosine", "mountford", "mcconnaughey", "driver_kroeber", "simpson", "braun_banquet", "fager_mcgowan", "kulczynski", "intersection", "hamming", "hellinger"]),
         ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights", "Weights for mixture similarity measure " "(only applicable for 'mixture' similarity measure; " "order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25"),),
         ui.input_file( "compound_ID_output_file", "Upload output from spectral library matching " "to plot top matches"),
@@ -2646,7 +2658,7 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_numeric("mz_max", "Maximum m/z for filtering:", 99999999),
         ui.input_numeric("int_min", "Minimum intensity for filtering:", 0),
         ui.input_numeric("int_max", "Maximum intensity for filtering:", 999999999),
-        ui.input_numeric("noise_threshold", "Noise removal threshold:", 0.0),
+        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), 0.0),
         ui.input_numeric("wf_mz", "Mass/charge weight factor:", 0.0),
         ui.input_numeric("wf_int", "Intensity weight factor:", 1.0),
         ui.input_numeric("LET_threshold", "Low-entropy threshold:", 0.0),
@@ -2748,8 +2760,8 @@ def run_spec_lib_matching_ui(platform: str):
 
 def run_parameter_tuning_grid_ui(platform: str):
     base_inputs = [
-        ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
-        ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
+        ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
+        ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_selectize("similarity_measure", "Select similarity measure(s):", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"], multiple=True, selected='cosine'),
         ui.panel_conditional("input.similarity_measure && input.similarity_measure.indexOf('mixture') !== -1", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
         ui.input_text("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", '[True]')
@@ -2778,7 +2790,7 @@ def run_parameter_tuning_grid_ui(platform: str):
         ui.input_text("mz_max", "Maximum m/z for filtering:", '[99999999]'),
         ui.input_text("int_min", "Minimum intensity for filtering:", '[0]'),
         ui.input_text("int_max", "Maximum intensity for filtering:", '[999999999]'),
-        ui.input_text("noise_threshold", "Noise removal threshold:", '[0.0]'),
+        ui.input_text("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), '[0.0]'),
         ui.input_text("wf_mz", "Mass/charge weight factor:", '[0.0]'),
         ui.input_text("wf_int", "Intensity weight factor:", '[1.0]'),
         ui.input_text("LET_threshold", "Low-entropy threshold:", '[0.0]'),
@@ -2851,8 +2863,8 @@ def run_parameter_tuning_DE_ui(platform: str):
         PARAMS = PARAMS_NRMS
 
     base_inputs = [
-        ui.input_file("query_data", "Upload query dataset (mgf, mzML, cdf, msp, or txt):"),
-        ui.input_file("reference_data", "Upload reference dataset (mgf, mzML, cdf, msp, or txt):"),
+        ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
+        ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
         ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
         ui.input_select("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", [False, True])]
@@ -2874,7 +2886,7 @@ def run_parameter_tuning_DE_ui(platform: str):
         ui.input_numeric("mz_max", "Maximum m/z for filtering:", 99_999_999),
         ui.input_numeric("int_min", "Minimum intensity for filtering:", 0),
         ui.input_numeric("int_max", "Maximum intensity for filtering:", 999_999_999),
-        ui.input_numeric("noise_threshold", "Noise removal threshold:", 0.0),
+        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), 0.0),
         ui.input_numeric("wf_mz", "Mass/charge weight factor:", 0.0),
         ui.input_numeric("wf_int", "Intensity weight factor:", 1.0),
         ui.input_numeric("LET_threshold", "Low-entropy threshold:", 0.0),

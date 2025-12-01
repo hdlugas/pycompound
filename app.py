@@ -2696,17 +2696,6 @@ def _open_plot_window(session, svg_bytes: bytes, title: str = "plot.svg"):
 
 def plot_spectra_ui(platform: str):
     base_inputs = [
-            ui.div({"class":"form-control", "style": "max-width: 320px; padding: 10px; background:#f8f9fa"},
-                   ui.p("Detailed descriptions found on GitHub:"),
-                   ui.HTML("<br>"),
-                   ui.HTML('Spectrum preprocessing transformations: '
-                           '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations".'
-                           'target="_blank" rel="noopener noreferrer">README → Spectrum Preprocessing Transformations</a>'),
-                   ui.HTML("<br>"),
-                   ui.HTML("<br>"),
-                   ui.HTML('Parameters: '
-                           '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions".'
-                           'target="_blank" rel="noopener noreferrer">README → Parameter Descriptions</a>')),
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_selectize("spectrum_ID1", ui.span("Select ",ui.strong("spectrum ID 1")," (default is the first spectrum in the query dataset):"), choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
@@ -3451,6 +3440,15 @@ def server(input, output, session):
                 ui.h2("Main Menu"),
                 ui.div("Overview:", style="text-align:left; font-size:24px; font-weight:bold"),
                 ui.div("PyCompound is a Python-based tool designed for performing spectral library matching on either high-resolution mass spectrometry data (HRMS) or low-resolution mass spectrometry data (NRMS). PyCompound offers a range of spectrum preprocessing transformations and similarity measures. These spectrum preprocessing transformations include filtering on mass/charge and/or intensity values, weight factor transformation, low-entropy transformation, centroiding, noise removal, and matching. The available similarity measures include the canonical Cosine similarity measure, three entropy-based similarity measures, and a variety of binary similarity measures: Jaccard, Dice, 3W-Jaccard, Sokal-Sneath, Binary Cosine, Mountford, McConnaughey, Driver-Kroeber, Simpson, Braun-Banquet, Fager-McGowan, Kulczynski, Intersection, Hamming, and Hellinger.", style="margin-top:10px; text-align:left; font-size:16px; font-weight:500"),
+                ui.div({"class":"form-control", "style": "max-width: 800px; max-height: 200px; padding: 10px; background:#f8f9fa"},
+                       ui.p("Detailed descriptions found on GitHub:"),
+                       ui.HTML('Spectrum preprocessing transformations: '
+                               '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations".'
+                               'target="_blank" rel="noopener noreferrer">README → Spectrum Preprocessing Transformations</a>'),
+                       ui.HTML("<br>"),
+                       ui.HTML('Parameters: '
+                               '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions".'
+                               'target="_blank" rel="noopener noreferrer">README → Parameter Descriptions</a>')),
                 ui.div("Select options:", style="margin-top:30px; text-align:left; font-size:24px; font-weight:bold"),
                 ui.div(ui.input_radio_buttons("chromatography_platform", "Specify chromatography platform:", ["HRMS","NRMS"]), style="font-size:18px; margin-top:10px; max-width:none"),
                 ui.input_action_button("plot_spectra", "Plot two spectra before and after preprocessing transformations.", style="font-size:18px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),

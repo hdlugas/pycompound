@@ -81,6 +81,40 @@ def get_pubchem_url(query: str) -> str:
     return f"https://pubchem.ncbi.nlm.nih.gov/#query={q}"
 
 
+"""
+def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
+    if input_path is None:
+        print('Error: please specify input_path (i.e. the path to the input mgf, mzML, cdf, json, or msp file). Mandatory argument.')
+        sys.exit()
+
+    if output_path is None:
+        tmp = input_path.split('/')
+        tmp = tmp[(len(tmp)-1)]
+        basename = tmp.split('.')[0]
+        output_path = f'{Path.cwd()}/{basename}.csv'
+        print(f'Warning: no output_path specified, so library is written to {output_path}')
+
+    if is_reference not in [True,False]:
+        print('Error: is_reference must be either \'True\' or \'False\'.')
+        sys.exit()
+
+    last_three_chars = input_path[(len(input_path)-3):len(input_path)]
+    last_four_chars = input_path[(len(input_path)-4):len(input_path)]
+    if last_three_chars == 'mgf' or last_three_chars == 'MGF':
+        input_file_type = 'mgf'
+    elif last_four_chars == 'mzML' or last_four_chars == 'mzml' or last_four_chars == 'MZML':
+        input_file_type = 'mzML'
+    elif last_four_chars == 'json' or last_four_chars == 'JSON':
+        input_file_type = 'json'
+    elif last_three_chars == 'cdf' or last_three_chars == 'CDF':
+        input_file_type = 'cdf'
+    elif last_three_chars == 'msp' or last_three_chars == 'MSP':
+        input_file_type = 'msp'
+    else:
+        print('ERROR: either an \'mgf\', \'mzML\', \'cdf\', \'json\', or \'msp\' file must be passed to --input_path')
+        sys.exit()
+"""
+
 
 def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
     if input_path is None:
@@ -115,8 +149,138 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
         sys.exit()
 
 
+    spectra = []
+    if input_file_type == 'mgf':
+        with mgf.read(input_path, use_index=False) as reader:
+            for spec in reader:
+                spectra.append(spec)
+    if input_file_type == 'mzML':
+        with mzml.read(input_path) as reader:
+            for spec in reader:
+                spectra.append(spec)
 
-def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
+
+    if input_file_type == 'mgf' or input_file_type == 'mzML':
+        ids = []
+        mzs = []
+        ints = []
+        precursor_ion_mzs = []
+        for i in range(0,len(spectra)):
+            for j in range(0,len(spectra[i]['m/z array'])):
+                if input_file_type == 'mzML':
+                    if is_reference == False:
+                        ids.append(f'ID_{i+1}')
+                    else:
+                        ids.append(spectra[i]['id'])
+                elif input_file_type == 'mgf':
+                    precursor_ion_mzs.append(spectra[i]['params']['pepmass'][0])
+                    if is_reference == False:
+                        ids.append(f'ID_{i+1}')
+                    else:
+                        ids.append(spectra[i]['params']['name'])
+                mzs.append(spectra[i]['m/z array'][j])
+                ints.append(spectra[i]['intensity array'][j])
+
+
+    if input_file_type == 'cdf':
+        dataset = nc.Dataset(input_path, 'r')
+        all_mzs = dataset.variables['mass_values'][:]
+        all_ints = dataset.variables['intensity_values'][:]
+        scan_idxs = dataset.variables['scan_index'][:]
+        dataset.close()
+
+        ids = []
+        mzs = []
+        ints = []
+        for i in range(0,(len(scan_idxs)-1)):
+            if i % 1000 == 0:
+                print(f'analyzed {i} out of {len(scan_idxs)} scans')
+            s_idx = scan_idxs[i]
+            e_idx = scan_idxs[i+1]
+
+            mzs_tmp = all_mzs[s_idx:e_idx]
+            ints_tmp = all_ints[s_idx:e_idx]
+
+            for j in range(0,len(mzs_tmp)):
+                ids.append(f'ID_{i+1}')
+                mzs.append(mzs_tmp[j])
+                ints.append(ints_tmp[j])
+
+
+    if input_file_type == "msp":
+        ids = []
+        mzs = []
+        ints = []
+        precursor_ion_mzs = []
+        spectrum_id = None
+        precursor_ion_mz = None
+        with open(input_path, "r", encoding="utf-8", errors="ignore") as f:
+            i = 0
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+
+                if line.startswith("Name:"):
+                    i += 1
+                    if not is_reference:
+                        spectrum_id = f"ID_{i}"
+                    else:
+                        spectrum_id = line.replace("Name:", "", 1).strip()
+
+                elif line.startswith("PrecursorMZ:"):
+                    try:
+                        precursor_ion_mz = float(line.replace("PrecursorMZ:", "", 1).strip())
+                    except ValueError:
+                        precursor_ion_mz = None
+
+                elif line[0].isdigit():
+                    try:
+                        mz, intensity = map(float, line.split()[:2])
+                    except ValueError:
+                        continue
+
+                    if spectrum_id is None:
+                        continue
+
+                    ids.append(spectrum_id)
+                    mzs.append(mz)
+                    ints.append(intensity)
+                    precursor_ion_mzs.append(precursor_ion_mz)
+
+
+    if input_file_type == 'json':
+        data = json.load(open(input_path))
+        ids = []
+        mzs = []
+        ints = []
+        precursor_ion_mzs = []
+        for i in range(0,len(data)):
+            spec_ID_tmp = data[i]['spectrum_id']
+            tmp = data[i]['peaks_json']
+            tmp = tmp[1:-1].split(",")
+            tmp = [a.replace("[","") for a in tmp]
+            tmp = [a.replace("]","") for a in tmp]
+            mzs_tmp = tmp[0::2]
+            ints_tmp = tmp[1::2]
+            if is_reference == False:
+                ids.extend([f'ID_{i+1}'] * len(mzs_tmp))
+            elif is_reference == True:
+                ids.extend([spec_ID_tmp] * len(mzs_tmp))
+            mzs.extend(mzs_tmp)
+            ints.extend(ints_tmp)
+            precursor_ion_mzs.extend([data[i]['Precursor_MZ']] * len(mzs_tmp))
+
+
+    if len(precursor_ion_mzs) > 0:
+        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_ion_mz':precursor_ion_mzs})
+    else:
+        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
+
+    df.to_csv(output_path, index=False, sep='\t')
+
+
+def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -126,8 +290,8 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         extension = extension[(len(extension)-1)]
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
-            #build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
-            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
+            #build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
@@ -386,40 +550,42 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         plt.yticks([])
 
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-    plt.figlegend(loc='upper center')
+    plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
+    #plt.gcf().subplots_adjust(top=0.88)
 
-    fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
-    fig.text(0.05, 0.17, f'Similarity Score: {round(similarity_score, 4)}', fontsize=7)
-    fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
-    fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
-    fig.text(0.05, 0.08, f'Window Size (Centroiding): {window_size_centroiding}', fontsize=7)
-    fig.text(0.05, 0.05, f'Window Size (Matching): {window_size_matching}', fontsize=7)
-    if similarity_measure == 'mixture':
-        fig.text(0.05, 0.02, f'Weights for mixture similarity: {weights}', fontsize=7)
+    if annotate_fig == True:
+        fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
+        fig.text(0.05, 0.17, f'Similarity Score: {round(similarity_score, 4)}', fontsize=7)
+        fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
+        fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
+        fig.text(0.05, 0.08, f'Window Size (Centroiding): {window_size_centroiding}', fontsize=7)
+        fig.text(0.05, 0.05, f'Window Size (Matching): {window_size_matching}', fontsize=7)
+        if similarity_measure == 'mixture':
+            fig.text(0.05, 0.02, f'Weights for mixture similarity: {weights}', fontsize=7)
 
-    fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]', fontsize=7)
-    fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
-    fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
-    fig.text(0.40, 0.11, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
-    fig.text(0.40, 0.08, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
+        fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]', fontsize=7)
+        fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
+        fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
+        fig.text(0.40, 0.11, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
+        fig.text(0.40, 0.08, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
 
-    if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
-        url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-        url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-        t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
-        t2 = fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
-        t1.set_url(url_tmp1)
-        t2.set_url(url_tmp2)
+        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+            t2 = fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+            t1.set_url(url_tmp1)
+            t2.set_url(url_tmp2)
 
-    if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
-        url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-        t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
-        t1.set_url(url_tmp1)
+        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+            t1.set_url(url_tmp1)
 
-    if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
-        url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-        t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
-        t2.set_url(url_tmp2)
+        if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+            t2.set_url(url_tmp2)
 
     fig.savefig(output_path, format='svg')
 
@@ -429,7 +595,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
 
 
-def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
+def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -534,8 +700,8 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         print(f'Warning: plots will be saved to the svg ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.svg in the current working directory.')
         output_path = f'{Path.cwd()}/spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}.svg'
 
-    min_mz = np.min([df_query['mz_ratio'].min(), df_reference['mz_ratio'].min()])
-    max_mz = np.max([df_query['mz_ratio'].max(), df_reference['mz_ratio'].max()])
+    min_mz = int(np.min([df_query['mz_ratio'].min(), df_reference['mz_ratio'].min()]))
+    max_mz = int(np.max([df_query['mz_ratio'].max(), df_reference['mz_ratio'].max()]))
     mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
     unique_query_ids = df_query['id'].unique().tolist()
@@ -569,10 +735,14 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     q_spec = convert_spec(q_spec,mzs)
     r_spec = convert_spec(r_spec,mzs)
 
-    int_min_tmp_q = min(q_spec[q_spec[:,1].nonzero(),1][0])
-    int_min_tmp_r = min(r_spec[r_spec[:,1].nonzero(),1][0])
-    int_max_tmp_q = max(q_spec[q_spec[:,1].nonzero(),1][0])
-    int_max_tmp_r = max(r_spec[r_spec[:,1].nonzero(),1][0])
+    #int_min_tmp_q = min(q_spec[q_spec[:,1].nonzero(),1][0])
+    #int_min_tmp_r = min(r_spec[r_spec[:,1].nonzero(),1][0])
+    #int_max_tmp_q = max(q_spec[q_spec[:,1].nonzero(),1][0])
+    #int_max_tmp_r = max(r_spec[r_spec[:,1].nonzero(),1][0])
+    int_min_tmp_q = min(q_spec[:,1])
+    int_min_tmp_r = min(r_spec[:,1])
+    int_max_tmp_q = max(q_spec[:,1])
+    int_max_tmp_r = max(r_spec[:,1])
     int_min_tmp = int(min([int_min_tmp_q,int_min_tmp_r]))
     int_max_tmp = int(max([int_max_tmp_q,int_max_tmp_r]))
     
@@ -668,38 +838,40 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         plt.title(f'Transformed Query and Reference Spectra', fontsize=10)
 
     plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-    plt.figlegend(loc='upper center')
+    plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
+    #plt.gcf().subplots_adjust(top=0.88)
 
-    fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
-    fig.text(0.05, 0.17, f'Similarity Score: {round(similarity_score, 4)}', fontsize=7)
-    fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
-    fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
-    fig.text(0.05, 0.08, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
-    if similarity_measure == 'mixture':
-        fig.text(0.05, 0.05, f'Weights for mixture similarity: {weights}', fontsize=7)
+    if annotate_fig == True:
+        fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
+        fig.text(0.05, 0.17, f'Similarity Score: {round(similarity_score, 4)}', fontsize=7)
+        fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
+        fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
+        fig.text(0.05, 0.08, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
+        if similarity_measure == 'mixture':
+            fig.text(0.05, 0.05, f'Weights for mixture similarity: {weights}', fontsize=7)
 
-    fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
-    fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
-    fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
-    fig.text(0.40, 0.11, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
+        fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
+        fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
+        fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
+        fig.text(0.40, 0.11, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
 
-    if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
-        url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-        url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-        t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
-        t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
-        t1.set_url(url_tmp1)
-        t2.set_url(url_tmp2)
+        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+            t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+            t1.set_url(url_tmp1)
+            t2.set_url(url_tmp2)
 
-    if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
-        url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-        t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
-        t1.set_url(url_tmp1)
+        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+            t1.set_url(url_tmp1)
 
-    if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
-        url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-        t2 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
-        t2.set_url(url_tmp2)
+        if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t2 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+            t2.set_url(url_tmp2)
 
     fig.savefig(output_path, format='svg')
 
@@ -2517,7 +2689,6 @@ def extract_first_column_ids(file_path: str, max_ids: int = 20000):
 
 
 def _open_plot_window(session, svg_bytes: bytes, title: str = "plot.svg"):
-    """Send SVG bytes to browser and open in a new window as a data URL."""
     b64 = base64.b64encode(svg_bytes).decode("ascii")
     data_url = f"data:image/svg;base64,{b64}"
     session.send_custom_message("open-plot-window", {"svg": data_url, "title": title})
@@ -2525,8 +2696,7 @@ def _open_plot_window(session, svg_bytes: bytes, title: str = "plot.svg"):
 
 def plot_spectra_ui(platform: str):
     base_inputs = [
-            ui.div({"class":"form-control",
-                    "style": "max-width: 320px; padding: 10px; background:#f8f9fa;"},
+            ui.div({"class":"form-control", "style": "max-width: 320px; padding: 10px; background:#f8f9fa"},
                    ui.p("Detailed descriptions found on GitHub:"),
                    ui.HTML("<br>"),
                    ui.HTML('Spectrum preprocessing transformations: '
@@ -2539,40 +2709,40 @@ def plot_spectra_ui(platform: str):
                            'target="_blank" rel="noopener noreferrer">README → Parameter Descriptions</a>')),
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
-        ui.input_selectize("spectrum_ID1", "Select spectrum ID 1 (default is the first spectrum in the library):", choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
-        ui.input_selectize("spectrum_ID2", "Select spectrum ID 2 (default is the first spectrum in the library):", choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
-        ui.input_select('print_url_spectrum1', 'Print PubChem URL for spectrum 1:', ['No', 'Yes']),
-        ui.input_select('print_url_spectrum2', 'Print PubChem URL for spectrum 2:', ['No', 'Yes'], selected='Yes'),
-        ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
-        ui.input_select("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", [False, True]),
+        ui.input_selectize("spectrum_ID1", ui.span("Select ",ui.strong("spectrum ID 1")," (default is the first spectrum in the query dataset):"), choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
+        ui.input_selectize("spectrum_ID2", ui.span("Select ",ui.strong("spectrum ID 2")," (default is the first spectrum in the reference dataset):"), choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
+        ui.input_select('print_url_spectrum1', ui.span(ui.strong('Print PubChem URL'),' for spectrum 1:'), ['No', 'Yes']),
+        ui.input_select('print_url_spectrum2', ui.span(ui.strong('Print PubChem URL'),' for spectrum 2:'), ['No', 'Yes'], selected='Yes'),
+        ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
+        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights",ui.span(ui.strong("Weights")," for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
+        ui.input_select("high_quality_reference_library", ui.span("Indicate whether the reference library is considered ",ui.strong("high quality"),". If True, filtering and noise removal are only applied to the query spectra."), [False, True]),
     ]
 
 
     if platform == "HRMS":
         extra_inputs = [
-            ui.input_text("spectrum_preprocessing_order", "Sequence of characters for preprocessing order (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used.", "FCNMWL",),
-            ui.input_numeric("window_size_centroiding", "Centroiding window-size:", 0.5),
-            ui.input_numeric("window_size_matching", "Matching window-size:", 0.5),
+            ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used."), "FCNMWL",),
+            ui.input_numeric("window_size_centroiding", ui.strong("Centroiding window-size:"), 0.5),
+            ui.input_numeric("window_size_matching", ui.strong("Matching window-size:"), 0.5),
         ]
     else:
-        extra_inputs = [ui.input_text("spectrum_preprocessing_order", "Sequence of characters for preprocessing order (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation)).", "FNLW")]
+        extra_inputs = [ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation))."), "FNLW")]
 
     numeric_inputs = [
-        ui.input_numeric("mz_min", "Minimum m/z for filtering:", 0),
-        ui.input_numeric("mz_max", "Maximum m/z for filtering:", 99999999),
-        ui.input_numeric("int_min", "Minimum intensity for filtering:", 0),
-        ui.input_numeric("int_max", "Maximum intensity for filtering:", 999999999),
+        ui.input_numeric("mz_min", ui.span(ui.strong("Minimum m/z")," for filtering:"), 0),
+        ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
+        ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
+        ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
         ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), 0.0),
-        ui.input_numeric("wf_mz", "Mass/charge weight factor:", 0.0),
-        ui.input_numeric("wf_int", "Intensity weight factor:", 1.0),
-        ui.input_numeric("LET_threshold", "Low-entropy threshold:", 0.0),
-        ui.input_numeric("entropy_dimension", "Entropy dimension (Renyi/Tsallis only):", 1.1),
+        ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
+        ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
+        ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
+        ui.input_numeric("entropy_dimension", ui.span(ui.strong("Entropy dimension")," (Renyi/Tsallis only):"), 1.1),
     ]
 
-    select_input = ui.input_select("y_axis_transformation", "Transformation to apply to intensity axis:", ["normalized", "none", "log10", "sqrt"])
+    select_input = ui.input_select("y_axis_transformation", ui.span(ui.strong("Transformation")," to apply to intensity axis:"), ["normalized", "none", "log10", "sqrt"])
 
-    run_button_plot_spectra = ui.download_button("run_btn_plot_spectra", "Run", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
+    run_button_plot_spectra = ui.download_button("run_btn_plot_spectra", "Download SVG file", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
     back_button = ui.input_action_button("back", "Back to main menu", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
 
     if platform == "HRMS":
@@ -2599,7 +2769,8 @@ def plot_spectra_ui(platform: str):
             run_button_plot_spectra,
             back_button,
             ui.div(ui.output_text("plot_query_status"), style="margin-top:8px; font-size:14px"),
-            ui.div(ui.output_text("plot_reference_status"), style="margin-top:8px; font-size:14px")
+            ui.div(ui.output_text("plot_reference_status"), style="margin-top:8px; font-size:14px"),
+            ui.output_plot("spectra_plot", width="800px", height="600px")
         ),
     )
 
@@ -2609,14 +2780,14 @@ def run_spec_lib_matching_ui(platform: str):
     base_inputs = [
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
-        ui.input_select("similarity_measure", "Select similarity measure:", ["cosine", "shannon", "renyi", "tsallis", "mixture", "jaccard", "dice", "3w_jaccard", "sokal_sneath", "binary_cosine", "mountford", "mcconnaughey", "driver_kroeber", "simpson", "braun_banquet", "fager_mcgowan", "kulczynski", "intersection", "hamming", "hellinger"]),
-        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights", "Weights for mixture similarity measure " "(only applicable for 'mixture' similarity measure; " "order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25"),),
-        ui.input_file( "compound_ID_output_file", "Upload output from spectral library matching " "to plot top matches"),
-        ui.input_selectize("q_spec", "Select query spectrum (only applicable for plotting; default is the first spectrum in the compound ID output):", choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
-        ui.input_selectize( "r_spec", "Select reference spectrum (only applicable for plotting; default is the rank 1 reference spectrum):", choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
-        ui.input_select("print_url_spectrum1", "Print PubChem URL for query spectrum (only applicable for plotting):", ["No", "Yes"]),
-        ui.input_select("print_url_spectrum2", "Print PubChem URL for reference spectrum (only applicable for plotting):", ["No", "Yes"], selected="Yes"),
-        ui.input_select( "high_quality_reference_library", "Indicate whether the reference library is considered high quality. " "If True, filtering and noise removal are only applied to the query spectra.", [False, True])
+        ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
+        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights",ui.span(ui.strong("Weights")," for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
+        ui.input_file( "compound_ID_output_file", ui.span(ui.strong("Upload output")," from spectral library matching to plot top matches")),
+        ui.input_selectize("q_spec", ui.span("Select ",ui.strong("query spectrum")," (only applicable for plotting; default is the first spectrum in the compound ID output):"), choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
+        ui.input_selectize( "r_spec", ui.span("Select ",ui.strong("reference spectrum")," (only applicable for plotting; default is the rank 1 reference spectrum):"), choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
+        ui.input_select("print_url_spectrum1", ui.span(ui.strong("Print PubChem URL")," for query spectrum (only applicable for plotting):"), ["No", "Yes"]),
+        ui.input_select("print_url_spectrum2", ui.span(ui.strong("Print PubChem URL")," for reference spectrum (only applicable for plotting):"), ["No", "Yes"], selected="Yes"),
+        ui.input_select("high_quality_reference_library", ui.span("Indicate whether the reference library is considered ",ui.strong("high quality"),". If True, filtering and noise removal are only applied to the query spectra."), [False, True]),
     ]
 
     plot_controls = [
@@ -2629,45 +2800,31 @@ def run_spec_lib_matching_ui(platform: str):
 
     if platform == "HRMS":
         extra_inputs = [
-            ui.input_numeric("precursor_ion_mz_tolerance", "Precursor ion mass tolerance (leave blank if not applicable):", None),
-            ui.input_select("ionization_mode", "Ionization mode:", ["Positive", "Negative", "N/A"], selected="N/A"),
-            ui.input_select("adduct", "Adduct:", ["H", "NH3", "NH4", "Na", "K", "N/A"], selected="N/A"),
-            ui.input_text("spectrum_preprocessing_order",
-                "Sequence of characters for preprocessing order "
-                "(C (centroiding), F (filtering), M (matching), N (noise removal), "
-                "L (low-entropy transformation), W (weight factor transformation)). "
-                "M must be included, C before M if used.",
-                "FCNMWL",
-            ),
-            ui.input_numeric("window_size_centroiding", "Centroiding window-size:", 0.5),
-            ui.input_numeric("window_size_matching", "Matching window-size:", 0.5),
+            ui.input_numeric("precursor_ion_mz_tolerance", ui.span(ui.strong("Precursor ion mass tolerance")," (leave blank if not applicable):"), None),
+            ui.input_select("ionization_mode", ui.strong("Ionization mode:"), ["Positive", "Negative", "N/A"], selected="N/A"),
+            ui.input_select("adduct", ui.strong("Adduct:"), ['H','NH3','NH4','Na','K','N/A'], selected='N/A'),
+            ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used."), "FCNMWL",),
+            ui.input_numeric("window_size_centroiding", ui.strong("Centroiding window-size:"), 0.5),
+            ui.input_numeric("window_size_matching", ui.strong("Matching window-size:"), 0.5),
         ]
     else:
-        extra_inputs = [
-            ui.input_text(
-                "spectrum_preprocessing_order",
-                "Sequence of characters for preprocessing order "
-                "(F (filtering), N (noise removal), L (low-entropy transformation), "
-                "W (weight factor transformation)).",
-                "FNLW",
-            )
-        ]
+        extra_inputs = [ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation))."), "FNLW")]
 
     numeric_inputs = [
-        ui.input_numeric("mz_min", "Minimum m/z for filtering:", 0),
-        ui.input_numeric("mz_max", "Maximum m/z for filtering:", 99999999),
-        ui.input_numeric("int_min", "Minimum intensity for filtering:", 0),
-        ui.input_numeric("int_max", "Maximum intensity for filtering:", 999999999),
+        ui.input_numeric("mz_min", ui.span(ui.strong("Minimum m/z")," for filtering:"), 0),
+        ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
+        ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
+        ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
         ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), 0.0),
-        ui.input_numeric("wf_mz", "Mass/charge weight factor:", 0.0),
-        ui.input_numeric("wf_int", "Intensity weight factor:", 1.0),
-        ui.input_numeric("LET_threshold", "Low-entropy threshold:", 0.0),
-        ui.input_numeric("entropy_dimension", "Entropy dimension (Renyi/Tsallis only):", 1.1),
-        ui.input_numeric("n_top_matches_to_save", "Number of top matches to save:", 3),
+        ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
+        ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
+        ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
+        ui.input_numeric("entropy_dimension", ui.span(ui.strong("Entropy dimension")," (Renyi/Tsallis only):"), 1.1),
+        ui.input_numeric("n_top_matches_to_save", ui.strong("Number of top matches to save:"), 3),
     ]
 
     run_button_spec_lib_matching = ui.download_button("run_btn_spec_lib_matching", "Run Spectral Library Matching", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
-    run_button_plot_spectra_within_spec_lib_matching = ui.download_button("run_btn_plot_spectra_within_spec_lib_matching", "Plot Spectra", style="font-size:16px; padding:10px 20px; width:180px; height:60px")
+    run_button_plot_spectra_within_spec_lib_matching = ui.download_button("run_btn_plot_spectra_within_spec_lib_matching", "Download SVG file", style="font-size:16px; padding:10px 20px; width:180px; height:60px")
     back_button = ui.input_action_button("back", "Back to main menu", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
 
     plot_panel = ui.div(
@@ -2680,27 +2837,11 @@ def run_spec_lib_matching_ui(platform: str):
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
             ui.div(
-                [
-                    base_inputs[0],
-                    base_inputs[1],
-                    extra_inputs[0],
-                    extra_inputs[1],
-                    extra_inputs[2],
-                    base_inputs[2],
-                    base_inputs[3],
-                ],
+                [base_inputs[0], base_inputs[1], extra_inputs[0], extra_inputs[1], extra_inputs[2], base_inputs[2], base_inputs[3]],
                 style="display:flex; flex-direction:column; gap:10px;",
             ),
             ui.div(
-                [
-                    base_inputs[9],
-                    extra_inputs[3],
-                    extra_inputs[4],
-                    extra_inputs[5],
-                    numeric_inputs[0],
-                    numeric_inputs[1],
-                    numeric_inputs[2],
-                ],
+                [base_inputs[9], extra_inputs[3], extra_inputs[4], extra_inputs[5], numeric_inputs[0], numeric_inputs[1], numeric_inputs[2]],
                 style="display:flex; flex-direction:column; gap:10px;"
             ),
             ui.div(numeric_inputs[3:10], style="display:flex; flex-direction:column; gap:10px;"),
@@ -2710,33 +2851,12 @@ def run_spec_lib_matching_ui(platform: str):
     else:
         inputs_columns = ui.layout_columns(
             ui.div(
-                [
-                    base_inputs[0],
-                    base_inputs[1],
-                    base_inputs[2],
-                    base_inputs[3],
-                    extra_inputs[0],
-                ],
+                [base_inputs[0], base_inputs[1], base_inputs[2], base_inputs[3], extra_inputs[0]],
                 style="display:flex; flex-direction:column; gap:10px;",
             ),
-            ui.div(
-                [
-                    base_inputs[9],
-                    numeric_inputs[0],
-                    numeric_inputs[1],
-                    numeric_inputs[2],
-                    numeric_inputs[3],
-                ],
-                style="display:flex; flex-direction:column; gap:10px;",
-            ),
-            ui.div(
-                numeric_inputs[4:10],
-                style="display:flex; flex-direction:column; gap:10px;",
-            ),
-            ui.div(
-                plot_panel,
-                style="display:flex; justify-content:flex-start;",
-            ),
+            ui.div([base_inputs[9], numeric_inputs[0], numeric_inputs[1], numeric_inputs[2], numeric_inputs[3]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(numeric_inputs[4:10], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(plot_panel, style="display:flex; justify-content:flex-start;"),
             col_widths=(3, 3, 3, 3),
         )
 
@@ -2753,6 +2873,7 @@ def run_spec_lib_matching_ui(platform: str):
             run_button_spec_lib_matching,
             back_button,
             log_panel,
+            ui.output_plot("spectra_plot_spec_lib_matching", width="800px", height="600px"),
         ),
     )
 
@@ -2762,39 +2883,33 @@ def run_parameter_tuning_grid_ui(platform: str):
     base_inputs = [
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
-        ui.input_selectize("similarity_measure", "Select similarity measure(s):", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"], multiple=True, selected='cosine'),
-        ui.panel_conditional("input.similarity_measure && input.similarity_measure.indexOf('mixture') !== -1", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
-        ui.input_text("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", '[True]')
+        ui.input_selectize("similarity_measure", ui.span("Select ",ui.strong("similarity measure(s)"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"], multiple=True, selected='cosine'),
+        ui.panel_conditional("input.similarity_measure && input.similarity_measure.indexOf('mixture') !== -1", ui.input_text("weights",ui.span(ui.strong("Weights for mixture similarity measure")," (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
+        ui.input_text("high_quality_reference_library", ui.span("Indicate whether the reference library is considered ",ui.strong("high quality"),". If True, filtering and noise removal are only applied to the query spectra."), '[True]')
     ]
 
     if platform == "HRMS":
         extra_inputs = [
-            ui.input_numeric("precursor_ion_mz_tolerance", "Precursor ion mass tolerance (leave blank if not applicable):", None),
-            ui.input_select("ionization_mode", "Ionization mode:", ['Positive','Negative','N/A'], selected='N/A'),
-            ui.input_select("adduct", "Adduct:", ['H','NH3','NH4','Na','K','N/A'], selected='N/A'),
-            ui.input_text("spectrum_preprocessing_order", "Sequence of characters for preprocessing order (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used.", "[FCNMWL,CWM]"),
-            ui.input_text("window_size_centroiding", "Centroiding window-size:", "[0.5]"),
-            ui.input_text("window_size_matching", "Matching window-size:", "[0.1,0.5]"),
+            ui.input_numeric("precursor_ion_mz_tolerance", ui.span(ui.strong("Precursor ion mass tolerance")," (leave blank if not applicable):"), None),
+            ui.input_select("ionization_mode", ui.strong("Ionization mode:"), ["Positive", "Negative", "N/A"], selected="N/A"),
+            ui.input_select("adduct", ui.strong("Adduct:"), ['H','NH3','NH4','Na','K','N/A'], selected='N/A'),
+            ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used."), "FCNMWL",),
+            ui.input_numeric("window_size_centroiding", ui.strong("Centroiding window-size:"), 0.5),
+            ui.input_numeric("window_size_matching", ui.strong("Matching window-size:"), 0.5),
         ]
     else:
-        extra_inputs = [
-            ui.input_text(
-                "spectrum_preprocessing_order",
-                "Sequence of characters for preprocessing order (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation)).",
-                "[FNLW,WNL]",
-            )
-        ]
+        extra_inputs = [ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation))."), "[FNLW,WNL]")]
 
     numeric_inputs = [
-        ui.input_text("mz_min", "Minimum m/z for filtering:", '[0]'),
-        ui.input_text("mz_max", "Maximum m/z for filtering:", '[99999999]'),
-        ui.input_text("int_min", "Minimum intensity for filtering:", '[0]'),
-        ui.input_text("int_max", "Maximum intensity for filtering:", '[999999999]'),
+        ui.input_numeric("mz_min", ui.span(ui.strong("Minimum m/z")," for filtering:"), 0),
+        ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
+        ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
+        ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
         ui.input_text("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), '[0.0]'),
-        ui.input_text("wf_mz", "Mass/charge weight factor:", '[0.0]'),
-        ui.input_text("wf_int", "Intensity weight factor:", '[1.0]'),
-        ui.input_text("LET_threshold", "Low-entropy threshold:", '[0.0]'),
-        ui.input_text("entropy_dimension", "Entropy dimension (Renyi/Tsallis only):", '[1.1]')
+        ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
+        ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
+        ui.input_text("LET_threshold", ui.strong("Low-entropy threshold:"), '[0.0]'),
+        ui.input_text("entropy_dimension", ui.span(ui.strong("Entropy dimension")," (Renyi/Tsallis only):"), '[1.1]'),
     ]
 
 
@@ -2804,17 +2919,16 @@ def run_parameter_tuning_grid_ui(platform: str):
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
             ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:7], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(numeric_inputs[5:9], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[6:7], extra_inputs[0:4]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([extra_inputs[4:6], numeric_inputs[0:4]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(numeric_inputs[4:9], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3, 3, 3, 3),
         )
     elif platform == "NRMS":
         inputs_columns = ui.layout_columns(
-            ui.div(base_inputs[0:6], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[6:7], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(numeric_inputs[5:9], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(base_inputs[0:7], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([*extra_inputs, numeric_inputs[0:4]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(numeric_inputs[4:9], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3, 3, 3, 3),
         )
 
@@ -2865,33 +2979,33 @@ def run_parameter_tuning_DE_ui(platform: str):
     base_inputs = [
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
-        ui.input_select("similarity_measure", "Select similarity measure:", ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
+        ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
         ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
-        ui.input_select("high_quality_reference_library", "Indicate whether the reference library is considered high quality. If True, filtering and noise removal are only applied to the query spectra.", [False, True])]
+        ui.input_select("high_quality_reference_library", ui.span("Indicate whether the reference library is considered ",ui.strong("high quality"),". If True, filtering and noise removal are only applied to the query spectra."), [False, True])]
 
     if platform == "HRMS":
         extra_inputs = [
-            ui.input_numeric("precursor_ion_mz_tolerance", "Precursor ion mass tolerance (leave blank if not applicable):", None),
-            ui.input_select("ionization_mode", "Ionization mode:", ['Positive','Negative','N/A'], selected='N/A'),
-            ui.input_select("adduct", "Adduct:", ['H','NH3','NH4','Na','K','N/A'], selected='N/A'),
-            ui.input_text("spectrum_preprocessing_order", "Sequence of characters for preprocessing order (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used.", "FCNMWL"),
-            ui.input_numeric("window_size_centroiding", "Centroiding window-size:", 0.5),
-            ui.input_numeric("window_size_matching", "Matching window-size:", 0.5),
+            ui.input_numeric("precursor_ion_mz_tolerance", ui.span(ui.strong("Precursor ion mass tolerance")," (leave blank if not applicable):"), None),
+            ui.input_select("ionization_mode", ui.strong("Ionization mode:"), ["Positive", "Negative", "N/A"], selected="N/A"),
+            ui.input_select("adduct", ui.strong("Adduct:"), ['H','NH3','NH4','Na','K','N/A'], selected='N/A'),
+            ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used."), "FCNMWL",),
+            ui.input_numeric("window_size_centroiding", ui.strong("Centroiding window-size:"), 0.5),
+            ui.input_numeric("window_size_matching", ui.strong("Matching window-size:"), 0.5),
         ]
     else:
-        extra_inputs = [ui.input_text("spectrum_preprocessing_order", "Sequence of characters for preprocessing order (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation)).", "FNLW")]
+        extra_inputs = [ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation))."), "FNLW")]
 
     numeric_inputs = [
-        ui.input_numeric("mz_min", "Minimum m/z for filtering:", 0),
-        ui.input_numeric("mz_max", "Maximum m/z for filtering:", 99_999_999),
-        ui.input_numeric("int_min", "Minimum intensity for filtering:", 0),
-        ui.input_numeric("int_max", "Maximum intensity for filtering:", 999_999_999),
+        ui.input_numeric("mz_min", ui.span(ui.strong("Minimum m/z")," for filtering:"), 0),
+        ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
+        ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
+        ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
         ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), 0.0),
-        ui.input_numeric("wf_mz", "Mass/charge weight factor:", 0.0),
-        ui.input_numeric("wf_int", "Intensity weight factor:", 1.0),
-        ui.input_numeric("LET_threshold", "Low-entropy threshold:", 0.0),
-        ui.input_numeric("entropy_dimension", "Entropy dimension (Renyi/Tsallis only):", 1.1),
-        ui.input_numeric("max_iterations", "Maximum number of iterations:", 5),
+        ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
+        ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
+        ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
+        ui.input_numeric("entropy_dimension", ui.span(ui.strong("Entropy dimension")," (Renyi/Tsallis only):"), 1.1),
+        ui.input_numeric("max_iterations", ui.strong("Maximum number of iterations:"), 5),
     ]
 
     run_button_parameter_tuning_DE = ui.input_action_button("run_btn_parameter_tuning_DE", "Tune parameters (differential evolution optimization)", style="font-size:16px; padding:15px 30px; width:300px; height:100px")
@@ -2900,18 +3014,17 @@ def run_parameter_tuning_DE_ui(platform: str):
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
             ui.div(*base_inputs, style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(*extra_inputs, style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(*numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(*numeric_inputs[5:11], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(extra_inputs[0:4], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([extra_inputs[4:6], numeric_inputs[0:4]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(*numeric_inputs[4:11], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3, 3, 3, 3),
         )
     else:
         inputs_columns = ui.layout_columns(
             ui.div(*base_inputs, style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(*extra_inputs, style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(*numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div(*numeric_inputs[5:11], style="display:flex; flex-direction:column; gap:10px;"),
-            col_widths=(3, 3, 3, 3),
+            ui.div([*extra_inputs, *numeric_inputs[0:4]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(*numeric_inputs[4:11], style="display:flex; flex-direction:column; gap:10px;"),
+            col_widths=(3, 3, 3),
         )
 
     return ui.page_fillable(
@@ -3501,29 +3614,187 @@ def server(input, output, session):
             raise
 
 
-    @render.download(filename=lambda: f"plot.svg")
-    def run_btn_plot_spectra():
+    def _build_spectra_figure(annotate_fig):
         spectrum_ID1 = input.spectrum_ID1() or None
         spectrum_ID2 = input.spectrum_ID2() or None
+        weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
+        weights = {"Cosine": weights_list[0], "Shannon": weights_list[1], "Renyi": weights_list[2], "Tsallis": weights_list[3]}
+        hq = input.high_quality_reference_library()
+        if isinstance(hq, str):
+            hq = hq.lower() != "false"
 
-        weights = [float(weight.strip()) for weight in input.weights().split(",") if weight.strip()]
-        weights = {'Cosine':weights[0], 'Shannon':weights[1], 'Renyi':weights[2], 'Tsallis':weights[3]}
-
-        high_quality_reference_library_tmp2 = False
-        if input.high_quality_reference_library() != 'False':
-            high_quality_reference_library_tmp2 = True
+        common = dict(
+            query_data=input.query_data()[0]["datapath"],
+            reference_data=input.reference_data()[0]["datapath"],
+            spectrum_ID1=spectrum_ID1,
+            spectrum_ID2=spectrum_ID2,
+            print_url_spectrum1=input.print_url_spectrum1(),
+            print_url_spectrum2=input.print_url_spectrum2(),
+            similarity_measure=input.similarity_measure(),
+            weights=weights,
+            spectrum_preprocessing_order=input.spectrum_preprocessing_order(),
+            high_quality_reference_library=hq,
+            mz_min=input.mz_min(), mz_max=input.mz_max(),
+            int_min=input.int_min(), int_max=input.int_max(),
+            noise_threshold=input.noise_threshold(),
+            wf_mz=input.wf_mz(), wf_intensity=input.wf_int(),
+            LET_threshold=input.LET_threshold(),
+            entropy_dimension=input.entropy_dimension(),
+            y_axis_transformation=input.y_axis_transformation(),
+            return_plot=True,
+            annotate_fig=annotate_fig,
+        )
 
         if input.chromatography_platform() == "HRMS":
-            fig = generate_plots_on_HRMS_data(query_data=input.query_data()[0]['datapath'], reference_data=input.reference_data()[0]['datapath'], spectrum_ID1=spectrum_ID1, spectrum_ID2=spectrum_ID2, print_url_spectrum1=input.print_url_spectrum1(), print_url_spectrum2=input.print_url_spectrum2(), similarity_measure=input.similarity_measure(), weights=weights, spectrum_preprocessing_order=input.spectrum_preprocessing_order(), high_quality_reference_library=high_quality_reference_library_tmp2, mz_min=input.mz_min(), mz_max=input.mz_max(), int_min=input.int_min(), int_max=input.int_max(), window_size_centroiding=input.window_size_centroiding(), window_size_matching=input.window_size_matching(), noise_threshold=input.noise_threshold(), wf_mz=input.wf_mz(), wf_intensity=input.wf_int(), LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(), y_axis_transformation=input.y_axis_transformation(), return_plot=True)
-            plt.show()
-        elif input.chromatography_platform() == "NRMS":
-            fig = generate_plots_on_NRMS_data(query_data=input.query_data()[0]['datapath'], reference_data=input.reference_data()[0]['datapath'], spectrum_ID1=spectrum_ID1, spectrum_ID2=spectrum_ID2, print_url_spectrum1=input.print_url_spectrum1(), print_url_spectrum2=input.print_url_spectrum2(), similarity_measure=input.similarity_measure(), spectrum_preprocessing_order=input.spectrum_preprocessing_order(), high_quality_reference_library=high_quality_reference_library_tmp2, mz_min=input.mz_min(), mz_max=input.mz_max(), int_min=input.int_min(), int_max=input.int_max(), noise_threshold=input.noise_threshold(), wf_mz=input.wf_mz(), wf_intensity=input.wf_int(), LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(), y_axis_transformation=input.y_axis_transformation(), return_plot=True)
-            plt.show()
+            fig = generate_plots_on_HRMS_data(
+                window_size_centroiding=input.window_size_centroiding(),
+                window_size_matching=input.window_size_matching(),
+                **common
+            )
+        else:
+            fig = generate_plots_on_NRMS_data(**common)
+
+        return fig
+
+
+    def _build_spectra_figure_spec_lib_matching(annotate_fig):
+        spectrum_ID1 = input.q_spec() or None
+        spectrum_ID2 = input.r_spec() or None
+        weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
+        weights = {"Cosine": weights_list[0], "Shannon": weights_list[1], "Renyi": weights_list[2], "Tsallis": weights_list[3]}
+        hq = input.high_quality_reference_library()
+        if isinstance(hq, str):
+            hq = hq.lower() != "false"
+
+        common = dict(
+            query_data=input.query_data()[0]["datapath"],
+            reference_data=input.reference_data()[0]["datapath"],
+            spectrum_ID1=spectrum_ID1,
+            spectrum_ID2=spectrum_ID2,
+            print_url_spectrum1=input.print_url_spectrum1(),
+            print_url_spectrum2=input.print_url_spectrum2(),
+            similarity_measure=input.similarity_measure(),
+            weights=weights,
+            spectrum_preprocessing_order=input.spectrum_preprocessing_order(),
+            high_quality_reference_library=hq,
+            mz_min=input.mz_min(), mz_max=input.mz_max(),
+            int_min=input.int_min(), int_max=input.int_max(),
+            noise_threshold=input.noise_threshold(),
+            wf_mz=input.wf_mz(), wf_intensity=input.wf_int(),
+            LET_threshold=input.LET_threshold(),
+            entropy_dimension=input.entropy_dimension(),
+            y_axis_transformation=input.y_axis_transformation(),
+            return_plot=True,
+            annotate_fig=annotate_fig,
+        )
+
+        if input.chromatography_platform() == "HRMS":
+            fig = generate_plots_on_HRMS_data(
+                window_size_centroiding=input.window_size_centroiding(),
+                window_size_matching=input.window_size_matching(),
+                **common
+            )
+        else:
+            fig = generate_plots_on_NRMS_data(**common)
+
+        return fig
+
+
+    @reactive.calc
+    def _fig_obj():
+        req(input.query_data(), input.reference_data())
+        return _build_spectra_figure(annotate_fig=False)
+
+    @output
+    @render.plot(alt="Spectra plot")
+    def spectra_plot():
+        return _fig_obj()
+
+    @output
+    @render.download(filename=lambda: "plot.svg")
+    def run_btn_plot_spectra():
+        req(input.query_data(), input.reference_data())
+        fig2 = _build_spectra_figure(annotate_fig=True)
         with io.BytesIO() as buf:
-            fig.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
-            plt.close()
+            fig2.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
+            plt.close(fig2)
             yield buf.getvalue()
 
+
+    @output
+    @render.download(filename=lambda: "plot.svg")
+    def run_btn_plot_spectra_within_spec_lib_matching():
+        req(input.query_data(), input.reference_data(), input.compound_ID_output_file())
+        fig = _build_spectra_figure_spec_lib_matching(annotate_fig=True)
+        with io.BytesIO() as buf:
+            fig.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
+            plt.close(fig)
+            yield buf.getvalue()
+
+
+    @reactive.calc
+    def _fig_within_spec():
+        req(input.query_data(), input.reference_data())
+
+        spectrum_ID1 = input.q_spec() or None
+        spectrum_ID2 = input.r_spec() or None
+
+        # normalize high_quality_reference_library to bool
+        hq = input.high_quality_reference_library()
+        if isinstance(hq, str):
+            hq = hq.lower() == "true"
+        elif isinstance(hq, (int, float)):
+            hq = bool(hq)
+
+        weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
+        weights = {"Cosine": weights_list[0], "Shannon": weights_list[1], "Renyi": weights_list[2], "Tsallis": weights_list[3]}
+
+        common = dict(
+            query_data=input.query_data()[0]["datapath"],
+            reference_data=input.reference_data()[0]["datapath"],
+            spectrum_ID1=spectrum_ID1,
+            spectrum_ID2=spectrum_ID2,
+            print_url_spectrum1=input.print_url_spectrum1(),
+            print_url_spectrum2=input.print_url_spectrum2(),
+            similarity_measure=input.similarity_measure(),
+            weights=weights,
+            spectrum_preprocessing_order=input.spectrum_preprocessing_order(),
+            high_quality_reference_library=hq,
+            mz_min=input.mz_min(), mz_max=input.mz_max(),
+            int_min=input.int_min(), int_max=input.int_max(),
+            noise_threshold=input.noise_threshold(),
+            wf_mz=input.wf_mz(), wf_intensity=input.wf_int(),
+            LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(),
+            y_axis_transformation="normalized",
+            return_plot=True,
+            annotate_fig=False,
+        )
+
+        if input.chromatography_platform() == "HRMS":
+            fig = generate_plots_on_HRMS_data(
+                window_size_centroiding=input.window_size_centroiding(),
+                window_size_matching=input.window_size_matching(),
+                **common
+            )
+        else:
+            fig = generate_plots_on_NRMS_data(**common)
+
+        return fig
+
+    @output
+    @render.plot(alt="Spectrum match plot")
+    def spectra_plot_spec_lib_matching():
+        return _fig_within_spec()
+
+    @output
+    @render.download(filename="plot.svg")
+    def run_btn_plot_spectra_within_spec_lib_matching():
+        req(input.query_data(), input.reference_data())
+        fig = _fig_within_spec()
+        with io.BytesIO() as buf:
+            fig.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
+            plt.close(fig)
+            yield buf.getvalue()
 
 
 
@@ -3561,7 +3832,6 @@ def server(input, output, session):
             return_ID_output=True,
         )
 
-        # --- streaming setup (same pattern as your DE block) ---
         loop = asyncio.get_running_loop()
         q: asyncio.Queue[str | None] = asyncio.Queue()
 
@@ -3583,10 +3853,8 @@ def server(input, output, session):
         drain_task = asyncio.create_task(_drain())
         writer = UIWriter()
 
-        # --- worker wrappers that install redirects INSIDE the thread ---
         def _run_hrms():
             with redirect_stdout(writer), redirect_stderr(writer):
-                # optional heartbeat
                 print(">> Starting HRMS identification ...", flush=True)
                 return run_spec_lib_matching_on_HRMS_data_shiny(
                     precursor_ion_mz_tolerance=input.precursor_ion_mz_tolerance(),
@@ -3602,7 +3870,6 @@ def server(input, output, session):
                 print(">> Starting NRMS identification ...", flush=True)
                 return run_spec_lib_matching_on_NRMS_data_shiny(**common_kwargs)
 
-        # --- run in worker thread and stream output live ---
         try:
             if input.chromatography_platform() == "HRMS":
                 df_out = await asyncio.to_thread(_run_hrms)
@@ -3617,7 +3884,6 @@ def server(input, output, session):
             tb = "".join(traceback.format_exception(type(e), e, e.__traceback__))
             match_log_rv.set(match_log_rv.get() + f"\n❌ {type(e).__name__}: {e}\n{tb}\n")
             await reactive.flush()
-            # make sure to stop the drainer before re-raising
             await q.put(None); await drain_task
             raise
 
@@ -3626,61 +3892,6 @@ def server(input, output, session):
             await drain_task
 
         yield df_out.to_csv(index=True, sep="\t")
-
-
-
-
-    @render.download(filename="plot.svg")
-    def run_btn_plot_spectra_within_spec_lib_matching():
-        req(input.query_data(), input.reference_data())
-
-        spectrum_ID1 = input.q_spec() or None
-        spectrum_ID2 = input.r_spec() or None
-
-        hq = input.high_quality_reference_library()
-        if isinstance(hq, str):
-            hq = hq.lower() == "true"
-        elif isinstance(hq, (int, float)):
-            hq = bool(hq)
-
-        weights = [float(weight.strip()) for weight in input.weights().split(",") if weight.strip()]
-        weights = {'Cosine':weights[0], 'Shannon':weights[1], 'Renyi':weights[2], 'Tsallis':weights[3]}
-
-        common = dict(
-            query_data=input.query_data()[0]['datapath'],
-            reference_data=input.reference_data()[0]['datapath'],
-            spectrum_ID1=spectrum_ID1,
-            spectrum_ID2=spectrum_ID2,
-            print_url_spectrum1=input.print_url_spectrum1(),
-            print_url_spectrum2=input.print_url_spectrum2(), 
-            similarity_measure=input.similarity_measure(),
-            weights=weights,
-            spectrum_preprocessing_order=input.spectrum_preprocessing_order(),
-            high_quality_reference_library=hq,
-            mz_min=input.mz_min(), mz_max=input.mz_max(),
-            int_min=input.int_min(), int_max=input.int_max(),
-            noise_threshold=input.noise_threshold(),
-            wf_mz=input.wf_mz(), wf_intensity=input.wf_int(),
-            LET_threshold=input.LET_threshold(), entropy_dimension=input.entropy_dimension(),
-            y_axis_transformation="normalized",
-            return_plot=True
-        )
-
-        if input.chromatography_platform() == "HRMS":
-            fig = generate_plots_on_HRMS_data(
-                window_size_centroiding=input.window_size_centroiding(),
-                window_size_matching=input.window_size_matching(),
-                **common
-            )
-            plt.show()
-        else:
-            fig = generate_plots_on_NRMS_data(**common)
-            plt.show()
-
-        with io.BytesIO() as buf:
-            fig.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
-            plt.close()
-            yield buf.getvalue()
 
 
     @render.download(filename="parameter_tuning_grid_output.txt")

@@ -27,6 +27,7 @@ import re
 import urllib.parse
 import urllib.request
 import matplotlib
+import textwrap
 
 matplotlib.rcParams['svg.fonttype'] = 'none'
 
@@ -280,7 +281,7 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
     df.to_csv(output_path, index=False, sep='\t')
 
 
-def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True):
+def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True, display_within_app_flag=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -460,14 +461,55 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
     fig, axes = plt.subplots(nrows=2, ncols=1)
 
-    plt.subplot(2,1,1)
+    """
+    if display_within_app_flag == True:
+        plt.close(fig)
+        fig = plt.figure(figsize=(18, 6), dpi=150)
+        gs = fig.add_gridspec(
+            2, 3,
+            width_ratios=[1, 1, 2.5],  # <-- wider right column
+            left=0.06, right=0.995, top=0.94, bottom=0.115,
+            wspace=0.30, hspace=0.92
+        )
+        ax_top = fig.add_subplot(gs[0, 0:2])
+        ax_bot = fig.add_subplot(gs[1, 0:2])
+        ax_txt = fig.add_subplot(gs[:, 2])
+        ax_txt.axis("off")
+        ax_txt.set_xlim(0, 1); ax_txt.set_ylim(0, 1)
+    """
+
+    if display_within_app_flag == True:
+        plt.close(fig)
+        fig = plt.figure(figsize=(18, 7), dpi=150)
+        gs = fig.add_gridspec(
+            2, 3,
+            width_ratios=[1, 1, 2],
+            left=0.06, right=0.995, top=0.94, bottom=0.115,
+            wspace=0.30, hspace=0.25   # <<< tighter vertical gap
+        )
+        ax_top = fig.add_subplot(gs[0, 0:2])
+        ax_bot = fig.add_subplot(gs[1, 0:2], sharex=ax_top)  # <<< share x
+        ax_txt = fig.add_subplot(gs[:, 2])
+        ax_txt.axis("off")
+        ax_txt.set_xlim(0,1); ax_txt.set_ylim(0,1)
+
+
+
+    if display_within_app_flag == True:
+        plt.sca(ax_top)
+    else:
+        plt.subplot(2,1,1)
+
     plt.vlines(x=q_spec_pre_trans[:,0], ymin=[0]*q_spec_pre_trans.shape[0], ymax=q_spec_pre_trans[:,1], linewidth=3, color='blue', label=f'Spectrum ID 1: {spectrum_ID1}')
     plt.vlines(x=r_spec_pre_trans[:,0], ymin=[0]*r_spec_pre_trans.shape[0], ymax=-r_spec_pre_trans[:,1], linewidth=3, color='red', label=f'Spectrum ID 2: {spectrum_ID2}')
     plt.xlabel('m/z',fontsize=7)
     plt.ylabel(ylab, fontsize=7)
     plt.xticks(fontsize=7)
     plt.yticks(fontsize=7)
-    plt.title('Untransformed Spectra', fontsize=10)
+    if display_within_app_flag == True:
+        plt.title('Untransformed Spectra', fontsize=9)
+    else:
+        plt.title('Untransformed Spectra', fontsize=10)
 
     mz_min_tmp_q = round(q_spec[:,0].min(),1)
     mz_min_tmp_r = round(r_spec[:,0].min(),1)
@@ -515,11 +557,15 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
     else:
         similarity_score = 0
 
-    plt.subplot(2,1,2)
+
+    if display_within_app_flag == True:
+        plt.sca(ax_bot)
+    else:
+        plt.subplot(2,1,2)
 
     if q_spec.shape[0] > 1:
         if np.max(q_spec[:,1]) == 0 or np.max(r_spec[:,1]) == 0:
-            plt.text(0.5, 0.5, 'The query and/or reference spectrum has no non-zero intensities after transformations.\n Change transformation parameters.', ha='center', va='center', fontsize=7, color='black')
+            plt.text(0.5, 0.5, 'The query and/or reference spectrum has no non-zero intensities after transformations.\n Change transformation parameters.', ha='center', va='center', fontsize=5, color='black')
             plt.xticks([])
             plt.yticks([])
         else:
@@ -543,15 +589,31 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             plt.ylabel(ylab, fontsize=7)
             plt.xticks(fontsize=7)
             plt.yticks(fontsize=7)
-            plt.title(f'Transformed Spectra', fontsize=10)
+            if display_within_app_flag == True:
+                plt.title('Transformed Spectra', fontsize=9)
+            else:
+                plt.title('Transformed Spectra', fontsize=10)
     else:
-        plt.text(0.5, 0.5, 'All points in the spectra were removed during preprocessing. \nChange the spectrum_preprocesing_order and/or change other spectrum-preprocessing parameters.', ha='center', va='center', fontsize=7, color='black')
+        plt.text(0.5, 0.5, 'All points in the spectra were removed during preprocessing. \nChange the spectrum_preprocesing_order and/or change other spectrum-preprocessing parameters.', ha='center', va='center', fontsize=5, color='black')
         plt.xticks([])
         plt.yticks([])
 
-    plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-    plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
-    #plt.gcf().subplots_adjust(top=0.88)
+    """
+    if display_within_app_flag != True:
+        plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
+        plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
+        #plt.gcf().subplots_adjust(top=0.88)
+    else:
+        #plt.subplots_adjust(hspace=0.5)
+        plt.gcf().subplots_adjust(hspace=0.18)
+    """
+    if display_within_app_flag == True:
+        ax_top.label_outer()  # hides x tick labels on top when sharex is used
+        ax_top.set_xlabel("")  # no x label on top panel
+        ax_top.set_title(ax_top.get_title(), pad=4)
+        ax_bot.set_title(ax_bot.get_title(), pad=4)
+        fig.subplots_adjust(hspace=0.5)
+
 
     if annotate_fig == True:
         fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
@@ -587,6 +649,63 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
             t2.set_url(url_tmp2)
 
+
+    if display_within_app_flag == True:
+        def tidy(line, wrap_cols=42, shorten_cols=80):
+            s = textwrap.fill(str(line), width=wrap_cols, break_long_words=False)
+            return textwrap.shorten(s, width=shorten_cols, placeholder="…")
+
+        y = 0.98
+        dy = 0.065
+        def put(line):
+            nonlocal y
+            ax_txt.text(
+                0.0, y, tidy(line),
+                fontsize=6, ha="left", va="top",
+                transform=ax_txt.transAxes, wrap=True
+            )
+            y -= dy
+
+        put(f"Similarity Measure: {similarity_measure.capitalize()}")
+        put(f"Similarity Score: {round(similarity_score, 4)}")
+        put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
+        put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
+        put(f"Window Size (Centroiding): {window_size_centroiding}")
+        put(f"Window Size (Matching): {window_size_matching}")
+        if similarity_measure == "mixture":
+            put(f"Weights for mixture similarity: {weights}")
+
+        y -= dy * 0.4
+        put(f"Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]")
+        put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
+        put(f"Noise Threshold: {noise_threshold}")
+        put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
+        put(f"Low-Entropy Threshold: {LET_threshold}")
+
+        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t1 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID1})", fontsize=6,
+                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
+            t2 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID2})", fontsize=6,
+                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
+            try: t1.set_url(url_tmp1)
+            except Exception: pass
+            try: t2.set_url(url_tmp2)
+            except Exception: pass
+        elif print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            t1 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID1})", fontsize=6,
+                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
+            try: t1.set_url(url_tmp1)
+            except Exception: pass
+        elif print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t2 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID2})", fontsize=6,
+                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
+            try: t2.set_url(url_tmp2)
+            except Exception: pass
+
     fig.savefig(output_path, format='svg')
 
     if return_plot == True:
@@ -595,7 +714,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
 
 
-def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True):
+def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True, display_within_app_flag=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -837,9 +956,44 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         plt.yticks(fontsize=7)
         plt.title(f'Transformed Query and Reference Spectra', fontsize=10)
 
-    plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-    plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
-    #plt.gcf().subplots_adjust(top=0.88)
+
+    """
+    if display_within_app_flag == True:
+        try:
+            ax_top.tick_params(axis='x', labelbottom=False)
+            ax_top.set_title(ax_top.get_title(), pad=6)
+            ax_bot.set_title(ax_bot.get_title(), pad=6)
+        except NameError:
+            axes = plt.gcf().axes
+            if len(axes) >= 2:
+                axes[0].tick_params(axis='x', labelbottom=False)
+                axes[0].set_title(axes[0].get_title(), pad=6)
+                axes[1].set_title(axes[1].get_title(), pad=6)
+        #plt.subplots_adjust(top=0.8, hspace=0.2, bottom=0.3)
+        plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
+        plt.gcf().subplots_adjust(hspace=0.18)
+    else:
+        plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
+        plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
+        plt.gcf().subplots_adjust(hspace=0.18)
+    """
+
+    if display_within_app_flag == True:
+        # hide top x tick labels to allow a tighter gap
+        try:
+            ax_top.tick_params(axis='x', labelbottom=False)
+            ax_top.set_title(ax_top.get_title(), pad=6)
+            ax_bot.set_title(ax_bot.get_title(), pad=6)
+        except NameError:
+            axes = plt.gcf().axes
+            if len(axes) >= 2:
+                axes[0].tick_params(axis='x', labelbottom=False)
+                axes[0].set_title(axes[0].get_title(), pad=6)
+                axes[1].set_title(axes[1].get_title(), pad=6)
+
+        # tighten vertical spacing between the two rows
+        plt.gcf().subplots_adjust(hspace=0.18)
+
 
     if annotate_fig == True:
         fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
@@ -2722,7 +2876,7 @@ def plot_spectra_ui(platform: str):
         ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
         ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
         ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
-        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), 0.0),
+        ui.input_numeric("noise_threshold", ui.span("Noise removal ", ui.strong("threshold"),":"), 0.0),
         ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
         ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
         ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
@@ -2804,7 +2958,7 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
         ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
         ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
-        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), 0.0),
+        ui.input_numeric("noise_threshold", ui.span("Noise removal ", ui.strong("threshold"),":"), 0.0),
         ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
         ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
         ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
@@ -2989,7 +3143,7 @@ def run_parameter_tuning_DE_ui(platform: str):
         ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
         ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
         ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
-        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), 0.0),
+        ui.input_numeric("noise_threshold", ui.span("Noise removal ", ui.strong("threshold"),":"), 0.0),
         ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
         ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
         ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
@@ -3612,7 +3766,7 @@ def server(input, output, session):
             raise
 
 
-    def _build_spectra_figure(annotate_fig):
+    def _build_spectra_figure(annotate_fig,display_within_app_flag):
         spectrum_ID1 = input.spectrum_ID1() or None
         spectrum_ID2 = input.spectrum_ID2() or None
         weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
@@ -3641,6 +3795,7 @@ def server(input, output, session):
             y_axis_transformation=input.y_axis_transformation(),
             return_plot=True,
             annotate_fig=annotate_fig,
+            display_within_app_flag=display_within_app_flag
         )
 
         if input.chromatography_platform() == "HRMS":
@@ -3651,11 +3806,10 @@ def server(input, output, session):
             )
         else:
             fig = generate_plots_on_NRMS_data(**common)
-
         return fig
 
 
-    def _build_spectra_figure_spec_lib_matching(annotate_fig):
+    def _build_spectra_figure_spec_lib_matching(annotate_fig,display_within_app_flag):
         spectrum_ID1 = input.q_spec() or None
         spectrum_ID2 = input.r_spec() or None
         weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
@@ -3684,6 +3838,7 @@ def server(input, output, session):
             y_axis_transformation=input.y_axis_transformation(),
             return_plot=True,
             annotate_fig=annotate_fig,
+            display_within_app_flag=display_within_app_flag
         )
 
         if input.chromatography_platform() == "HRMS":
@@ -3694,14 +3849,13 @@ def server(input, output, session):
             )
         else:
             fig = generate_plots_on_NRMS_data(**common)
-
         return fig
 
 
     @reactive.calc
     def _fig_obj():
         req(input.query_data(), input.reference_data())
-        return _build_spectra_figure(annotate_fig=False)
+        return _build_spectra_figure(annotate_fig=False,display_within_app_flag=True)
 
     @output
     @render.plot(alt="Spectra plot")
@@ -3712,7 +3866,7 @@ def server(input, output, session):
     @render.download(filename=lambda: "plot.svg")
     def run_btn_plot_spectra():
         req(input.query_data(), input.reference_data())
-        fig2 = _build_spectra_figure(annotate_fig=True)
+        fig2 = _build_spectra_figure(annotate_fig=True,display_within_app_flag=True)
         with io.BytesIO() as buf:
             fig2.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
             plt.close(fig2)
@@ -3723,7 +3877,7 @@ def server(input, output, session):
     @render.download(filename=lambda: "plot.svg")
     def run_btn_plot_spectra_within_spec_lib_matching():
         req(input.query_data(), input.reference_data(), input.compound_ID_output_file())
-        fig = _build_spectra_figure_spec_lib_matching(annotate_fig=True)
+        fig = _build_spectra_figure_spec_lib_matching(annotate_fig=True,display_within_app_flag=True)
         with io.BytesIO() as buf:
             fig.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
             plt.close(fig)

@@ -461,23 +461,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
     fig, axes = plt.subplots(nrows=2, ncols=1)
 
-    """
-    if display_within_app_flag == True:
-        plt.close(fig)
-        fig = plt.figure(figsize=(18, 6), dpi=150)
-        gs = fig.add_gridspec(
-            2, 3,
-            width_ratios=[1, 1, 2.5],  # <-- wider right column
-            left=0.06, right=0.995, top=0.94, bottom=0.115,
-            wspace=0.30, hspace=0.92
-        )
-        ax_top = fig.add_subplot(gs[0, 0:2])
-        ax_bot = fig.add_subplot(gs[1, 0:2])
-        ax_txt = fig.add_subplot(gs[:, 2])
-        ax_txt.axis("off")
-        ax_txt.set_xlim(0, 1); ax_txt.set_ylim(0, 1)
-    """
-
     if display_within_app_flag == True:
         plt.close(fig)
         fig = plt.figure(figsize=(18, 7), dpi=150)
@@ -492,13 +475,21 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         ax_txt = fig.add_subplot(gs[:, 2])
         ax_txt.axis("off")
         ax_txt.set_xlim(0,1); ax_txt.set_ylim(0,1)
-
-
+        plt.sca(ax_top)
+    else:
+        #fig.set_size_inches(14, 5.5)
+        #plt.subplots_adjust(left=0.08, right=0.985, top=0.88,  bottom=0.18, hspace=0.22)
+        plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
+        #plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
 
     if display_within_app_flag == True:
         plt.sca(ax_top)
     else:
-        plt.subplot(2,1,1)
+        try:
+            plt.sca(axes[0])
+        except Exception:
+            plt.subplot(2,1,1)
+
 
     plt.vlines(x=q_spec_pre_trans[:,0], ymin=[0]*q_spec_pre_trans.shape[0], ymax=q_spec_pre_trans[:,1], linewidth=3, color='blue', label=f'Spectrum ID 1: {spectrum_ID1}')
     plt.vlines(x=r_spec_pre_trans[:,0], ymin=[0]*r_spec_pre_trans.shape[0], ymax=-r_spec_pre_trans[:,1], linewidth=3, color='red', label=f'Spectrum ID 2: {spectrum_ID2}')
@@ -510,6 +501,25 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         plt.title('Untransformed Spectra', fontsize=9)
     else:
         plt.title('Untransformed Spectra', fontsize=10)
+
+
+    if display_within_app_flag == True:
+        try:
+            top_ax = ax_top
+        except NameError:
+            top_ax = plt.gcf().axes[0]
+        h, l = top_ax.get_legend_handles_labels()
+        if l:
+            top_ax.legend(h, l, loc="upper left", frameon=False, fontsize=5, handlelength=1.0, borderaxespad=0.2)
+    else:
+        try:
+            top_ax = axes[0]
+        except Exception:
+            top_ax = plt.gca()
+        h, l = top_ax.get_legend_handles_labels()
+        if l:
+            fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 0.96), ncol=2, frameon=False, prop={"size": 7}, handlelength=1.0)
+
 
     mz_min_tmp_q = round(q_spec[:,0].min(),1)
     mz_min_tmp_r = round(r_spec[:,0].min(),1)
@@ -598,22 +608,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         plt.xticks([])
         plt.yticks([])
 
-    """
-    if display_within_app_flag != True:
-        plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-        plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
-        #plt.gcf().subplots_adjust(top=0.88)
-    else:
-        #plt.subplots_adjust(hspace=0.5)
-        plt.gcf().subplots_adjust(hspace=0.18)
-    """
-    if display_within_app_flag == True:
-        ax_top.label_outer()  # hides x tick labels on top when sharex is used
-        ax_top.set_xlabel("")  # no x label on top panel
-        ax_top.set_title(ax_top.get_title(), pad=4)
-        ax_bot.set_title(ax_bot.get_title(), pad=4)
-        fig.subplots_adjust(hspace=0.5)
-
 
     if annotate_fig == True:
         fig.text(0.05, 0.20, f'Similarity Measure: {similarity_measure.capitalize()}', fontsize=7)
@@ -651,6 +645,11 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
 
     if display_within_app_flag == True:
+        ax_top.label_outer()
+        ax_top.set_xlabel("")
+        ax_top.set_title(ax_top.get_title(), pad=4)
+        ax_bot.set_title(ax_bot.get_title(), pad=4)
+
         def tidy(line, wrap_cols=42, shorten_cols=80):
             s = textwrap.fill(str(line), width=wrap_cols, break_long_words=False)
             return textwrap.shorten(s, width=shorten_cols, placeholder="…")
@@ -867,7 +866,34 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     
     fig, axes = plt.subplots(nrows=2, ncols=1)
 
-    plt.subplot(2,1,1)
+    if display_within_app_flag == True:
+        plt.close(fig)
+        fig = plt.figure(figsize=(18, 7), dpi=150)
+        gs = fig.add_gridspec(
+            2, 3,
+            width_ratios=[1, 1, 2],
+            left=0.06, right=0.995, top=0.94, bottom=0.115,
+            wspace=0.30, hspace=0.25   # <<< tighter vertical gap
+        )
+        ax_top = fig.add_subplot(gs[0, 0:2])
+        ax_bot = fig.add_subplot(gs[1, 0:2], sharex=ax_top)  # <<< share x
+        ax_txt = fig.add_subplot(gs[:, 2])
+        ax_txt.axis("off")
+        ax_txt.set_xlim(0,1); ax_txt.set_ylim(0,1)
+        plt.sca(ax_top)
+    #else:
+    #fig.set_size_inches(14, 5.5)
+    #plt.subplots_adjust(left=0.08, right=0.985, top=0.88,  bottom=0.18, hspace=0.22)
+    #plt.subplots_adjust(top=0.8, hspace=0.8, bottom=0.3)
+    #plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
+
+    if display_within_app_flag == True:
+        plt.sca(ax_top)
+    else:
+        try:
+            plt.sca(axes[0])
+        except Exception:
+            plt.subplot(2,1,1)
 
     if np.max(q_spec[:,1]) == 0 or np.max(r_spec[:,1]) == 0:
         plt.text(0.5, 0.5, 'The query and/or reference spectrum has no non-zero intensities after transformations.\n Change transformation parameters.', ha='center', va='center', fontsize=7, color='black')
@@ -899,7 +925,29 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         plt.ylabel(ylab, fontsize=7)
         plt.xticks(fontsize=7)
         plt.yticks(fontsize=7)
-        plt.title('Untransformed Query and Reference Spectra', fontsize=10)
+        if display_within_app_flag == True:
+            plt.title('Untransformed Spectra', fontsize=9)
+        else:
+            plt.title('Untransformed Spectra', fontsize=10)
+
+
+    if display_within_app_flag == True:
+        try:
+            top_ax = ax_top
+        except NameError:
+            top_ax = plt.gcf().axes[0]
+        h, l = top_ax.get_legend_handles_labels()
+        if l:
+            top_ax.legend(h, l, loc="upper left", frameon=False, fontsize=5, handlelength=1.0, borderaxespad=0.2)
+    else:
+        try:
+            top_ax = axes[0]
+        except Exception:
+            top_ax = plt.gca()
+        h, l = top_ax.get_legend_handles_labels()
+        if l:
+            fig.legend(h, l, loc="upper center", bbox_to_anchor=(0.5, 0.96), ncol=2, frameon=False, prop={"size": 7}, handlelength=1.0)
+
 
     for transformation in spectrum_preprocessing_order:
         if transformation == 'W':
@@ -922,8 +970,10 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     else:
         similarity_score = 0
 
- 
-    plt.subplot(2,1,2)
+    if display_within_app_flag == True:
+        plt.sca(ax_bot)
+    else:
+        plt.subplot(2,1,2)
 
     if q_spec.shape[0] == 0 or r_spec.shape[0] == 0:
         plt.text(0.5, 0.5, 'The query and/or reference spectrum has no ion fragments left after transformations.\n Change transformation parameters.', ha='center', va='center', fontsize=7, color='black')
@@ -954,10 +1004,13 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         plt.ylabel(ylab, fontsize=7)
         plt.xticks(fontsize=7)
         plt.yticks(fontsize=7)
-        plt.title(f'Transformed Query and Reference Spectra', fontsize=10)
+        if display_within_app_flag == True:
+            plt.title('Transformed Spectra', fontsize=9)
+        else:
+            plt.title('Transformed Spectra', fontsize=10)
 
 
-    """
+
     if display_within_app_flag == True:
         try:
             ax_top.tick_params(axis='x', labelbottom=False)
@@ -969,30 +1022,12 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
                 axes[0].tick_params(axis='x', labelbottom=False)
                 axes[0].set_title(axes[0].get_title(), pad=6)
                 axes[1].set_title(axes[1].get_title(), pad=6)
-        #plt.subplots_adjust(top=0.8, hspace=0.2, bottom=0.3)
-        plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
+        #plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0, fontsize=6)
         plt.gcf().subplots_adjust(hspace=0.18)
     else:
         plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-        plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
-        plt.gcf().subplots_adjust(hspace=0.18)
-    """
-
-    if display_within_app_flag == True:
-        # hide top x tick labels to allow a tighter gap
-        try:
-            ax_top.tick_params(axis='x', labelbottom=False)
-            ax_top.set_title(ax_top.get_title(), pad=6)
-            ax_bot.set_title(ax_bot.get_title(), pad=6)
-        except NameError:
-            axes = plt.gcf().axes
-            if len(axes) >= 2:
-                axes[0].tick_params(axis='x', labelbottom=False)
-                axes[0].set_title(axes[0].get_title(), pad=6)
-                axes[1].set_title(axes[1].get_title(), pad=6)
-
-        # tighten vertical spacing between the two rows
-        plt.gcf().subplots_adjust(hspace=0.18)
+        #plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
+        plt.gcf().subplots_adjust(hspace=0.7)
 
 
     if annotate_fig == True:
@@ -1027,10 +1062,71 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             t2 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
             t2.set_url(url_tmp2)
 
+
+    if display_within_app_flag == True:
+        ax_top.label_outer()
+        ax_top.set_xlabel("")
+        ax_top.set_title(ax_top.get_title(), pad=4)
+        ax_bot.set_title(ax_bot.get_title(), pad=4)
+
+        def tidy(line, wrap_cols=42, shorten_cols=80):
+            s = textwrap.fill(str(line), width=wrap_cols, break_long_words=False)
+            return textwrap.shorten(s, width=shorten_cols, placeholder="…")
+
+        y = 0.98
+        dy = 0.065
+        def put(line):
+            nonlocal y
+            ax_txt.text(
+                0.0, y, tidy(line),
+                fontsize=6, ha="left", va="top",
+                transform=ax_txt.transAxes, wrap=True
+            )
+            y -= dy
+
+        put(f"Similarity Measure: {similarity_measure.capitalize()}")
+        put(f"Similarity Score: {round(similarity_score, 4)}")
+        put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
+        put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
+        if similarity_measure == "mixture":
+            put(f"Weights for mixture similarity: {weights}")
+
+        y -= dy * 0.4
+        put(f"Raw-Scale M/Z Range: [{min_mz},{max_mz}]")
+        put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
+        put(f"Noise Threshold: {noise_threshold}")
+        put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
+        put(f"Low-Entropy Threshold: {LET_threshold}")
+
+        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t1 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID1})", fontsize=6,
+                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
+            t2 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID2})", fontsize=6,
+                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
+            try: t1.set_url(url_tmp1)
+            except Exception: pass
+            try: t2.set_url(url_tmp2)
+            except Exception: pass
+        elif print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            t1 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID1})", fontsize=6,
+                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
+            try: t1.set_url(url_tmp1)
+            except Exception: pass
+        elif print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t2 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID2})", fontsize=6,
+                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
+            try: t2.set_url(url_tmp2)
+            except Exception: pass
+
     fig.savefig(output_path, format='svg')
 
     if return_plot == True:
         return fig
+
 
 
 def wf_transform(spec_mzs, spec_ints, wf_mz, wf_int):
@@ -3818,6 +3914,7 @@ def server(input, output, session):
         if isinstance(hq, str):
             hq = hq.lower() != "false"
 
+        """
         common = dict(
             query_data=input.query_data()[0]["datapath"],
             reference_data=input.reference_data()[0]["datapath"],
@@ -3840,6 +3937,39 @@ def server(input, output, session):
             annotate_fig=annotate_fig,
             display_within_app_flag=display_within_app_flag
         )
+        """
+
+        # y-axis transform may not exist in this view; default safely
+        try:
+            y_axis_transform = input.y_axis_transformation()
+            if not y_axis_transform:
+                y_axis_transform = "normalized"
+        except Exception:
+            y_axis_transform = "normalized"
+
+        common = dict(
+            query_data=input.query_data()[0]["datapath"],
+            reference_data=input.reference_data()[0]["datapath"],
+            spectrum_ID1=spectrum_ID1,
+            spectrum_ID2=spectrum_ID2,
+            print_url_spectrum1=input.print_url_spectrum1(),
+            print_url_spectrum2=input.print_url_spectrum2(),
+            similarity_measure=input.similarity_measure(),
+            weights=weights,
+            spectrum_preprocessing_order=input.spectrum_preprocessing_order(),
+            high_quality_reference_library=hq,
+            mz_min=input.mz_min(), mz_max=input.mz_max(),
+            int_min=input.int_min(), int_max=input.int_max(),
+            noise_threshold=input.noise_threshold(),
+            wf_mz=input.wf_mz(), wf_intensity=input.wf_int(),
+            LET_threshold=input.LET_threshold(),
+            entropy_dimension=input.entropy_dimension(),
+            y_axis_transformation=y_axis_transform,   # <-- use safe value
+            return_plot=True,
+            annotate_fig=annotate_fig,
+            display_within_app_flag=display_within_app_flag
+        )
+
 
         if input.chromatography_platform() == "HRMS":
             fig = generate_plots_on_HRMS_data(
@@ -3866,9 +3996,9 @@ def server(input, output, session):
     @render.download(filename=lambda: "plot.svg")
     def run_btn_plot_spectra():
         req(input.query_data(), input.reference_data())
-        fig2 = _build_spectra_figure(annotate_fig=True,display_within_app_flag=True)
+        fig2 = _build_spectra_figure(annotate_fig=True,display_within_app_flag=False)
         with io.BytesIO() as buf:
-            fig2.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
+            fig2.savefig(buf, format="svg", dpi=150, bbox_inches=None)
             plt.close(fig2)
             yield buf.getvalue()
 
@@ -3877,9 +4007,9 @@ def server(input, output, session):
     @render.download(filename=lambda: "plot.svg")
     def run_btn_plot_spectra_within_spec_lib_matching():
         req(input.query_data(), input.reference_data(), input.compound_ID_output_file())
-        fig = _build_spectra_figure_spec_lib_matching(annotate_fig=True,display_within_app_flag=True)
+        fig = _build_spectra_figure_spec_lib_matching(annotate_fig=True,display_within_app_flag=False)
         with io.BytesIO() as buf:
-            fig.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
+            fig.savefig(buf, format="svg", dpi=150, bbox_inches=None)
             plt.close(fig)
             yield buf.getvalue()
 
@@ -3891,7 +4021,6 @@ def server(input, output, session):
         spectrum_ID1 = input.q_spec() or None
         spectrum_ID2 = input.r_spec() or None
 
-        # normalize high_quality_reference_library to bool
         hq = input.high_quality_reference_library()
         if isinstance(hq, str):
             hq = hq.lower() == "true"
@@ -3920,6 +4049,7 @@ def server(input, output, session):
             y_axis_transformation="normalized",
             return_plot=True,
             annotate_fig=False,
+            display_within_app_flag=True
         )
 
         if input.chromatography_platform() == "HRMS":
@@ -3937,16 +4067,6 @@ def server(input, output, session):
     @render.plot(alt="Spectrum match plot")
     def spectra_plot_spec_lib_matching():
         return _fig_within_spec()
-
-    @output
-    @render.download(filename="plot.svg")
-    def run_btn_plot_spectra_within_spec_lib_matching():
-        req(input.query_data(), input.reference_data())
-        fig = _fig_within_spec()
-        with io.BytesIO() as buf:
-            fig.savefig(buf, format="svg", dpi=150, bbox_inches="tight")
-            plt.close(fig)
-            yield buf.getvalue()
 
 
 

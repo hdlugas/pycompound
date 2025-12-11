@@ -658,6 +658,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
         y = 0.98
         dy = 0.065
+
         def put(line):
             nonlocal y
             ax_txt.text(
@@ -667,6 +668,22 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             )
             y -= dy
 
+        def put_link(label, url):
+            """Write a clickable link line in the ax_txt panel."""
+            nonlocal y
+            t = ax_txt.text(
+                0.0, y, tidy(label),
+                fontsize=6, ha="left", va="top",
+                transform=ax_txt.transAxes
+            )
+            try:
+                t.set_url(url)  # clickable in SVG/HTML backends
+            except Exception:
+                pass
+            y -= dy
+            return t
+
+        # --- existing summary lines ---
         put(f"Similarity Measure: {similarity_measure.capitalize()}")
         put(f"Similarity Score: {round(similarity_score, 4)}")
         put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
@@ -683,51 +700,41 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
         put(f"Low-Entropy Threshold: {LET_threshold}")
 
-        """
+        y -= dy * 0.4
+
+        def put_link_two_lines(label, url):
+            nonlocal y
+            ax_txt.text(
+                0.0, y, tidy(label),
+                fontsize=6, ha="left", va="top",
+                transform=ax_txt.transAxes, wrap=True
+            )
+            y -= dy * 0.6
+
+            t = ax_txt.text(
+                0.0, y, url,
+                fontsize=6, ha="left", va="top",
+                transform=ax_txt.transAxes
+            )
+            try:
+                t.set_url(url)
+            except Exception:
+                pass
+            y -= dy * 1.1 
+
         if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            t1 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID1})", fontsize=6,
-                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
-            t2 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID2})", fontsize=6,
-                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
-            try: t1.set_url(url_tmp1)
-            except Exception: pass
-            try: t2.set_url(url_tmp2)
-            except Exception: pass
-        elif print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            t1 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID1})", fontsize=6,
-                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
-            try: t1.set_url(url_tmp1)
-            except Exception: pass
-        elif print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            t2 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID2})", fontsize=6,
-                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
-            try: t2.set_url(url_tmp2)
-            except Exception: pass
-        """
+            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
 
-        """
-        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
+        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
-            t2 = fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
-            t1.set_url(url_tmp1)
-            t2.set_url(url_tmp2)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
 
-        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
-            t1.set_url(url_tmp1)
-
-        if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
+        if print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
-            t2.set_url(url_tmp2)
-        """
+            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
 
     fig.savefig(output_path, format='svg')
 
@@ -1147,6 +1154,39 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             try: t2.set_url(url_tmp2)
             except Exception: pass
         """
+        def put_link_two_lines(label, url):
+            nonlocal y
+            ax_txt.text(
+                0.0, y, tidy(label),
+                fontsize=6, ha="left", va="top",
+                transform=ax_txt.transAxes, wrap=True
+            )
+            y -= dy * 0.6
+
+            t = ax_txt.text(
+                0.0, y, url,
+                fontsize=6, ha="left", va="top",
+                transform=ax_txt.transAxes
+            )
+            try:
+                t.set_url(url)
+            except Exception:
+                pass
+            y -= dy * 1.1 
+
+        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
+
+        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
+
+        if print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
 
     fig.savefig(output_path, format='svg')
 

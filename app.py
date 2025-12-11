@@ -35,6 +35,7 @@ _LOG_QUEUE: asyncio.Queue[str] = asyncio.Queue()
 
 _ADDUCT_PAT = re.compile(r"\s*(?:\[(M[^\]]+)\]|(M[+-][A-Za-z0-9]+)\+?)\s*$", re.IGNORECASE)
 
+
 def start_log_consumer():
     if getattr(start_log_consumer, "_started", False):
         return
@@ -81,40 +82,6 @@ def get_pubchem_url(query: str) -> str:
     q = urllib.parse.quote(base_name)
     return f"https://pubchem.ncbi.nlm.nih.gov/#query={q}"
 
-
-"""
-def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
-    if input_path is None:
-        print('Error: please specify input_path (i.e. the path to the input mgf, mzML, cdf, json, or msp file). Mandatory argument.')
-        sys.exit()
-
-    if output_path is None:
-        tmp = input_path.split('/')
-        tmp = tmp[(len(tmp)-1)]
-        basename = tmp.split('.')[0]
-        output_path = f'{Path.cwd()}/{basename}.csv'
-        print(f'Warning: no output_path specified, so library is written to {output_path}')
-
-    if is_reference not in [True,False]:
-        print('Error: is_reference must be either \'True\' or \'False\'.')
-        sys.exit()
-
-    last_three_chars = input_path[(len(input_path)-3):len(input_path)]
-    last_four_chars = input_path[(len(input_path)-4):len(input_path)]
-    if last_three_chars == 'mgf' or last_three_chars == 'MGF':
-        input_file_type = 'mgf'
-    elif last_four_chars == 'mzML' or last_four_chars == 'mzml' or last_four_chars == 'MZML':
-        input_file_type = 'mzML'
-    elif last_four_chars == 'json' or last_four_chars == 'JSON':
-        input_file_type = 'json'
-    elif last_three_chars == 'cdf' or last_three_chars == 'CDF':
-        input_file_type = 'cdf'
-    elif last_three_chars == 'msp' or last_three_chars == 'MSP':
-        input_file_type = 'msp'
-    else:
-        print('ERROR: either an \'mgf\', \'mzML\', \'cdf\', \'json\', or \'msp\' file must be passed to --input_path')
-        sys.exit()
-"""
 
 
 def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
@@ -646,13 +613,14 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             t2.set_url(url_tmp2)
 
 
+    """
     if display_within_app_flag == True:
         ax_top.label_outer()
         ax_top.set_xlabel("")
         ax_top.set_title(ax_top.get_title(), pad=4)
         ax_bot.set_title(ax_bot.get_title(), pad=4)
 
-        def tidy(line, wrap_cols=42, shorten_cols=80):
+        def tidy(line, wrap_cols=42, shorten_cols=200):
             s = textwrap.fill(str(line), width=wrap_cols, break_long_words=False)
             return textwrap.shorten(s, width=shorten_cols, placeholder="…")
 
@@ -661,29 +629,19 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
         def put(line):
             nonlocal y
-            ax_txt.text(
-                0.0, y, tidy(line),
-                fontsize=6, ha="left", va="top",
-                transform=ax_txt.transAxes, wrap=True
-            )
+            ax_txt.text(0.0, y, tidy(line), fontsize=6, ha="left", va="top", transform=ax_txt.transAxes, wrap=True)
             y -= dy
 
         def put_link(label, url):
-            """Write a clickable link line in the ax_txt panel."""
             nonlocal y
-            t = ax_txt.text(
-                0.0, y, tidy(label),
-                fontsize=6, ha="left", va="top",
-                transform=ax_txt.transAxes
-            )
+            t = ax_txt.text(0.0, y, tidy(label), fontsize=6, ha="left", va="top", transform=ax_txt.transAxes)
             try:
-                t.set_url(url)  # clickable in SVG/HTML backends
+                t.set_url(url)
             except Exception:
                 pass
             y -= dy
             return t
 
-        # --- existing summary lines ---
         put(f"Similarity Measure: {similarity_measure.capitalize()}")
         put(f"Similarity Score: {round(similarity_score, 4)}")
         put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
@@ -704,18 +662,9 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
         def put_link_two_lines(label, url):
             nonlocal y
-            ax_txt.text(
-                0.0, y, tidy(label),
-                fontsize=6, ha="left", va="top",
-                transform=ax_txt.transAxes, wrap=True
-            )
+            ax_txt.text(0.0, y, tidy(label), fontsize=6, ha="left", va="top", transform=ax_txt.transAxes, wrap=True)
             y -= dy * 0.6
-
-            t = ax_txt.text(
-                0.0, y, url,
-                fontsize=6, ha="left", va="top",
-                transform=ax_txt.transAxes
-            )
+            t = ax_txt.text(0.0, y, url, fontsize=6, ha="left", va="top", transform=ax_txt.transAxes, wrap=True)
             try:
                 t.set_url(url)
             except Exception:
@@ -735,9 +684,113 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         if print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
             put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
+    """
 
+
+    if display_within_app_flag == True:
+        ax_top.label_outer()
+        ax_top.set_xlabel("")
+        ax_top.set_title(ax_top.get_title(), pad=4)
+        ax_bot.set_title(ax_bot.get_title(), pad=4)
+
+        def _wrap_cols_for_axes(ax, fontsize_pt=6, pad_px=6):
+            fig = ax.figure
+            try:
+                fig.canvas.draw()  # safe no-op if already drawn
+            except Exception:
+                pass
+            renderer = fig.canvas.get_renderer()
+            bbox = ax.get_window_extent(renderer=renderer)
+            width_px = max(1, bbox.width - pad_px)  # available width in pixels
+            # Approximate average character width as 0.6em
+            char_px = (fontsize_pt * fig.dpi / 72.0) * 0.6
+            cols = max(20, int(width_px / max(1e-6, char_px)))
+            return cols
+
+        def _tidy(ax, line, fontsize_pt=6):
+            wrap_cols = _wrap_cols_for_axes(ax, fontsize_pt=fontsize_pt)
+            return textwrap.fill(
+                str(line),
+                width=wrap_cols,
+                break_long_words=False,
+                break_on_hyphens=False,
+            )
+
+        def _make_url_breakable(url: str) -> str:
+            if url is None:
+                return ""
+            s = str(url)
+            ZWSP = "\u200b"
+            return re.sub(r'([/?#&=._%\-\:])', lambda m: m.group(1) + ZWSP, s)
+
+
+        y = 0.98
+        dy = 0.065
+        fs = 6
+
+        def put(line):
+            nonlocal y
+            ax_txt.text(0.0, y, _tidy(ax_txt, line, fontsize_pt=fs), fontsize=fs, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
+            y -= dy
+
+        def put_link(label, url):
+            nonlocal y
+            t = ax_txt.text(0.0, y, _tidy(ax_txt, label, fontsize_pt=fs), fontsize=fs, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
+            try:
+                t.set_url(url)
+            except Exception:
+                pass
+            y -= dy
+            return t
+
+        def put_link_two_lines(label, url):
+            if len(url) > 45:
+                url = f"{url[0:45]}..."
+            nonlocal y
+            ax_txt.text(0.0, y, _tidy(ax_txt, label, fontsize_pt=fs), fontsize=fs, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
+            y -= dy * 0.6
+            url_breakable = _make_url_breakable(url)
+            ax_txt.text(0.0, y, _tidy(ax_txt, url_breakable, fontsize_pt=5), fontsize=5, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
+            try:
+                t = ax_txt.text(0.0, y, "", transform=ax_txt.transAxes, alpha=0)
+                t.set_url(url)
+            except Exception:
+                pass
+            y -= dy * 1.1
+
+
+        put(f"Similarity Measure: {similarity_measure.capitalize()}")
+        put(f"Similarity Score: {round(similarity_score, 4)}")
+        put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
+        put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
+        put(f"Window Size (Centroiding): {window_size_centroiding}")
+        put(f"Window Size (Matching): {window_size_matching}")
+        if similarity_measure == "mixture":
+            put(f"Weights for mixture similarity: {weights}")
+
+        y -= dy * 0.4
+        put(f"Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]")
+        put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
+        put(f"Noise Threshold: {noise_threshold}")
+        put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
+        put(f"Low-Entropy Threshold: {LET_threshold}")
+        y -= dy * 0.4
+
+        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
+
+        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
+
+        if print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
+            
     fig.savefig(output_path, format='svg')
-
     if return_plot == True:
         return fig
 
@@ -1100,6 +1153,19 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         ax_top.set_title(ax_top.get_title(), pad=4)
         ax_bot.set_title(ax_bot.get_title(), pad=4)
 
+        def _wrap_cols_for_axes(ax, fontsize_pt=6, pad_px=6):
+            fig = ax.figure
+            try:
+                fig.canvas.draw()
+            except Exception:
+                pass
+            renderer = fig.canvas.get_renderer()
+            bbox = ax.get_window_extent(renderer=renderer)
+            width_px = max(1, bbox.width - pad_px)
+            char_px = (fontsize_pt * fig.dpi / 72.0) * 0.6
+            cols = max(20, int(width_px / max(1e-6, char_px)))
+            return cols
+
         def tidy(line, wrap_cols=42, shorten_cols=80):
             s = textwrap.fill(str(line), width=wrap_cols, break_long_words=False)
             return textwrap.shorten(s, width=shorten_cols, placeholder="…")
@@ -1108,11 +1174,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         dy = 0.065
         def put(line):
             nonlocal y
-            ax_txt.text(
-                0.0, y, tidy(line),
-                fontsize=6, ha="left", va="top",
-                transform=ax_txt.transAxes, wrap=True
-            )
+            ax_txt.text(0.0, y, tidy(line), fontsize=6, ha="left", va="top", transform=ax_txt.transAxes, wrap=True)
             y -= dy
 
         put(f"Similarity Measure: {similarity_measure.capitalize()}")
@@ -1129,50 +1191,36 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
         put(f"Low-Entropy Threshold: {LET_threshold}")
 
-        """
-        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            t1 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID1})", fontsize=6,
-                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
-            t2 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID2})", fontsize=6,
-                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
-            try: t1.set_url(url_tmp1)
-            except Exception: pass
-            try: t2.set_url(url_tmp2)
-            except Exception: pass
-        elif print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            t1 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID1})", fontsize=6,
-                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
-            try: t1.set_url(url_tmp1)
-            except Exception: pass
-        elif print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            t2 = ax_txt.text(0.0, y, f"PubChem ({spectrum_ID2})", fontsize=6,
-                             ha="left", va="top", transform=ax_txt.transAxes); y -= dy
-            try: t2.set_url(url_tmp2)
-            except Exception: pass
-        """
-        def put_link_two_lines(label, url):
-            nonlocal y
-            ax_txt.text(
-                0.0, y, tidy(label),
-                fontsize=6, ha="left", va="top",
-                transform=ax_txt.transAxes, wrap=True
+        def _tidy(ax, line, fontsize_pt=6):
+            wrap_cols = _wrap_cols_for_axes(ax, fontsize_pt=fontsize_pt)
+            return textwrap.fill(
+                str(line),
+                width=wrap_cols,
+                break_long_words=False,
+                break_on_hyphens=False,
             )
-            y -= dy * 0.6
 
-            t = ax_txt.text(
-                0.0, y, url,
-                fontsize=6, ha="left", va="top",
-                transform=ax_txt.transAxes
-            )
+        def _make_url_breakable(url: str) -> str:
+            if url is None:
+                return ""
+            s = str(url)
+            ZWSP = "\u200b"
+            return re.sub(r'([/?#&=._%\-\:])', lambda m: m.group(1) + ZWSP, s)
+
+        def put_link_two_lines(label, url):
+            if len(url) > 45:
+                url = f"{url[0:45]}..."
+            nonlocal y
+            ax_txt.text(0.0, y, _tidy(ax_txt, label, fontsize_pt=6), fontsize=6, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
+            y -= dy * 0.6
+            url_breakable = _make_url_breakable(url)
+            ax_txt.text(0.0, y, _tidy(ax_txt, url_breakable, fontsize_pt=5), fontsize=5, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
             try:
+                t = ax_txt.text(0.0, y, "", transform=ax_txt.transAxes, alpha=0)
                 t.set_url(url)
             except Exception:
                 pass
-            y -= dy * 1.1 
+            y -= dy * 1.1
 
         if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)

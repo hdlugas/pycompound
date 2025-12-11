@@ -281,6 +281,8 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
     df.to_csv(output_path, index=False, sep='\t')
 
 
+
+
 def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True, display_within_app_flag=False):
 
     if query_data is None:
@@ -681,6 +683,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
         put(f"Low-Entropy Threshold: {LET_threshold}")
 
+        """
         if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
@@ -704,6 +707,27 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
                              ha="left", va="top", transform=ax_txt.transAxes); y -= dy
             try: t2.set_url(url_tmp2)
             except Exception: pass
+        """
+
+        """
+        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+            t2 = fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+            t1.set_url(url_tmp1)
+            t2.set_url(url_tmp2)
+
+        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
+            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
+            t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
+            t1.set_url(url_tmp1)
+
+        if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
+            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
+            t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+            t2.set_url(url_tmp2)
+        """
 
     fig.savefig(output_path, format='svg')
 
@@ -1098,6 +1122,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
         put(f"Low-Entropy Threshold: {LET_threshold}")
 
+        """
         if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
@@ -1121,6 +1146,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
                              ha="left", va="top", transform=ax_txt.transAxes); y -= dy
             try: t2.set_url(url_tmp2)
             except Exception: pass
+        """
 
     fig.savefig(output_path, format='svg')
 
@@ -2972,7 +2998,7 @@ def plot_spectra_ui(platform: str):
         ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
         ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
         ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
-        ui.input_numeric("noise_threshold", ui.span("Noise removal ", ui.strong("threshold"),":"), 0.0),
+        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal threshold"),":"), 0.0),
         ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
         ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
         ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
@@ -3001,6 +3027,7 @@ def plot_spectra_ui(platform: str):
             col_widths=(3,3,3,3),
         )
 
+    """
     return ui.div(
         ui.TagList(
             ui.h2("Plot Spectra"),
@@ -3012,6 +3039,47 @@ def plot_spectra_ui(platform: str):
             ui.output_plot("spectra_plot", width="800px", height="600px")
         ),
     )
+    """
+
+    return ui.div(
+    ui.TagList(
+        ui.h2("Plot Spectra"),
+        ui.div(
+            {"class": "form-control",
+             "style": "max-width:800px; max-height:140px; padding:10px; "
+                      "background:#f8f9fa; overflow:auto; margin-bottom:8px;"},
+            ui.p("Detailed descriptions on GitHub:"),
+            ui.p(
+                "Spectrum preprocessing transformations: ",
+                ui.tags.a(
+                    "README → Spectrum Preprocessing Transformations",
+                    href=("https://github.com/hdlugas/pycompound"
+                          "?tab=readme-ov-file#spec-preprocessing-transformations"),
+                    target="_blank",
+                    rel="noopener noreferrer",
+                ),
+            ),
+            ui.p(
+                "Parameters: ",
+                ui.tags.a(
+                    "README → Parameter Descriptions",
+                    href=("https://github.com/hdlugas/pycompound"
+                          "?tab=readme-ov-file#param_descriptions"),
+                    target="_blank",
+                    rel="noopener noreferrer",
+                ),
+            ),
+        ),
+        inputs_columns,
+        run_button_plot_spectra,
+        back_button,
+        ui.div(ui.output_text("plot_query_status"), style="margin-top:8px; font-size:14px"),
+        ui.div(ui.output_text("plot_reference_status"), style="margin-top:8px; font-size:14px"),
+        ui.output_plot("spectra_plot", width="800px", height="600px"),
+    ),
+    )
+
+
 
 
 
@@ -3054,7 +3122,7 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
         ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
         ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
-        ui.input_numeric("noise_threshold", ui.span("Noise removal ", ui.strong("threshold"),":"), 0.0),
+        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal threshold"),":"), 0.0),
         ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
         ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
         ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
@@ -3080,10 +3148,10 @@ def run_spec_lib_matching_ui(platform: str):
                 style="display:flex; flex-direction:column; gap:10px;",
             ),
             ui.div(
-                [base_inputs[9], extra_inputs[3], extra_inputs[4], extra_inputs[5], numeric_inputs[0], numeric_inputs[1], numeric_inputs[2]],
+                [base_inputs[9], extra_inputs[3], extra_inputs[4], extra_inputs[5], numeric_inputs[0], numeric_inputs[1]],
                 style="display:flex; flex-direction:column; gap:10px;"
             ),
-            ui.div(numeric_inputs[3:10], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(numeric_inputs[2:10], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(plot_panel, style="display:flex; justify-content:flex-start;"),
             col_widths=(3, 3, 3, 3),
         )
@@ -3106,15 +3174,48 @@ def run_spec_lib_matching_ui(platform: str):
     )
 
     return ui.div(
-        ui.TagList(
-            ui.h2("Run Spectral Library Matching"),
-            inputs_columns,
-            run_button_spec_lib_matching,
-            back_button,
-            log_panel,
-            ui.output_plot("spectra_plot_spec_lib_matching", width="800px", height="600px"),
+        ui.h2("Run Spectral Library Matching"),
+
+        ui.div(
+            {"class": "form-control",
+             "style": "max-width: 800px; max-height: 200px; padding: 10px; "
+                      "background:#f8f9fa; overflow:auto;"},   # <- add overflow
+            ui.p("Detailed descriptions found on GitHub:"),
+
+            ui.p(
+                "Spectrum preprocessing transformations: ",
+                ui.tags.a(
+                    "README → Spectrum Preprocessing Transformations",
+                    href=(
+                        "https://github.com/hdlugas/pycompound"
+                        "?tab=readme-ov-file#spec-preprocessing-transformations"
+                    ),
+                    target="_blank",
+                    rel="noopener noreferrer",
+                ),
+            ),
+
+            ui.p(
+                "Parameters: ",
+                ui.tags.a(
+                    "README → Parameter Descriptions",
+                    href=(
+                        "https://github.com/hdlugas/pycompound"
+                        "?tab=readme-ov-file#param_descriptions"
+                    ),
+                    target="_blank",
+                    rel="noopener noreferrer",
+                ),
+            ),
         ),
+
+        inputs_columns,
+        run_button_spec_lib_matching,
+        back_button,
+        log_panel,
+        ui.output_plot("spectra_plot_spec_lib_matching", width="800px", height="600px"),
     )
+
 
 
 
@@ -3239,7 +3340,7 @@ def run_parameter_tuning_DE_ui(platform: str):
         ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
         ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
         ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
-        ui.input_numeric("noise_threshold", ui.span("Noise removal ", ui.strong("threshold"),":"), 0.0),
+        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal threshold"),":"), 0.0),
         ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
         ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
         ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
@@ -3692,13 +3793,15 @@ def server(input, output, session):
                 ui.div("PyCompound is a Python-based tool designed for performing spectral library matching on either high-resolution mass spectrometry data (HRMS) or low-resolution mass spectrometry data (NRMS). PyCompound offers a range of spectrum preprocessing transformations and similarity measures. These spectrum preprocessing transformations include filtering on mass/charge and/or intensity values, weight factor transformation, low-entropy transformation, centroiding, noise removal, and matching. The available similarity measures include the canonical Cosine similarity measure, three entropy-based similarity measures, and a variety of binary similarity measures: Jaccard, Dice, 3W-Jaccard, Sokal-Sneath, Binary Cosine, Mountford, McConnaughey, Driver-Kroeber, Simpson, Braun-Banquet, Fager-McGowan, Kulczynski, Intersection, Hamming, and Hellinger.", style="margin-top:10px; text-align:left; font-size:16px; font-weight:500"),
                 ui.div({"class":"form-control", "style": "max-width: 800px; max-height: 200px; padding: 10px; background:#f8f9fa"},
                        ui.p("Detailed descriptions found on GitHub:"),
-                       ui.HTML('Spectrum preprocessing transformations: '
-                               '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations".'
-                               'target="_blank" rel="noopener noreferrer">README → Spectrum Preprocessing Transformations</a>'),
+                        ui.HTML('Spectrum preprocessing transformations: '
+                            '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations" '
+                            'target="_blank" rel="noopener noreferrer">'
+                            'README → Spectrum Preprocessing Transformations </a>'),
                        ui.HTML("<br>"),
-                       ui.HTML('Parameters: '
-                               '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions".'
-                               'target="_blank" rel="noopener noreferrer">README → Parameter Descriptions</a>')),
+                        ui.HTML('Parameters: '
+                            '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions" '
+                            'target="_blank" rel="noopener noreferrer">'
+                            'README → Parameter Descriptions </a>')),
                 ui.div("Select options:", style="margin-top:30px; text-align:left; font-size:24px; font-weight:bold"),
                 ui.div(ui.input_radio_buttons("chromatography_platform", "Specify chromatography platform:", ["HRMS","NRMS"]), style="font-size:18px; margin-top:10px; max-width:none"),
                 ui.input_action_button("plot_spectra", "Plot two spectra before and after preprocessing transformations.", style="font-size:18px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),

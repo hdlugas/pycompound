@@ -29,7 +29,10 @@ import urllib.request
 import matplotlib
 import textwrap
 
+os.environ["MPLBACKEND"] = "Agg"
 matplotlib.rcParams['svg.fonttype'] = 'none'
+matplotlib.use("Agg")
+
 
 _LOG_QUEUE: asyncio.Queue[str] = asyncio.Queue()
 
@@ -613,80 +616,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             t2.set_url(url_tmp2)
 
 
-    """
-    if display_within_app_flag == True:
-        ax_top.label_outer()
-        ax_top.set_xlabel("")
-        ax_top.set_title(ax_top.get_title(), pad=4)
-        ax_bot.set_title(ax_bot.get_title(), pad=4)
-
-        def tidy(line, wrap_cols=42, shorten_cols=200):
-            s = textwrap.fill(str(line), width=wrap_cols, break_long_words=False)
-            return textwrap.shorten(s, width=shorten_cols, placeholder="…")
-
-        y = 0.98
-        dy = 0.065
-
-        def put(line):
-            nonlocal y
-            ax_txt.text(0.0, y, tidy(line), fontsize=6, ha="left", va="top", transform=ax_txt.transAxes, wrap=True)
-            y -= dy
-
-        def put_link(label, url):
-            nonlocal y
-            t = ax_txt.text(0.0, y, tidy(label), fontsize=6, ha="left", va="top", transform=ax_txt.transAxes)
-            try:
-                t.set_url(url)
-            except Exception:
-                pass
-            y -= dy
-            return t
-
-        put(f"Similarity Measure: {similarity_measure.capitalize()}")
-        put(f"Similarity Score: {round(similarity_score, 4)}")
-        put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
-        put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
-        put(f"Window Size (Centroiding): {window_size_centroiding}")
-        put(f"Window Size (Matching): {window_size_matching}")
-        if similarity_measure == "mixture":
-            put(f"Weights for mixture similarity: {weights}")
-
-        y -= dy * 0.4
-        put(f"Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]")
-        put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
-        put(f"Noise Threshold: {noise_threshold}")
-        put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
-        put(f"Low-Entropy Threshold: {LET_threshold}")
-
-        y -= dy * 0.4
-
-        def put_link_two_lines(label, url):
-            nonlocal y
-            ax_txt.text(0.0, y, tidy(label), fontsize=6, ha="left", va="top", transform=ax_txt.transAxes, wrap=True)
-            y -= dy * 0.6
-            t = ax_txt.text(0.0, y, url, fontsize=6, ha="left", va="top", transform=ax_txt.transAxes, wrap=True)
-            try:
-                t.set_url(url)
-            except Exception:
-                pass
-            y -= dy * 1.1 
-
-        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
-
-        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
-
-        if print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
-    """
-
-
     if display_within_app_flag == True:
         ax_top.label_outer()
         ax_top.set_xlabel("")
@@ -723,7 +652,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             ZWSP = "\u200b"
             return re.sub(r'([/?#&=._%\-\:])', lambda m: m.group(1) + ZWSP, s)
 
-
         y = 0.98
         dy = 0.065
         fs = 6
@@ -732,6 +660,25 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             nonlocal y
             ax_txt.text(0.0, y, _tidy(ax_txt, line, fontsize_pt=fs), fontsize=fs, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
             y -= dy
+
+        put(f"Similarity Measure: {similarity_measure.capitalize()}")
+        put(f"Similarity Score: {round(similarity_score, 4)}")
+        put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
+        put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
+        put(f"Window Size (Centroiding): {window_size_centroiding}")
+        put(f"Window Size (Matching): {window_size_matching}")
+        if similarity_measure == "mixture":
+            put(f"Weights for mixture similarity: {weights}")
+
+        y -= dy * 0.4
+        put(f"Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]")
+        put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
+        put(f"Noise Threshold: {noise_threshold}")
+        put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
+        put(f"Low-Entropy Threshold: {LET_threshold}")
+        y -= dy * 0.4
+
+        """
 
         def put_link(label, url):
             nonlocal y
@@ -758,37 +705,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
                 pass
             y -= dy * 1.1
 
-
-        put(f"Similarity Measure: {similarity_measure.capitalize()}")
-        put(f"Similarity Score: {round(similarity_score, 4)}")
-        put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
-        put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
-        put(f"Window Size (Centroiding): {window_size_centroiding}")
-        put(f"Window Size (Matching): {window_size_matching}")
-        if similarity_measure == "mixture":
-            put(f"Weights for mixture similarity: {weights}")
-
-        y -= dy * 0.4
-        put(f"Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]")
-        put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
-        put(f"Noise Threshold: {noise_threshold}")
-        put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
-        put(f"Low-Entropy Threshold: {LET_threshold}")
-        y -= dy * 0.4
-
-        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
-
-        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
-
-        if print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
+        """
             
     fig.savefig(output_path, format='svg')
     if return_plot == True:
@@ -1190,51 +1107,6 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         put(f"Noise Threshold: {noise_threshold}")
         put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
         put(f"Low-Entropy Threshold: {LET_threshold}")
-
-        def _tidy(ax, line, fontsize_pt=6):
-            wrap_cols = _wrap_cols_for_axes(ax, fontsize_pt=fontsize_pt)
-            return textwrap.fill(
-                str(line),
-                width=wrap_cols,
-                break_long_words=False,
-                break_on_hyphens=False,
-            )
-
-        def _make_url_breakable(url: str) -> str:
-            if url is None:
-                return ""
-            s = str(url)
-            ZWSP = "\u200b"
-            return re.sub(r'([/?#&=._%\-\:])', lambda m: m.group(1) + ZWSP, s)
-
-        def put_link_two_lines(label, url):
-            if len(url) > 45:
-                url = f"{url[0:45]}..."
-            nonlocal y
-            ax_txt.text(0.0, y, _tidy(ax_txt, label, fontsize_pt=6), fontsize=6, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
-            y -= dy * 0.6
-            url_breakable = _make_url_breakable(url)
-            ax_txt.text(0.0, y, _tidy(ax_txt, url_breakable, fontsize_pt=5), fontsize=5, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
-            try:
-                t = ax_txt.text(0.0, y, "", transform=ax_txt.transAxes, alpha=0)
-                t.set_url(url)
-            except Exception:
-                pass
-            y -= dy * 1.1
-
-        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "Yes":
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
-
-        if print_url_spectrum1 == "Yes" and print_url_spectrum2 == "No":
-            url_tmp1 = get_pubchem_url(query=spectrum_ID1)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID1}:", url_tmp1)
-
-        if print_url_spectrum1 == "No" and print_url_spectrum2 == "Yes":
-            url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            put_link_two_lines(f"PubChem URL for {spectrum_ID2}:", url_tmp2)
 
     fig.savefig(output_path, format='svg')
 
@@ -3064,8 +2936,10 @@ def plot_spectra_ui(platform: str):
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_selectize("spectrum_ID1", ui.span("Select ",ui.strong("spectrum ID 1")," (default is the first spectrum in the query dataset):"), choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
         ui.input_selectize("spectrum_ID2", ui.span("Select ",ui.strong("spectrum ID 2")," (default is the first spectrum in the reference dataset):"), choices=[], multiple=False, options={"placeholder": "Upload a library..."}),
-        ui.input_select('print_url_spectrum1', ui.span(ui.strong('Print PubChem URL'),' for spectrum 1:'), ['No', 'Yes']),
-        ui.input_select('print_url_spectrum2', ui.span(ui.strong('Print PubChem URL'),' for spectrum 2:'), ['No', 'Yes'], selected='Yes'),
+        ui.input_checkbox('print_url_spectrum1', ui.span(ui.strong('Print PubChem URL'),': Spectrum 1'), value=False),
+        ui.output_ui('pubchem1_area'),
+        ui.input_checkbox('print_url_spectrum2', ui.span(ui.strong('Print PubChem URL'),': Spectrum 2'), value=False),
+        ui.output_ui('pubchem2_area'),
         ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
         ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights",ui.span(ui.strong("Weights")," for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
         ui.input_select("high_quality_reference_library", ui.span("Indicate whether the reference library is considered ",ui.strong("high quality"),". If True, filtering and noise removal are only applied to the query spectra."), [False, True]),
@@ -3100,34 +2974,20 @@ def plot_spectra_ui(platform: str):
 
     if platform == "HRMS":
         inputs_columns = ui.layout_columns(
-            ui.div(base_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[5:10], extra_inputs[0]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(base_inputs[0:4], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[4:11], extra_inputs[0]], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(extra_inputs[1:3], numeric_inputs[0:4], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div([numeric_inputs[4:10], select_input], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3),
         )
     elif platform == "NRMS":
         inputs_columns = ui.layout_columns(
-            ui.div(base_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
-            ui.div([base_inputs[5:10], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div(base_inputs[0:4], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[4:11], *extra_inputs], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div([numeric_inputs[5:10], select_input], style="display:flex; flex-direction:column; gap:10px;"),
             col_widths=(3,3,3,3),
         )
-
-    """
-    return ui.div(
-        ui.TagList(
-            ui.h2("Plot Spectra"),
-            inputs_columns,
-            run_button_plot_spectra,
-            back_button,
-            ui.div(ui.output_text("plot_query_status"), style="margin-top:8px; font-size:14px"),
-            ui.div(ui.output_text("plot_reference_status"), style="margin-top:8px; font-size:14px"),
-            ui.output_plot("spectra_plot", width="800px", height="600px")
-        ),
-    )
-    """
 
     return ui.div(
     ui.TagList(
@@ -3135,7 +2995,7 @@ def plot_spectra_ui(platform: str):
         ui.div(
             {"class": "form-control",
              "style": "max-width:800px; max-height:140px; padding:10px; "
-                      "background:#f8f9fa; overflow:auto; margin-bottom:8px;"},
+                      "background:#f8f9fa; 2verflow:auto; margin-bottom:8px;"},
             ui.p("Detailed descriptions on GitHub:"),
             ui.p(
                 "Spectrum preprocessing transformations: ",
@@ -3166,8 +3026,6 @@ def plot_spectra_ui(platform: str):
         ui.output_plot("spectra_plot", width="800px", height="600px"),
     ),
     )
-
-
 
 
 
@@ -4104,33 +3962,6 @@ def server(input, output, session):
         hq = input.high_quality_reference_library()
         if isinstance(hq, str):
             hq = hq.lower() != "false"
-
-        """
-        common = dict(
-            query_data=input.query_data()[0]["datapath"],
-            reference_data=input.reference_data()[0]["datapath"],
-            spectrum_ID1=spectrum_ID1,
-            spectrum_ID2=spectrum_ID2,
-            print_url_spectrum1=input.print_url_spectrum1(),
-            print_url_spectrum2=input.print_url_spectrum2(),
-            similarity_measure=input.similarity_measure(),
-            weights=weights,
-            spectrum_preprocessing_order=input.spectrum_preprocessing_order(),
-            high_quality_reference_library=hq,
-            mz_min=input.mz_min(), mz_max=input.mz_max(),
-            int_min=input.int_min(), int_max=input.int_max(),
-            noise_threshold=input.noise_threshold(),
-            wf_mz=input.wf_mz(), wf_intensity=input.wf_int(),
-            LET_threshold=input.LET_threshold(),
-            entropy_dimension=input.entropy_dimension(),
-            y_axis_transformation=input.y_axis_transformation(),
-            return_plot=True,
-            annotate_fig=annotate_fig,
-            display_within_app_flag=display_within_app_flag
-        )
-        """
-
-        # y-axis transform may not exist in this view; default safely
         try:
             y_axis_transform = input.y_axis_transformation()
             if not y_axis_transform:
@@ -4161,7 +3992,6 @@ def server(input, output, session):
             display_within_app_flag=display_within_app_flag
         )
 
-
         if input.chromatography_platform() == "HRMS":
             fig = generate_plots_on_HRMS_data(
                 window_size_centroiding=input.window_size_centroiding(),
@@ -4182,6 +4012,26 @@ def server(input, output, session):
     @render.plot(alt="Spectra plot")
     def spectra_plot():
         return _fig_obj()
+
+    @output
+    @render.ui
+    def pubchem1_area():
+        if not input.print_url_spectrum1():
+            return None
+        url_tmp = get_pubchem_url(query=input.spectrum_ID1())
+        if not url_tmp:
+            return ui.p("No PubChem ID available for Spectrum 1.")
+        return ui.div({"style": "margin-top:6px;"}, ui.p(f"PubChem URL for Spectrum 1 {input.spectrum_ID1()}):"), ui.a(url_tmp, href=url_tmp, target="_blank", rel="noopener noreferrer"))
+
+    @output
+    @render.ui
+    def pubchem2_area():
+        if not input.print_url_spectrum2():
+            return None
+        url_tmp = get_pubchem_url(query=input.spectrum_ID2())
+        if not url_tmp:
+            return ui.p("No PubChem ID available for Spectrum 2.")
+        return ui.div({"style": "margin-top:6px;"}, ui.p(f"PubChem URL for Spectrum 2 {input.spectrum_ID2()}):"), ui.a(url_tmp, href=url_tmp, target="_blank", rel="noopener noreferrer"))
 
     @output
     @render.download(filename=lambda: "plot.svg")

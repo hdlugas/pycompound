@@ -463,8 +463,17 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             plt.subplot(2,1,1)
 
 
-    plt.vlines(x=q_spec_pre_trans[:,0], ymin=[0]*q_spec_pre_trans.shape[0], ymax=q_spec_pre_trans[:,1], linewidth=3, color='blue', label=f'Spectrum ID 1: {spectrum_ID1}')
-    plt.vlines(x=r_spec_pre_trans[:,0], ymin=[0]*r_spec_pre_trans.shape[0], ymax=-r_spec_pre_trans[:,1], linewidth=3, color='red', label=f'Spectrum ID 2: {spectrum_ID2}')
+    if len(spectrum_ID1) > 21:
+        spectrum_ID1_tmp = f"{spectrum_ID1[0:20]}..."
+    else:
+        spectrum_ID1_tmp = spectrum_ID1
+    if len(spectrum_ID2) > 21:
+        spectrum_ID2_tmp = f"{spectrum_ID2[0:20]}..."
+    else:
+        spectrum_ID2_tmp = spectrum_ID2
+
+    plt.vlines(x=q_spec_pre_trans[:,0], ymin=[0]*q_spec_pre_trans.shape[0], ymax=q_spec_pre_trans[:,1], linewidth=3, color='blue', label=f'Spectrum ID 1: {spectrum_ID1_tmp}')
+    plt.vlines(x=r_spec_pre_trans[:,0], ymin=[0]*r_spec_pre_trans.shape[0], ymax=-r_spec_pre_trans[:,1], linewidth=3, color='red', label=f'Spectrum ID 2: {spectrum_ID2_tmp}')
     plt.xlabel('m/z',fontsize=7)
     plt.ylabel(ylab, fontsize=7)
     plt.xticks(fontsize=7)
@@ -600,8 +609,8 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
-            t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
-            t2 = fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
+            t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1_tmp}: {url_tmp1}', fontsize=7)
+            t2 = fig.text(0.40, 0.02, f'PubChem URL for {spectrum_ID2_tmp}: {url_tmp2}', fontsize=7)
             t1.set_url(url_tmp1)
             t2.set_url(url_tmp2)
 
@@ -676,37 +685,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         put(f"Noise Threshold: {noise_threshold}")
         put(f"Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})")
         put(f"Low-Entropy Threshold: {LET_threshold}")
-        y -= dy * 0.4
 
-        """
-
-        def put_link(label, url):
-            nonlocal y
-            t = ax_txt.text(0.0, y, _tidy(ax_txt, label, fontsize_pt=fs), fontsize=fs, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
-            try:
-                t.set_url(url)
-            except Exception:
-                pass
-            y -= dy
-            return t
-
-        def put_link_two_lines(label, url):
-            if len(url) > 45:
-                url = f"{url[0:45]}..."
-            nonlocal y
-            ax_txt.text(0.0, y, _tidy(ax_txt, label, fontsize_pt=fs), fontsize=fs, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
-            y -= dy * 0.6
-            url_breakable = _make_url_breakable(url)
-            ax_txt.text(0.0, y, _tidy(ax_txt, url_breakable, fontsize_pt=5), fontsize=5, ha="left", va="top", transform=ax_txt.transAxes, wrap=True, clip_on=False)
-            try:
-                t = ax_txt.text(0.0, y, "", transform=ax_txt.transAxes, alpha=0)
-                t.set_url(url)
-            except Exception:
-                pass
-            y -= dy * 1.1
-
-        """
-            
     fig.savefig(output_path, format='svg')
     if return_plot == True:
         return fig

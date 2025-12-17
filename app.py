@@ -597,8 +597,8 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
         fig.text(0.05, 0.08, f'Window Size (Centroiding): {window_size_centroiding}', fontsize=7)
         fig.text(0.05, 0.05, f'Window Size (Matching): {window_size_matching}', fontsize=7)
-        if similarity_measure == 'mixture':
-            fig.text(0.05, 0.02, f'Weights for mixture similarity: {weights}', fontsize=7)
+        #if similarity_measure == 'mixture':
+        #    fig.text(0.05, 0.02, f'Weights for mixture similarity: {weights}', fontsize=7)
 
         fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]', fontsize=7)
         fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
@@ -676,10 +676,10 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
         put(f"Window Size (Centroiding): {window_size_centroiding}")
         put(f"Window Size (Matching): {window_size_matching}")
-        if similarity_measure == "mixture":
-            put(f"Weights for mixture similarity: {weights}")
+        #if similarity_measure == "mixture":
+        #    put(f"Weights for mixture similarity: {weights}")
 
-        y -= dy * 0.4
+        #y -= dy * 0.4
         put(f"Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]")
         put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
         put(f"Noise Threshold: {noise_threshold}")
@@ -1016,9 +1016,8 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
         fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
         fig.text(0.05, 0.08, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
-        if similarity_measure == 'mixture':
-            fig.text(0.05, 0.05, f'Weights for mixture similarity: {weights}', fontsize=7)
-
+        #if similarity_measure == 'mixture':
+        #    fig.text(0.05, 0.05, f'Weights for mixture similarity: {weights}', fontsize=7)
         fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
         fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
         fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
@@ -1077,10 +1076,9 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         put(f"Similarity Score: {round(similarity_score, 4)}")
         put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
         put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
-        if similarity_measure == "mixture":
-            put(f"Weights for mixture similarity: {weights}")
-
-        y -= dy * 0.4
+        #if similarity_measure == "mixture":
+        #    put(f"Weights for mixture similarity: {weights}")
+        #y -= dy * 0.4
         put(f"Raw-Scale M/Z Range: [{min_mz},{max_mz}]")
         put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
         put(f"Noise Threshold: {noise_threshold}")
@@ -1320,21 +1318,48 @@ def S_tsallis(ints_a, ints_b, q):
         N = np.sum(2*np.power(ints_a/2,q)+2*np.power(ints_b/2,q)-np.power(ints_a,q)-np.power(ints_b,q)) / (1-q)
         return 1 - (2 * ent_merg - ent_a - ent_b) / N
 
-def S_mixture(ints_a, ints_b, weights={'Cosine':0.25, 'Shannon':0.25, 'Renyi':0.25, 'Tsallis':0.25}, q=1.1):
-    if set(weights.keys()).issubset(set(['Cosine','Shannon','Renyi','Tsallis'])) is False:
-        print('Error: the keys to the weight parameter dict of the function S_mixture must be one of the four: Cosine, Shannon, Renyi, Tsallis')
-        sys.exit()
 
+def S_mixture(ints_a, ints_b, weights={'cosine':0.25, 'shannon':0.25, 'renyi':0.25, 'tsallis':0.25}, q=1.1):
     similarity = 0
     for key, value in weights.items():
-        if key == 'Cosine':
+        if key == 'cosine':
             similarity += value * S_cos(ints_a,ints_b)
-        if key == 'Shannon':
+        if key == 'shannon':
             similarity += value * S_shannon(ints_a,ints_b)
-        if key == 'Renyi':
+        if key == 'renyi':
             similarity += value * S_renyi(ints_a,ints_b,q)
-        if key == 'Tsallis':
+        if key == 'tsallis':
             similarity += value * S_tsallis(ints_a,ints_b,q)
+        if key == 'jaccard':
+            similarity += value * S_jaccard(ints_a,ints_b)
+        if key == 'dice':
+            similarity += value * S_dice(ints_a,ints_b)
+        if key == '3w_jaccard':
+            similarity += value * S_3w_jaccard(ints_a,ints_b)
+        if key == 'sokal_sneath':
+            similarity += value * S_sokal_sneath(ints_a,ints_b)
+        if key == 'binary_cosine':
+            similarity += value * S_binary_cosine(ints_a,ints_b)
+        if key == 'mountford':
+            similarity += value * S_mountford(ints_a,ints_b)
+        if key == 'mcconnaughey':
+            similarity += value * S_mcconnaughey(ints_a,ints_b)
+        if key == 'driver_kroeber':
+            similarity += value * S_driver_kroeber(ints_a,ints_b)
+        if key == 'simpson':
+            similarity += value * S_simpson(ints_a,ints_b)
+        if key == 'braun_banquet':
+            similarity += value * S_braun_banquet(ints_a,ints_b)
+        if key == 'fager_mcgowan':
+            similarity += value * S_fager_mcgowan(ints_a,ints_b)
+        if key == 'kulczynski':
+            similarity += value * S_kulczynski(ints_a,ints_b)
+        if key == 'intersection':
+            similarity += value * S_intersection(ints_a,ints_b)
+        if key == 'hamming':
+            similarity += value * S_hamming(ints_a,ints_b)
+        if key == 'hellinger':
+            similarity += value * S_hellinger(ints_a,ints_b)
     return similarity
 
 
@@ -1427,7 +1452,7 @@ def S_mountford(ints_a, ints_b):
     if denom == 0:
         similarity = 1
     else:
-        similarity = 2 * c / denom
+        similarity = c / denom
     return similarity
 
 
@@ -1441,6 +1466,7 @@ def S_mcconnaughey(ints_a, ints_b):
         similarity = 0
     else:
         similarity = (c**2 - a * b) / denom
+        similarity = (similarity + 1) / 2
     return similarity
 
 
@@ -1494,6 +1520,7 @@ def S_fager_mcgowan(ints_a, ints_b):
         similarity = 0
     else:
         similarity = c / denom1 - 1 / denom2
+        similarity = (similarity + 0.5) / 1.5
     return similarity
 
 
@@ -1507,12 +1534,14 @@ def S_kulczynski(ints_a, ints_b):
         similarity = 1
     else:
         similarity = c / denom
+        similarity = similarity / (similarity + 1)
     return similarity
 
 
 def S_intersection(ints_a, ints_b):
     tmp = get_contingency_entries(ints_a, ints_b)
     c = tmp[2]
+    c = c / (c + 1)
     return c
 
 
@@ -2920,7 +2949,28 @@ def plot_spectra_ui(platform: str):
         ui.input_checkbox('print_url_spectrum2', ui.span(ui.strong('Print PubChem URL'),': Spectrum 2'), value=False),
         ui.output_ui('pubchem2_area'),
         ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights",ui.span(ui.strong("Weights")," for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
+        #ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights",ui.span(ui.strong("Weights")," for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
+        ui.panel_conditional("input.similarity_measure == 'mixture'",
+                             ui.h5("Mixture weights"),
+                             ui.input_numeric("w_cosine", "Cosine", value=0.25),
+                             ui.input_numeric("w_shannon", "Shannon", value=0.25),
+                             ui.input_numeric("w_renyi", "Rényi", value=0.25),
+                             ui.input_numeric("w_tsallis", "Tsallis", value=0.25),
+                             ui.input_numeric("w_jaccard", "Jaccard", value=0.0),
+                             ui.input_numeric("w_dice", "Dice", value=0.0),
+                             ui.input_numeric("w_3w_jaccard", "3d-Jaccard", value=0.0),
+                             ui.input_numeric("w_sokal_sneath", "Sokal-Sneath", value=0.0),
+                             ui.input_numeric("w_binary_cosine", "Binary Cosine", value=0.0),
+                             ui.input_numeric("w_mountford", "Mountford", value=0.0),
+                             ui.input_numeric("w_mcconnaughey", "McConnaughey", value=0.0),
+                             ui.input_numeric("w_driver_kroeber", "Driver-Kroeber", value=0.0),
+                             ui.input_numeric("w_simpson", "Simpson", value=0.0),
+                             ui.input_numeric("w_braun_banquet", "Braun-Banquet", value=0.0),
+                             ui.input_numeric("w_fager_mcgowan", "Fager-McGowan", value=0.0),
+                             ui.input_numeric("w_kulczynski", "Kulczynski", value=0.0),
+                             ui.input_numeric("w_intersection", "Intersection", value=0.0),
+                             ui.input_numeric("w_hamming", "Hamming", value=0.0),
+                             ui.input_numeric("w_hellinger", "Hellinger", value=0.0)),
         ui.input_select("high_quality_reference_library", ui.span("Indicate whether the reference library is considered ",ui.strong("high quality"),". If True, filtering and noise removal are only applied to the query spectra."), [False, True]),
     ]
 
@@ -3013,7 +3063,28 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights",ui.span(ui.strong("Weights")," for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
+        #ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights",ui.span(ui.strong("Weights")," for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
+        ui.panel_conditional("input.similarity_measure == 'mixture'",
+                             ui.h5("Mixture weights"),
+                             ui.input_numeric("w_cosine", "Cosine", value=0.25),
+                             ui.input_numeric("w_shannon", "Shannon", value=0.25),
+                             ui.input_numeric("w_renyi", "Rényi", value=0.25),
+                             ui.input_numeric("w_tsallis", "Tsallis", value=0.25),
+                             ui.input_numeric("w_jaccard", "Jaccard", value=0.0),
+                             ui.input_numeric("w_dice", "Dice", value=0.0),
+                             ui.input_numeric("w_3w_jaccard", "3d-Jaccard", value=0.0),
+                             ui.input_numeric("w_sokal_sneath", "Sokal-Sneath", value=0.0),
+                             ui.input_numeric("w_binary_cosine", "Binary Cosine", value=0.0),
+                             ui.input_numeric("w_mountford", "Mountford", value=0.0),
+                             ui.input_numeric("w_mcconnaughey", "McConnaughey", value=0.0),
+                             ui.input_numeric("w_driver_kroeber", "Driver-Kroeber", value=0.0),
+                             ui.input_numeric("w_simpson", "Simpson", value=0.0),
+                             ui.input_numeric("w_braun_banquet", "Braun-Banquet", value=0.0),
+                             ui.input_numeric("w_fager_mcgowan", "Fager-McGowan", value=0.0),
+                             ui.input_numeric("w_kulczynski", "Kulczynski", value=0.0),
+                             ui.input_numeric("w_intersection", "Intersection", value=0.0),
+                             ui.input_numeric("w_hamming", "Hamming", value=0.0),
+                             ui.input_numeric("w_hellinger", "Hellinger", value=0.0)),
         ui.input_file( "compound_ID_output_file", ui.span(ui.strong("Upload output")," from spectral library matching to plot top matches")),
         ui.input_selectize("q_spec", ui.span("Select ",ui.strong("query spectrum")," (only applicable for plotting; default is the first spectrum in the compound ID output):"), choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
         ui.input_selectize( "r_spec", ui.span("Select ",ui.strong("reference spectrum")," (only applicable for plotting; default is the rank 1 reference spectrum):"), choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
@@ -3893,8 +3964,31 @@ def server(input, output, session):
     def _build_spectra_figure(annotate_fig,display_within_app_flag):
         spectrum_ID1 = input.spectrum_ID1() or None
         spectrum_ID2 = input.spectrum_ID2() or None
+
+        """
         weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
         weights = {"Cosine": weights_list[0], "Shannon": weights_list[1], "Renyi": weights_list[2], "Tsallis": weights_list[3]}
+        """
+        weights = {"cosine":input.w_cosine(),
+                   "shannon":input.w_shannon(),
+                   "renyi":input.w_renyi(),
+                   "tsallis":input.w_tsallis(),
+                   "jaccard":input.w_jaccard(),
+                   "dice":input.w_dice(),
+                   "3d_jaccard":input.w_3w_jaccard(),
+                   "sokal_sneak":input.w_sokal_sneath(),
+                   "binary_cosine":input.w_binary_cosine(),
+                   "mountford":input.w_mountford(),
+                   "mcconnaughey":input.w_mcconnaughey(),
+                   "driver_kroeber":input.w_driver_kroeber(),
+                   "simpson":input.w_simpson(),
+                   "braun_banquet":input.w_braun_banquet(),
+                   "fager_mcgowan":input.w_fager_mcgowan(),
+                   "kulczynski":input.w_kulczynski(),
+                   "intersection":input.w_intersection(),
+                   "hamming":input.w_hamming(),
+                   "hellinger":input.w_hellinger()}
+
         hq = input.high_quality_reference_library()
         if isinstance(hq, str):
             hq = hq.lower() != "false"
@@ -3936,8 +4030,33 @@ def server(input, output, session):
     def _build_spectra_figure_spec_lib_matching(annotate_fig,display_within_app_flag):
         spectrum_ID1 = input.q_spec() or None
         spectrum_ID2 = input.r_spec() or None
+
+        """
         weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
         weights = {"Cosine": weights_list[0], "Shannon": weights_list[1], "Renyi": weights_list[2], "Tsallis": weights_list[3]}
+        """
+
+        weights = {"cosine":input.w_cosine(),
+                   "shannon":input.w_shannon(),
+                   "renyi":input.w_renyi(),
+                   "tsallis":input.w_tsallis(),
+                   "jaccard":input.w_jaccard(),
+                   "dice":input.w_dice(),
+                   "3d_jaccard":input.w_3w_jaccard(),
+                   "sokal_sneak":input.w_sokal_sneath(),
+                   "binary_cosine":input.w_binary_cosine(),
+                   "mountford":input.w_mountford(),
+                   "mcconnaughey":input.w_mcconnaughey(),
+                   "driver_kroeber":input.w_driver_kroeber(),
+                   "simpson":input.w_simpson(),
+                   "braun_banquet":input.w_braun_banquet(),
+                   "fager_mcgowan":input.w_fager_mcgowan(),
+                   "kulczynski":input.w_kulczynski(),
+                   "intersection":input.w_intersection(),
+                   "hamming":input.w_hamming(),
+                   "hellinger":input.w_hellinger()}
+
+
         hq = input.high_quality_reference_library()
         if isinstance(hq, str):
             hq = hq.lower() != "false"
@@ -4047,8 +4166,30 @@ def server(input, output, session):
         elif isinstance(hq, (int, float)):
             hq = bool(hq)
 
+        """
         weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
         weights = {"Cosine": weights_list[0], "Shannon": weights_list[1], "Renyi": weights_list[2], "Tsallis": weights_list[3]}
+        """
+
+        weights = {"cosine":input.w_cosine(),
+                   "shannon":input.w_shannon(),
+                   "renyi":input.w_renyi(),
+                   "tsallis":input.w_tsallis(),
+                   "jaccard":input.w_jaccard(),
+                   "dice":input.w_dice(),
+                   "3d_jaccard":input.w_3w_jaccard(),
+                   "sokal_sneak":input.w_sokal_sneath(),
+                   "binary_cosine":input.w_binary_cosine(),
+                   "mountford":input.w_mountford(),
+                   "mcconnaughey":input.w_mcconnaughey(),
+                   "driver_kroeber":input.w_driver_kroeber(),
+                   "simpson":input.w_simpson(),
+                   "braun_banquet":input.w_braun_banquet(),
+                   "fager_mcgowan":input.w_fager_mcgowan(),
+                   "kulczynski":input.w_kulczynski(),
+                   "intersection":input.w_intersection(),
+                   "hamming":input.w_hamming(),
+                   "hellinger":input.w_hellinger()}
 
         common = dict(
             query_data=input.query_data()[0]["datapath"],
@@ -4089,7 +4230,6 @@ def server(input, output, session):
         return _fig_within_spec()
 
 
-
     @render.download(filename="identification_output.txt")
     async def run_btn_spec_lib_matching():
         match_log_rv.set("Running identification...\n")
@@ -4101,8 +4241,30 @@ def server(input, output, session):
         elif isinstance(hq, (int, float)):
             hq = bool(hq)
 
+        """
         weights = [float(weight.strip()) for weight in input.weights().split(",") if weight.strip()]
         weights = {'Cosine': weights[0], 'Shannon': weights[1], 'Renyi': weights[2], 'Tsallis': weights[3]}
+        """
+
+        weights = {"cosine":input.w_cosine(),
+                   "shannon":input.w_shannon(),
+                   "renyi":input.w_renyi(),
+                   "tsallis":input.w_tsallis(),
+                   "jaccard":input.w_jaccard(),
+                   "dice":input.w_dice(),
+                   "3d_jaccard":input.w_3w_jaccard(),
+                   "sokal_sneak":input.w_sokal_sneath(),
+                   "binary_cosine":input.w_binary_cosine(),
+                   "mountford":input.w_mountford(),
+                   "mcconnaughey":input.w_mcconnaughey(),
+                   "driver_kroeber":input.w_driver_kroeber(),
+                   "simpson":input.w_simpson(),
+                   "braun_banquet":input.w_braun_banquet(),
+                   "fager_mcgowan":input.w_fager_mcgowan(),
+                   "kulczynski":input.w_kulczynski(),
+                   "intersection":input.w_intersection(),
+                   "hamming":input.w_hamming(),
+                   "hellinger":input.w_hellinger()}
 
         common_kwargs = dict(
             query_data=input.query_data()[0]["datapath"],
@@ -4270,7 +4432,6 @@ def server(input, output, session):
             await reactive.flush()
 
         yield df_out.to_csv(index=False, sep='\t').encode("utf-8")
-
 
 
     @reactive.effect

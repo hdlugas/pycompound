@@ -33,11 +33,11 @@ os.environ["MPLBACKEND"] = "Agg"
 matplotlib.rcParams['svg.fonttype'] = 'none'
 matplotlib.use("Agg")
 
-
 _LOG_QUEUE: asyncio.Queue[str] = asyncio.Queue()
-
 _ADDUCT_PAT = re.compile(r"\s*(?:\[(M[^\]]+)\]|(M[+-][A-Za-z0-9]+)\+?)\s*$", re.IGNORECASE)
 
+def _log(msg: str):
+    print(msg, flush=True)
 
 def start_log_consumer():
     if getattr(start_log_consumer, "_started", False):
@@ -1714,6 +1714,8 @@ def tune_params_DE(query_data=None, reference_data=None, precursor_ion_mz_tolera
     ctx = dict(
         df_query=df_query,
         df_reference=df_reference,
+        unique_query_ids=unique_query_ids,
+        unique_reference_ids=unique_reference_ids,
         precursor_ion_mz_tolerance=precursor_ion_mz_tolerance,
         ionization_mode=ionization_mode,
         adduct=adduct,
@@ -3316,7 +3318,28 @@ def run_parameter_tuning_DE_ui(platform: str):
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
+        #ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
+        ui.panel_conditional("input.similarity_measure == 'mixture'",
+                             ui.h5("Mixture weights"),
+                             ui.input_numeric("w_cosine", "Cosine", value=0.25),
+                             ui.input_numeric("w_shannon", "Shannon", value=0.25),
+                             ui.input_numeric("w_renyi", "Rényi", value=0.25),
+                             ui.input_numeric("w_tsallis", "Tsallis", value=0.25),
+                             ui.input_numeric("w_jaccard", "Jaccard", value=0.0),
+                             ui.input_numeric("w_dice", "Dice", value=0.0),
+                             ui.input_numeric("w_3w_jaccard", "3d-Jaccard", value=0.0),
+                             ui.input_numeric("w_sokal_sneath", "Sokal-Sneath", value=0.0),
+                             ui.input_numeric("w_binary_cosine", "Binary Cosine", value=0.0),
+                             ui.input_numeric("w_mountford", "Mountford", value=0.0),
+                             ui.input_numeric("w_mcconnaughey", "McConnaughey", value=0.0),
+                             ui.input_numeric("w_driver_kroeber", "Driver-Kroeber", value=0.0),
+                             ui.input_numeric("w_simpson", "Simpson", value=0.0),
+                             ui.input_numeric("w_braun_banquet", "Braun-Banquet", value=0.0),
+                             ui.input_numeric("w_fager_mcgowan", "Fager-McGowan", value=0.0),
+                             ui.input_numeric("w_kulczynski", "Kulczynski", value=0.0),
+                             ui.input_numeric("w_intersection", "Intersection", value=0.0),
+                             ui.input_numeric("w_hamming", "Hamming", value=0.0),
+                             ui.input_numeric("w_hellinger", "Hellinger", value=0.0)),
         ui.input_select("high_quality_reference_library", ui.span("Indicate whether the reference library is considered ",ui.strong("high quality"),". If True, filtering and noise removal are only applied to the query spectra."), [False, True])]
 
     if platform == "HRMS":
@@ -4498,10 +4521,30 @@ def server(input, output, session):
             int_min = _safe_float(_iget("int_min", 0.0), 0.0)
             int_max = _safe_float(_iget("int_max", 999_999_999.0), 999_999_999.0)
 
-            w_text = _iget("weights", "") or ""
-            w_list = [float(w.strip()) for w in w_text.split(",") if w.strip()]
-            w_list = (w_list + [0.0, 0.0, 0.0, 0.0])[:4]
-            weights = {"Cosine": w_list[0], "Shannon": w_list[1], "Renyi": w_list[2], "Tsallis": w_list[3]}
+            #w_text = _iget("weights", "") or ""
+            #w_list = [float(w.strip()) for w in w_text.split(",") if w.strip()]
+            #w_list = (w_list + [0.0, 0.0, 0.0, 0.0])[:4]
+            #weights = {"Cosine": w_list[0], "Shannon": w_list[1], "Renyi": w_list[2], "Tsallis": w_list[3]}
+
+            weights = {"cosine":input.w_cosine(),
+                       "shannon":input.w_shannon(),
+                       "renyi":input.w_renyi(),
+                       "tsallis":input.w_tsallis(),
+                       "jaccard":input.w_jaccard(),
+                       "dice":input.w_dice(),
+                       "3d_jaccard":input.w_3w_jaccard(),
+                       "sokal_sneak":input.w_sokal_sneath(),
+                       "binary_cosine":input.w_binary_cosine(),
+                       "mountford":input.w_mountford(),
+                       "mcconnaughey":input.w_mcconnaughey(),
+                       "driver_kroeber":input.w_driver_kroeber(),
+                       "simpson":input.w_simpson(),
+                       "braun_banquet":input.w_braun_banquet(),
+                       "fager_mcgowan":input.w_fager_mcgowan(),
+                       "kulczynski":input.w_kulczynski(),
+                       "intersection":input.w_intersection(),
+                       "hamming":input.w_hamming(),
+                       "hellinger":input.w_hellinger()}
 
             opt_params = tuple(_iget("params", ()) or ())
             bounds_dict = {}
@@ -4538,25 +4581,58 @@ def server(input, output, session):
 
         def _run():
             with redirect_stdout(writer), redirect_stderr(writer):
-                return tune_params_DE(
-                    query_data=qfile,
-                    reference_data=rfile,
-                    precursor_ion_mz_tolerance=float(input.precursor_ion_mz_tolerance()),
-                    ionization_mode=input.ionization_mode(),
-                    adduct=input.adduct(),
-                    chromatography_platform=input.chromatography_platform(),
-                    similarity_measure=sim,
-                    weights=weights,
-                    spectrum_preprocessing_order=spro,
-                    mz_min=mz_min, mz_max=mz_max,
-                    int_min=int_min, int_max=int_max,
-                    high_quality_reference_library=hq,
-                    optimize_params=list(opt_params),
-                    param_bounds=bounds_dict,
-                    default_params=defaults,
-                    de_workers=1,
-                    maxiters=input.max_iterations()
-                )
+                if input.precursor_ion_mz_tolerance() == None:
+                    precursor_ion_mz_tolerance_tmp = None
+                else:
+                    precursor_ion_mz_tolerance_tmp = float(input.precursor_ion_mz_tolerance())
+
+                if input.ionization_mode() == None:
+                    ionization_mode_tmp = None
+                else:
+                    ionization_mode_tmp = input.ionization_mode()
+
+                if input.adduct() == None:
+                    adduct_tmp = None
+                else:
+                    adduct_tmp = input.adduct()
+
+                if input.chromatography_platform() == 'HRMS':
+                    return tune_params_DE(
+                        query_data=qfile,
+                        reference_data=rfile,
+                        precursor_ion_mz_tolerance=precursor_ion_mz_tolerance_tmp,
+                        ionization_mode=ionization_mode_tmp,
+                        adduct=adduct_tmp,
+                        chromatography_platform=input.chromatography_platform(),
+                        similarity_measure=sim,
+                        weights=weights,
+                        spectrum_preprocessing_order=spro,
+                        mz_min=mz_min, mz_max=mz_max,
+                        int_min=int_min, int_max=int_max,
+                        high_quality_reference_library=hq,
+                        optimize_params=list(opt_params),
+                        param_bounds=bounds_dict,
+                        default_params=defaults,
+                        de_workers=1,
+                        maxiters=input.max_iterations()
+                    )
+                else:
+                    return tune_params_DE(
+                        query_data=qfile,
+                        reference_data=rfile,
+                        chromatography_platform=input.chromatography_platform(),
+                        similarity_measure=sim,
+                        weights=weights,
+                        spectrum_preprocessing_order=spro,
+                        mz_min=mz_min, mz_max=mz_max,
+                        int_min=int_min, int_max=int_max,
+                        high_quality_reference_library=hq,
+                        optimize_params=list(opt_params),
+                        param_bounds=bounds_dict,
+                        default_params=defaults,
+                        de_workers=1,
+                        maxiters=input.max_iterations()
+                    )
 
         try:
             _ = await asyncio.to_thread(_run)

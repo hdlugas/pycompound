@@ -253,7 +253,7 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
 
 
 
-def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True, display_within_app_flag=False):
+def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1=False, print_url_spectrum2=True, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True, display_within_app_flag=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -606,7 +606,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         fig.text(0.40, 0.11, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
         fig.text(0.40, 0.08, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
 
-        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
+        if print_url_spectrum1 == True and print_url_spectrum2 == False:
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
             t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1_tmp}: {url_tmp1}', fontsize=7)
@@ -614,12 +614,12 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             t1.set_url(url_tmp1)
             t2.set_url(url_tmp2)
 
-        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
+        if print_url_spectrum1 == True and print_url_spectrum2 == False:
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)
             t1 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
             t1.set_url(url_tmp1)
 
-        if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
+        if print_url_spectrum1 == False and print_url_spectrum2 == True:
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
             t2 = fig.text(0.40, 0.05, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
             t2.set_url(url_tmp2)
@@ -693,7 +693,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
 
 
 
-def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1='No', print_url_spectrum2='Yes', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True, display_within_app_flag=False):
+def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1=False, print_url_spectrum2=True, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True, display_within_app_flag=False):
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -1023,7 +1023,7 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
         fig.text(0.40, 0.11, f'Low-Entropy Threshold: {LET_threshold}', fontsize=7)
 
-        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'Yes':
+        if print_url_spectrum1 == True and print_url_spectrum2 == False:
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
             t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
@@ -1031,12 +1031,12 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             t1.set_url(url_tmp1)
             t2.set_url(url_tmp2)
 
-        if print_url_spectrum1 == 'Yes' and print_url_spectrum2 == 'No':
+        if print_url_spectrum1 == True and print_url_spectrum2 == False:
             url_tmp1 = get_pubchem_url(query=spectrum_ID1)
             t1 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID1}: {url_tmp1}', fontsize=7)
             t1.set_url(url_tmp1)
 
-        if print_url_spectrum1 == 'No' and print_url_spectrum2 == 'Yes':
+        if print_url_spectrum1 == False and print_url_spectrum2 == True:
             url_tmp2 = get_pubchem_url(query=spectrum_ID2)
             t2 = fig.text(0.40, 0.08, f'PubChem URL for {spectrum_ID2}: {url_tmp2}', fontsize=7)
             t2.set_url(url_tmp2)
@@ -1257,6 +1257,7 @@ def convert_spec(spec, mzs):
     return out
 
 
+"""
 def get_reference_df(reference_data, likely_reference_IDs=None):
     extension = reference_data.rsplit('.',1)
     extension = extension[(len(extension)-1)]
@@ -1264,11 +1265,36 @@ def get_reference_df(reference_data, likely_reference_IDs=None):
         output_path_tmp = reference_data[:-3] + 'txt'
         build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
         df_reference = pd.read_csv(output_path_tmp, sep='\t')
-    if extension == 'txt' or extension == 'TXT':
+    elif extension == 'txt' or extension == 'TXT':
         df_reference = pd.read_csv(reference_data, sep='\t')
     if likely_reference_IDs is not None:
         likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
         df_reference = df_reference.loc[df_reference['id'].isin(likely_reference_IDs.iloc[:,0].tolist())]
+    return df_reference
+"""
+
+def get_reference_df(reference_data, likely_reference_IDs=None):
+    reference_data = str(reference_data)
+    ext = Path(reference_data).suffix.lower().lstrip(".")
+
+    if ext in {"mgf", "mzml", "cdf", "msp", "json"}:
+        output_path_tmp = str(Path(reference_data).with_suffix(".txt"))
+        build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
+
+        if not Path(output_path_tmp).exists():
+            raise FileNotFoundError(f"Expected converted reference file not found: {output_path_tmp}")
+
+        df_reference = pd.read_csv(output_path_tmp, sep="\t")
+    elif ext == "txt":
+        df_reference = pd.read_csv(reference_data, sep="\t")
+
+    else:
+        raise ValueError(f"Unsupported reference_data extension: .{ext} (path={reference_data})")
+
+    if likely_reference_IDs is not None:
+        ids = pd.read_csv(likely_reference_IDs, header=None).iloc[:, 0]
+        df_reference = df_reference.loc[df_reference["id"].isin(ids)]
+
     return df_reference
 
 
@@ -1321,6 +1347,8 @@ def S_tsallis(ints_a, ints_b, q):
 
 def S_mixture(ints_a, ints_b, weights={'cosine':0.25, 'shannon':0.25, 'renyi':0.25, 'tsallis':0.25}, q=1.1):
     similarity = 0
+    s = sum(weights.values())
+    weights = {k: v / s for k, v in weights.items()}
     for key, value in weights.items():
         if key == 'cosine':
             similarity += value * S_cos(ints_a,ints_b)
@@ -1755,19 +1783,19 @@ default_NRMS_grid = {'similarity_measure':['cosine'], 'weight':[{'Cosine':0.25,'
 
 
 def _eval_one_HRMS(df_query, df_reference,
-              precursor_ion_mz_tolerance_tmp, ionization_mode_tmp, adduct_tmp,
-              similarity_measure_tmp, weight,
-              spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp,
-              int_min_tmp, int_max_tmp, noise_threshold_tmp,
-              window_size_centroiding_tmp, window_size_matching_tmp,
-              wf_mz_tmp, wf_int_tmp, LET_threshold_tmp,
-              entropy_dimension_tmp, high_quality_reference_library_tmp):
+                   precursor_ion_mz_tolerance_tmp, ionization_mode_tmp, adduct_tmp,
+                   weights_tmp, similarity_measure_tmp,
+                   spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp,
+                   int_min_tmp, int_max_tmp, noise_threshold_tmp,
+                   window_size_centroiding_tmp, window_size_matching_tmp,
+                   wf_mz_tmp, wf_int_tmp, LET_threshold_tmp,
+                   entropy_dimension_tmp, high_quality_reference_library_tmp):
 
     acc = get_acc_HRMS(
         df_query=df_query, df_reference=df_reference,
         precursor_ion_mz_tolerance=precursor_ion_mz_tolerance_tmp,
         ionization_mode=ionization_mode_tmp, adduct=adduct_tmp,
-        similarity_measure=similarity_measure_tmp, weights=weight,
+        weights=weights_tmp, similarity_measure=similarity_measure_tmp,
         spectrum_preprocessing_order=spectrum_preprocessing_order_tmp,
         mz_min=mz_min_tmp, mz_max=mz_max_tmp,
         int_min=int_min_tmp, int_max=int_max_tmp,
@@ -1782,7 +1810,7 @@ def _eval_one_HRMS(df_query, df_reference,
     )
 
     return (
-        acc, similarity_measure_tmp, json.dumps(weight), spectrum_preprocessing_order_tmp,
+        acc, similarity_measure_tmp, spectrum_preprocessing_order_tmp,
         mz_min_tmp, mz_max_tmp, int_min_tmp, int_max_tmp,
         noise_threshold_tmp, window_size_centroiding_tmp, window_size_matching_tmp,
         wf_mz_tmp, wf_int_tmp, LET_threshold_tmp, entropy_dimension_tmp,
@@ -1791,16 +1819,16 @@ def _eval_one_HRMS(df_query, df_reference,
 
 
 def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
-              similarity_measure_tmp, weight,
-              spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp,
-              int_min_tmp, int_max_tmp, noise_threshold_tmp,
-              wf_mz_tmp, wf_int_tmp, LET_threshold_tmp,
-              entropy_dimension_tmp, high_quality_reference_library_tmp):
+                   weights_tmp, similarity_measure_tmp,
+                   spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp,
+                   int_min_tmp, int_max_tmp, noise_threshold_tmp,
+                   wf_mz_tmp, wf_int_tmp, LET_threshold_tmp,
+                   entropy_dimension_tmp, high_quality_reference_library_tmp):
 
     acc = get_acc_NRMS(
         df_query=df_query, df_reference=df_reference,
         unique_query_ids=unique_query_ids, unique_reference_ids=unique_reference_ids,
-        similarity_measure=similarity_measure_tmp, weights=weight,
+        weights=weights_tmp, similarity_measure=similarity_measure_tmp,
         spectrum_preprocessing_order=spectrum_preprocessing_order_tmp,
         mz_min=mz_min_tmp, mz_max=mz_max_tmp,
         int_min=int_min_tmp, int_max=int_max_tmp,
@@ -1812,7 +1840,7 @@ def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_id
     )
 
     return (
-        acc, similarity_measure_tmp, json.dumps(weight), spectrum_preprocessing_order_tmp,
+        acc, similarity_measure_tmp, spectrum_preprocessing_order_tmp,
         mz_min_tmp, mz_max_tmp, int_min_tmp, int_max_tmp, noise_threshold_tmp, 
         wf_mz_tmp, wf_int_tmp, LET_threshold_tmp, entropy_dimension_tmp, high_quality_reference_library_tmp
     )
@@ -1820,7 +1848,7 @@ def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_id
 
 
 
-def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, grid=None, output_path=None, return_output=False):
+def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, grid=None, weights=None, output_path=None, return_output=False):
     local_grid = {**default_HRMS_grid, **(grid or {})}
     for key, value in local_grid.items():
         globals()[key] = value
@@ -1830,7 +1858,7 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, pr
         sys.exit()
     else:
         extension = query_data.rsplit('.', 1)[-1]
-        if extension in ('mgf','MGF','mzML','mzml','MZML','cdf','CDF'):
+        if extension in ('mgf','MGF','mzML','mzml','MZML','cdf','CDF','msp','MSP','json','JSON'):
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
@@ -1848,6 +1876,18 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, pr
         if isinstance(reference_data, str):
             df_reference = get_reference_df(reference_data=reference_data)
             unique_reference_ids = df_reference['id'].unique()
+            """
+            try:
+                df_reference = get_reference_df(reference_data=reference_data)
+                unique_reference_ids = df_reference['id'].unique()
+            except SystemExit as e:
+                print(f"SystemExit inside get_reference_df: {e}", file=sys.stderr, flush=True)
+                raise
+            except Exception:
+                print("Exception inside get_reference_df:", file=sys.stderr, flush=True)
+                print(traceback.format_exc(), file=sys.stderr, flush=True)
+                raise
+            """
         else:
             dfs = []
             unique_reference_ids = []
@@ -1856,6 +1896,7 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, pr
                 dfs.append(tmp)
                 unique_reference_ids.extend(tmp['id'].unique())
             df_reference = pd.concat(dfs, axis=0, ignore_index=True)
+
 
     print(f'\nNote that there are {len(unique_query_ids)} unique query spectra, '
           f'{len(unique_reference_ids)} unique reference spectra, and '
@@ -1871,44 +1912,45 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, pr
         print(f'Warning: since output_path=None, the output will be written to the current working directory: {output_path}')
 
     param_grid = product(
-        similarity_measure, weight, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max,
+        similarity_measure, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max,
         noise_threshold, window_size_centroiding, window_size_matching, wf_mz, wf_int, LET_threshold,
         entropy_dimension, high_quality_reference_library
     )
 
     results = []
     total = (
-        len(similarity_measure) * len(weight) * len(spectrum_preprocessing_order) * len(mz_min) * len(mz_max) *
+        len(similarity_measure) * len(spectrum_preprocessing_order) * len(mz_min) * len(mz_max) *
         len(int_min) * len(int_max) * len(noise_threshold) * len(window_size_centroiding) *
         len(window_size_matching) * len(wf_mz) * len(wf_int) * len(LET_threshold) *
         len(entropy_dimension) * len(high_quality_reference_library)
     )
     done = 0
     for params in param_grid:
-        res = _eval_one_HRMS(df_query, df_reference, precursor_ion_mz_tolerance, ionization_mode, adduct, *params)
+        res = _eval_one_HRMS(df_query, df_reference, precursor_ion_mz_tolerance, ionization_mode, adduct, weights, *params)
         results.append(res)
         done += 1
         print(f'Completed {done}/{total} grid combinations.\n', flush=True)
 
     df_out = pd.DataFrame(results, columns=[
-        'ACC','SIMILARITY.MEASURE','WEIGHT','SPECTRUM.PROCESSING.ORDER','MZ.MIN','MZ.MAX',
+        'ACC','SIMILARITY.MEASURE','SPECTRUM.PROCESSING.ORDER','MZ.MIN','MZ.MAX',
         'INT.MIN','INT.MAX','NOISE.THRESHOLD','WINDOW.SIZE.CENTROIDING','WINDOW.SIZE.MATCHING',
         'WF.MZ','WF.INT','LET.THRESHOLD','ENTROPY.DIMENSION','HIGH.QUALITY.REFERENCE.LIBRARY'
     ])
 
-    if 'WEIGHT' in df_out.columns:
-        df_out['WEIGHT'] = (
-            df_out['WEIGHT'].astype(str)
-                .str.replace("\"","",regex=False)
-                .str.replace("{","",regex=False)
-                .str.replace("}","",regex=False)
-                .str.replace(":","",regex=False)
-                .str.replace("Cosine","",regex=False)
-                .str.replace("Shannon","",regex=False)
-                .str.replace("Renyi","",regex=False)
-                .str.replace("Tsallis","",regex=False)
-                .str.replace(" ","",regex=False)
-        )
+    """
+    df_out['WEIGHT'] = (
+        df_out['WEIGHT'].astype(str)
+            .str.replace("\"","",regex=False)
+            .str.replace("{","",regex=False)
+            .str.replace("}","",regex=False)
+            .str.replace(":","",regex=False)
+            .str.replace("Cosine","",regex=False)
+            .str.replace("Shannon","",regex=False)
+            .str.replace("Renyi","",regex=False)
+            .str.replace("Tsallis","",regex=False)
+            .str.replace(" ","",regex=False)
+    )
+    """
 
     if return_output:
         return df_out
@@ -1918,7 +1960,7 @@ def tune_params_on_HRMS_data_grid_shiny(query_data=None, reference_data=None, pr
 
 
 
-def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False):
+def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=None, weights=None, output_path=None, return_output=False):
     grid = {**default_NRMS_grid, **(grid or {})}
     for key, value in grid.items():
         globals()[key] = value
@@ -1961,12 +2003,13 @@ def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=Non
 
     param_grid = product(similarity_measure, weight, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max,
                          noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library)
-    results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_NRMS)(df_query, df_reference, unique_query_ids, unique_reference_ids, *params) for params in param_grid)
+    results = Parallel(n_jobs=-1, verbose=10)(delayed(_eval_one_NRMS)(df_query, df_reference, unique_query_ids, unique_reference_ids, weights, *params) for params in param_grid)
 
     df_out = pd.DataFrame(results, columns=[
-        'ACC','SIMILARITY.MEASURE','WEIGHT','SPECTRUM.PROCESSING.ORDER', 'MZ.MIN','MZ.MAX','INT.MIN','INT.MAX',
+        'ACC','SIMILARITY.MEASURE','SPECTRUM.PROCESSING.ORDER', 'MZ.MIN','MZ.MAX','INT.MIN','INT.MAX',
         'NOISE.THRESHOLD','WF.MZ','WF.INT','LET.THRESHOLD','ENTROPY.DIMENSION', 'HIGH.QUALITY.REFERENCE.LIBRARY'
     ])
+    """
     df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("\"","",regex=False)
     df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("{","",regex=False)
     df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("}","",regex=False)
@@ -1976,6 +2019,7 @@ def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=Non
     df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Renyi","",regex=False)
     df_out['WEIGHT'] = df_out['WEIGHT'].str.replace("Tsallis","",regex=False)
     df_out['WEIGHT'] = df_out['WEIGHT'].str.replace(" ","",regex=False)
+    """
     if return_output is False:
         df_out.to_csv(output_path, index=False, sep='\t', quoting=csv.QUOTE_NONE)
     else:
@@ -1993,7 +2037,7 @@ def tune_params_on_NRMS_data_grid_shiny(query_data=None, reference_data=None, gr
         sys.exit()
     else:
         extension = query_data.rsplit('.', 1)[-1]
-        if extension in ('mgf','MGF','mzML','mzml','MZML','cdf','CDF'):
+        if extension in ('mgf','MGF','mzML','mzml','MZML','cdf','CDF','msp','MSP','json','JSON'):
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
@@ -2051,19 +2095,20 @@ def tune_params_on_NRMS_data_grid_shiny(query_data=None, reference_data=None, gr
         'INT.MIN','INT.MAX','NOISE.THRESHOLD','WF.MZ','WF.INT','LET.THRESHOLD','ENTROPY.DIMENSION','HIGH.QUALITY.REFERENCE.LIBRARY'
     ])
 
-    if 'WEIGHT' in df_out.columns:
-        df_out['WEIGHT'] = (
-            df_out['WEIGHT'].astype(str)
-                .str.replace("\"","",regex=False)
-                .str.replace("{","",regex=False)
-                .str.replace("}","",regex=False)
-                .str.replace(":","",regex=False)
-                .str.replace("Cosine","",regex=False)
-                .str.replace("Shannon","",regex=False)
-                .str.replace("Renyi","",regex=False)
-                .str.replace("Tsallis","",regex=False)
-                .str.replace(" ","",regex=False)
-        )
+    """
+    df_out['WEIGHT'] = (
+        df_out['WEIGHT'].astype(str)
+            .str.replace("\"","",regex=False)
+            .str.replace("{","",regex=False)
+            .str.replace("}","",regex=False)
+            .str.replace(":","",regex=False)
+            .str.replace("Cosine","",regex=False)
+            .str.replace("Shannon","",regex=False)
+            .str.replace("Renyi","",regex=False)
+            .str.replace("Tsallis","",regex=False)
+            .str.replace(" ","",regex=False)
+    )
+    """
 
     if return_output:
         return df_out
@@ -2279,7 +2324,7 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
     else:
         extension = query_data.rsplit('.',1)
         extension = extension[(len(extension)-1)]
-        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'json' or extension == 'JSON':
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             #build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
@@ -2951,7 +2996,6 @@ def plot_spectra_ui(platform: str):
         ui.input_checkbox('print_url_spectrum2', ui.span(ui.strong('Print PubChem URL'),': Spectrum 2'), value=False),
         ui.output_ui('pubchem2_area'),
         ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        #ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights",ui.span(ui.strong("Weights")," for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
         ui.panel_conditional("input.similarity_measure == 'mixture'",
                              ui.h5("Mixture weights"),
                              ui.input_numeric("w_cosine", "Cosine", value=0.25),
@@ -3065,7 +3109,6 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        #ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights",ui.span(ui.strong("Weights")," for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
         ui.panel_conditional("input.similarity_measure == 'mixture'",
                              ui.h5("Mixture weights"),
                              ui.input_numeric("w_cosine", "Cosine", value=0.25),
@@ -3090,8 +3133,12 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_file( "compound_ID_output_file", ui.span(ui.strong("Upload output")," from spectral library matching to plot top matches")),
         ui.input_selectize("q_spec", ui.span("Select ",ui.strong("query spectrum")," (only applicable for plotting; default is the first spectrum in the compound ID output):"), choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
         ui.input_selectize( "r_spec", ui.span("Select ",ui.strong("reference spectrum")," (only applicable for plotting; default is the rank 1 reference spectrum):"), choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
-        ui.input_select("print_url_spectrum1", ui.span(ui.strong("Print PubChem URL")," for query spectrum (only applicable for plotting):"), ["No", "Yes"]),
-        ui.input_select("print_url_spectrum2", ui.span(ui.strong("Print PubChem URL")," for reference spectrum (only applicable for plotting):"), ["No", "Yes"], selected="Yes"),
+        #ui.input_select("print_url_spectrum1", ui.span(ui.strong("Print PubChem URL")," for query spectrum (only applicable for plotting):"), ["No", "Yes"]),
+        #ui.input_select("print_url_spectrum2", ui.span(ui.strong("Print PubChem URL")," for reference spectrum (only applicable for plotting):"), ["No", "Yes"], selected="Yes"),
+        ui.input_checkbox('print_url_spectrum1', ui.span(ui.strong('Print PubChem URL'),': Spectrum 1'), value=False),
+        ui.output_ui('pubchem1_area_spec_lib_matching'),
+        ui.input_checkbox('print_url_spectrum2', ui.span(ui.strong('Print PubChem URL'),': Spectrum 2'), value=False),
+        ui.output_ui('pubchem2_area_spec_lib_matching'),
         ui.input_select("high_quality_reference_library", ui.span("Indicate whether the reference library is considered ",ui.strong("high quality"),". If True, filtering and noise removal are only applied to the query spectra."), [False, True]),
     ]
 
@@ -3101,6 +3148,8 @@ def run_spec_lib_matching_ui(platform: str):
         base_inputs[6],
         base_inputs[7],
         base_inputs[8],
+        base_inputs[9],
+        base_inputs[10],
     ]
 
     if platform == "HRMS":
@@ -3146,7 +3195,7 @@ def run_spec_lib_matching_ui(platform: str):
                 style="display:flex; flex-direction:column; gap:10px;",
             ),
             ui.div(
-                [base_inputs[9], extra_inputs[3], extra_inputs[4], extra_inputs[5], numeric_inputs[0], numeric_inputs[1]],
+                [base_inputs[11], extra_inputs[3], extra_inputs[4], extra_inputs[5], numeric_inputs[0], numeric_inputs[1]],
                 style="display:flex; flex-direction:column; gap:10px;"
             ),
             ui.div(numeric_inputs[2:10], style="display:flex; flex-direction:column; gap:10px;"),
@@ -3159,7 +3208,7 @@ def run_spec_lib_matching_ui(platform: str):
                 [base_inputs[0], base_inputs[1], base_inputs[2], base_inputs[3], extra_inputs[0]],
                 style="display:flex; flex-direction:column; gap:10px;",
             ),
-            ui.div([base_inputs[9], numeric_inputs[0], numeric_inputs[1], numeric_inputs[2], numeric_inputs[3]], style="display:flex; flex-direction:column; gap:10px;"),
+            ui.div([base_inputs[11], numeric_inputs[0], numeric_inputs[1], numeric_inputs[2], numeric_inputs[3]], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(numeric_inputs[4:10], style="display:flex; flex-direction:column; gap:10px;"),
             ui.div(plot_panel, style="display:flex; justify-content:flex-start;"),
             col_widths=(3, 3, 3, 3),
@@ -3222,7 +3271,29 @@ def run_parameter_tuning_grid_ui(platform: str):
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_selectize("similarity_measure", ui.span("Select ",ui.strong("similarity measure(s)"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"], multiple=True, selected='cosine'),
-        ui.panel_conditional("input.similarity_measure && input.similarity_measure.indexOf('mixture') !== -1", ui.input_text("weights",ui.span(ui.strong("Weights for mixture similarity measure")," (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
+        #ui.panel_conditional("input.similarity_measure && input.similarity_measure.indexOf('mixture') !== -1", ui.input_text("weights",ui.span(ui.strong("Weights for mixture similarity measure")," (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
+        #ui.panel_conditional("input.similarity_measure == 'mixture'",
+        ui.panel_conditional("input.similarity_measure && input.similarity_measure.indexOf('mixture') !== -1",
+                             ui.h5("Mixture weights"),
+                             ui.input_numeric("w_cosine", "Cosine", value=0.25),
+                             ui.input_numeric("w_shannon", "Shannon", value=0.25),
+                             ui.input_numeric("w_renyi", "Rényi", value=0.25),
+                             ui.input_numeric("w_tsallis", "Tsallis", value=0.25),
+                             ui.input_numeric("w_jaccard", "Jaccard", value=0.0),
+                             ui.input_numeric("w_dice", "Dice", value=0.0),
+                             ui.input_numeric("w_3w_jaccard", "3d-Jaccard", value=0.0),
+                             ui.input_numeric("w_sokal_sneath", "Sokal-Sneath", value=0.0),
+                             ui.input_numeric("w_binary_cosine", "Binary Cosine", value=0.0),
+                             ui.input_numeric("w_mountford", "Mountford", value=0.0),
+                             ui.input_numeric("w_mcconnaughey", "McConnaughey", value=0.0),
+                             ui.input_numeric("w_driver_kroeber", "Driver-Kroeber", value=0.0),
+                             ui.input_numeric("w_simpson", "Simpson", value=0.0),
+                             ui.input_numeric("w_braun_banquet", "Braun-Banquet", value=0.0),
+                             ui.input_numeric("w_fager_mcgowan", "Fager-McGowan", value=0.0),
+                             ui.input_numeric("w_kulczynski", "Kulczynski", value=0.0),
+                             ui.input_numeric("w_intersection", "Intersection", value=0.0),
+                             ui.input_numeric("w_hamming", "Hamming", value=0.0),
+                             ui.input_numeric("w_hellinger", "Hellinger", value=0.0)),
         ui.input_text("high_quality_reference_library", ui.span("Indicate whether the reference library is considered ",ui.strong("high quality"),". If True, filtering and noise removal are only applied to the query spectra."), '[True]')
     ]
 
@@ -3231,23 +3302,23 @@ def run_parameter_tuning_grid_ui(platform: str):
             ui.input_numeric("precursor_ion_mz_tolerance", ui.span(ui.strong("Precursor ion mass tolerance")," (leave blank if not applicable):"), None),
             ui.input_select("ionization_mode", ui.strong("Ionization mode:"), ["Positive", "Negative", "N/A"], selected="N/A"),
             ui.input_select("adduct", ui.strong("Adduct:"), ['H','NH3','NH4','Na','K','N/A'], selected='N/A'),
-            ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used."), "FCNMWL",),
-            ui.input_numeric("window_size_centroiding", ui.strong("Centroiding window-size:"), 0.5),
-            ui.input_numeric("window_size_matching", ui.strong("Matching window-size:"), 0.5),
+            ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (C (centroiding), F (filtering), M (matching), N (noise removal), L (low-entropy transformation), W (weight factor transformation)). M must be included, C before M if used."), "[FCNMWL,CWM]",),
+            ui.input_text("window_size_centroiding", ui.strong("Centroiding window-size:"), "[0.5]"),
+            ui.input_text("window_size_matching", ui.strong("Matching window-size:"), "[0.1,0.5]"),
         ]
     else:
         extra_inputs = [ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation))."), "[FNLW,WNL]")]
 
     numeric_inputs = [
-        ui.input_numeric("mz_min", ui.span(ui.strong("Minimum m/z")," for filtering:"), 0),
-        ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
-        ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
-        ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
-        ui.input_text("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), '[0.0]'),
-        ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
-        ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
-        ui.input_text("LET_threshold", ui.strong("Low-entropy threshold:"), '[0.0]'),
-        ui.input_text("entropy_dimension", ui.span(ui.strong("Entropy dimension")," (Renyi/Tsallis only):"), '[1.1]'),
+        ui.input_text("mz_min", ui.span(ui.strong("Minimum m/z")," for filtering:"), "[0]"),
+        ui.input_text("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), "[99999999]"),
+        ui.input_text("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), "[0]"),
+        ui.input_text("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), "[999999999]"),
+        ui.input_text("noise_threshold", ui.span(ui.strong("Noise removal")," threshold:"), "[0.0]"),
+        ui.input_text("wf_mz", ui.strong("Mass/charge weight factor:"), "[0.0]"),
+        ui.input_text("wf_int", ui.strong("Intensity weight factor:"), "[1.0]"),
+        ui.input_text("LET_threshold", ui.strong("Low-entropy threshold:"), "[0.0]"),
+        ui.input_text("entropy_dimension", ui.span(ui.strong("Entropy dimension")," (Renyi/Tsallis only):"), "[1.1]"),
     ]
 
 
@@ -3308,7 +3379,6 @@ PARAMS_NRMS = {
 
 
 def run_parameter_tuning_DE_ui(platform: str):
-    # Pick param set per platform
     if platform == "HRMS":
         PARAMS = PARAMS_HRMS
     else:
@@ -3318,7 +3388,6 @@ def run_parameter_tuning_DE_ui(platform: str):
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_select("similarity_measure", ui.span("Select ",ui.strong("similarity measure"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"]),
-        #ui.panel_conditional("input.similarity_measure == 'mixture'", ui.input_text("weights","Weights for mixture similarity measure (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):", "0.25, 0.25, 0.25, 0.25")),
         ui.panel_conditional("input.similarity_measure == 'mixture'",
                              ui.h5("Mixture weights"),
                              ui.input_numeric("w_cosine", "Cosine", value=0.25),
@@ -4155,6 +4224,26 @@ def server(input, output, session):
         return ui.div({"style": "margin-top:6px;"}, ui.p(f"PubChem URL for Spectrum 2 {input.spectrum_ID2()}):"), ui.a(url_tmp, href=url_tmp, target="_blank", rel="noopener noreferrer"))
 
     @output
+    @render.ui
+    def pubchem1_area_spec_lib_matching():
+        if not input.print_url_spectrum1():
+            return None
+        url_tmp = get_pubchem_url(query=input.q_spec())
+        if not url_tmp:
+            return ui.p("No PubChem ID available for query spectrum.")
+        return ui.div({"style": "margin-top:6px;"}, ui.p(f"PubChem URL for query spectrum {input.q_spec()}):"), ui.a(url_tmp, href=url_tmp, target="_blank", rel="noopener noreferrer"))
+
+    @output
+    @render.ui
+    def pubchem2_area_spec_lib_matching():
+        if not input.print_url_spectrum2():
+            return None
+        url_tmp = get_pubchem_url(query=input.r_spec())
+        if not url_tmp:
+            return ui.p("No PubChem ID available for reference spectrum.")
+        return ui.div({"style": "margin-top:6px;"}, ui.p(f"PubChem URL for reference spectrum {input.r_spec()}):"), ui.a(url_tmp, href=url_tmp, target="_blank", rel="noopener noreferrer"))
+
+    @output
     @render.download(filename=lambda: "plot.svg")
     def run_btn_plot_spectra():
         req(input.query_data(), input.reference_data())
@@ -4168,7 +4257,8 @@ def server(input, output, session):
     @output
     @render.download(filename=lambda: "plot.svg")
     def run_btn_plot_spectra_within_spec_lib_matching():
-        req(input.query_data(), input.reference_data(), input.compound_ID_output_file())
+        f = input.compound_ID_output_file()
+        req(input.query_data(), input.reference_data(), f is not None and len(f)>0)
         fig = _build_spectra_figure_spec_lib_matching(annotate_fig=True,display_within_app_flag=False)
         with io.BytesIO() as buf:
             fig.savefig(buf, format="svg", dpi=150, bbox_inches=None)
@@ -4178,7 +4268,7 @@ def server(input, output, session):
 
     @reactive.calc
     def _fig_within_spec():
-        req(input.query_data(), input.reference_data())
+        req(input.query_data(), input.reference_data(), input.compound_ID_output_file())
 
         spectrum_ID1 = input.q_spec() or None
         spectrum_ID2 = input.r_spec() or None
@@ -4188,11 +4278,6 @@ def server(input, output, session):
             hq = hq.lower() == "true"
         elif isinstance(hq, (int, float)):
             hq = bool(hq)
-
-        """
-        weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
-        weights = {"Cosine": weights_list[0], "Shannon": weights_list[1], "Renyi": weights_list[2], "Tsallis": weights_list[3]}
-        """
 
         weights = {"cosine":input.w_cosine(),
                    "shannon":input.w_shannon(),
@@ -4237,15 +4322,12 @@ def server(input, output, session):
         )
 
         if input.chromatography_platform() == "HRMS":
-            fig = generate_plots_on_HRMS_data(
-                window_size_centroiding=input.window_size_centroiding(),
-                window_size_matching=input.window_size_matching(),
-                **common
-            )
+            fig = generate_plots_on_HRMS_data(window_size_centroiding=input.window_size_centroiding(), window_size_matching=input.window_size_matching(), **common)
         else:
             fig = generate_plots_on_NRMS_data(**common)
 
         return fig
+
 
     @output
     @render.plot(alt="Spectrum match plot")
@@ -4263,11 +4345,6 @@ def server(input, output, session):
             hq = hq.lower() == "true"
         elif isinstance(hq, (int, float)):
             hq = bool(hq)
-
-        """
-        weights = [float(weight.strip()) for weight in input.weights().split(",") if weight.strip()]
-        weights = {'Cosine': weights[0], 'Shannon': weights[1], 'Renyi': weights[2], 'Tsallis': weights[3]}
-        """
 
         weights = {"cosine":input.w_cosine(),
                    "shannon":input.w_shannon(),
@@ -4390,7 +4467,26 @@ def server(input, output, session):
         wf_int_tmp = strip_numeric(input.wf_int())
         LET_threshold_tmp = strip_numeric(input.LET_threshold())
         entropy_dimension_tmp = strip_numeric(input.entropy_dimension())
-        weights_tmp = strip_weights(input.weights())
+        #weights_tmp = strip_weights(input.weights())
+        weights_tmp = {'cosine':input.w_cosine(),
+                       'shannon':input.w_shannon(),
+                       'renyi':input.w_renyi(),
+                       'tsallis':input.w_tsallis(),
+                       'jaccard':input.w_jaccard(),
+                       'dice':input.w_dice(),
+                       '3w_jaccard':input.w_3w_jaccard(),
+                       'sokal_sneath':input.w_sokal_sneath(),
+                       'binary_cosine':input.w_binary_cosine(),
+                       'mountford':input.w_mountford(),
+                       'mcconnaughey':input.w_mcconnaughey(),
+                       'driver_kroeber':input.w_driver_kroeber(),
+                       'simpson':input.w_simpson(),
+                       'braun_banquet':input.w_braun_banquet(),
+                       'fager_mcgowan':input.w_fager_mcgowan(),
+                       'kulczynski':input.w_kulczynski(),
+                       'intersection':input.w_intersection(),
+                       'hamming':input.w_hamming(),
+                       'hellinger':input.w_hellinger()}
 
         common_kwargs = dict(
             query_data=input.query_data()[0]["datapath"],
@@ -4403,15 +4499,26 @@ def server(input, output, session):
         rw = ReactiveWriter(loop)
 
         try:
+            if input.precursor_ion_mz_tolerance() == None:
+                precursor_ion_mz_tolerance_tmp = None
+            else:
+                precursor_ion_mz_tolerance_tmp = float(input.precursor_ion_mz_tolerance())
+
+            if input.ionization_mode() == None:
+                ionization_mode_tmp = None
+            else:
+                ionization_mode_tmp = input.ionization_mode()
+
+            if input.adduct() == None:
+                adduct_tmp = None
+            else:
+                adduct_tmp = input.adduct()
+
             if input.chromatography_platform() == "HRMS":
-                precursor_ion_mz_tolerance = float(input.precursor_ion_mz_tolerance())
-                ionization_mode = str(input.ionization_mode())
-                adduct = str(input.adduct())
                 window_size_centroiding_tmp = strip_numeric(input.window_size_centroiding())
                 window_size_matching_tmp = strip_numeric(input.window_size_matching())
                 grid = {
                     'similarity_measure': similarity_measure_tmp,
-                    'weight': weights_tmp,
                     'spectrum_preprocessing_order': spectrum_preprocessing_order_tmp,
                     'mz_min': mz_min_tmp,
                     'mz_max': mz_max_tmp,
@@ -4426,7 +4533,7 @@ def server(input, output, session):
                     'window_size_centroiding': window_size_centroiding_tmp,
                     'window_size_matching': window_size_matching_tmp,
                 }
-                df_out = await asyncio.to_thread(_run_with_redirects, tune_params_on_HRMS_data_grid_shiny, rw, **common_kwargs, grid=grid, precursor_ion_mz_tolerance=precursor_ion_mz_tolerance, ionization_mode=ionization_mode, adduct=adduct)
+                df_out = await asyncio.to_thread(_run_with_redirects, tune_params_on_HRMS_data_grid_shiny, rw, **common_kwargs, grid=grid, weights=weights_tmp, precursor_ion_mz_tolerance=precursor_ion_mz_tolerance_tmp, ionization_mode=ionization_mode_tmp, adduct=adduct_tmp)
             else:
                 grid = {
                     'similarity_measure': similarity_measure_tmp,
@@ -4520,11 +4627,6 @@ def server(input, output, session):
             mz_max = _safe_float(_iget("mz_max", 99_999_999.0), 99_999_999.0)
             int_min = _safe_float(_iget("int_min", 0.0), 0.0)
             int_max = _safe_float(_iget("int_max", 999_999_999.0), 999_999_999.0)
-
-            #w_text = _iget("weights", "") or ""
-            #w_list = [float(w.strip()) for w in w_text.split(",") if w.strip()]
-            #w_list = (w_list + [0.0, 0.0, 0.0, 0.0])[:4]
-            #weights = {"Cosine": w_list[0], "Shannon": w_list[1], "Renyi": w_list[2], "Tsallis": w_list[3]}
 
             weights = {"cosine":input.w_cosine(),
                        "shannon":input.w_shannon(),

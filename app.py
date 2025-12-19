@@ -3495,10 +3495,6 @@ def server(input, output, session):
 
     current_page = reactive.Value("main_menu")
     
-    plot_clicks = reactive.Value(0)
-    match_clicks = reactive.Value(0)
-    back_clicks = reactive.Value(0)
-
     run_status_plot_spectra = reactive.Value("")
     run_status_spec_lib_matching = reactive.Value("")
     run_status_plot_spectra_within_spec_lib_matching = reactive.Value("")
@@ -3512,6 +3508,8 @@ def server(input, output, session):
     latest_txt_path_rv = reactive.Value("")
     latest_df_rv = reactive.Value(None)
     is_running_rv = reactive.Value(False)
+    plot_ready_rv = reactive.Value(False)
+    specmatch_ready_rv = reactive.Value(False)
 
     query_ids_rv = reactive.Value([])
     query_file_path_rv = reactive.Value(None)
@@ -3685,6 +3683,7 @@ def server(input, output, session):
         return opt_params, bounds_dict, bounds_list
 
     def _reset_plot_spectra_state():
+        plot_ready_rv.set(False)
         query_status_rv.set("")
         reference_status_rv.set("")
         query_ids_rv.set([])
@@ -3703,6 +3702,7 @@ def server(input, output, session):
 
 
     def _reset_spec_lib_matching_state():
+        specmatch_ready_rv.set(False)
         match_log_rv.set("")
         is_matching_rv.set(False)
         is_any_job_running.set(False)
@@ -3711,6 +3711,7 @@ def server(input, output, session):
             ui.update_selectize("spectrum_ID2", choices=[], selected=None)
         except Exception:
             pass
+        df_rv.set(None)
 
 
     def _reset_parameter_tuning_state():
@@ -3723,6 +3724,8 @@ def server(input, output, session):
     @reactive.effect
     @reactive.event(input.back)
     def _clear_on_back_from_pages():
+        plot_ready_rv.set(False)
+        specmatch_ready_rv.set(False)
         page = current_page()
         if page == "plot_spectra":
             _reset_plot_spectra_state()
@@ -3770,7 +3773,6 @@ def server(input, output, session):
     def _run_with_redirects(func, writer: ReactiveWriter, **kwargs):
         with contextlib.redirect_stdout(writer), contextlib.redirect_stderr(writer):
             return func(**kwargs)
-
 
 
     @reactive.effect
@@ -3846,23 +3848,34 @@ def server(input, output, session):
         return match_log_rv.get()
 
 
-    @reactive.Effect
-    def _():
-        if input.plot_spectra() > plot_clicks.get():
-            current_page.set("plot_spectra")
-            plot_clicks.set(input.plot_spectra())
-        elif input.run_spec_lib_matching() > match_clicks.get():
-            current_page.set("run_spec_lib_matching")
-            match_clicks.set(input.run_spec_lib_matching())
-        elif input.run_parameter_tuning_grid() > match_clicks.get():
-            current_page.set("run_parameter_tuning_grid")
-            match_clicks.set(input.run_parameter_tuning_grid())
-        elif input.run_parameter_tuning_DE() > match_clicks.get():
-            current_page.set("run_parameter_tuning_DE")
-            match_clicks.set(input.run_parameter_tuning_DE())
-        elif hasattr(input, "back") and input.back() > back_clicks.get():
-            current_page.set("main_menu")
-            back_clicks.set(input.back())
+    @reactive.effect
+    @reactive.event(input.plot_spectra)
+    def _go_plot_spectra():
+        current_page.set("plot_spectra")
+
+
+    @reactive.effect
+    @reactive.event(input.run_spec_lib_matching)
+    def _go_spec_lib_matching():
+        current_page.set("run_spec_lib_matching")
+
+
+    @reactive.effect
+    @reactive.event(input.run_parameter_tuning_grid)
+    def _go_tuning_grid():
+        current_page.set("run_parameter_tuning_grid")
+
+
+    @reactive.effect
+    @reactive.event(input.run_parameter_tuning_DE)
+    def _go_tuning_de():
+        current_page.set("run_parameter_tuning_DE")
+
+
+    @reactive.effect
+    @reactive.event(input.back)
+    def _go_back_to_menu():
+        current_page.set("main_menu")
 
 
     @render.image
@@ -4053,14 +4066,34 @@ def server(input, output, session):
             raise
 
 
+    @reactive.effect
+    def _set_plot_ready_when_inputs_complete():
+        if current_page() != "plot_spectra":
+            return
+        q_ok = bool(input.query_data() and len(input.query_data()) > 0)
+        r_ok = bool(input.reference_data() and len(input.reference_data()) > 0)
+        id1_ok = bool(input.spectrum_ID1())
+        id2_ok = bool(input.spectrum_ID2())
+        plot_ready_rv.set(q_ok and r_ok and id1_ok and id2_ok)
+
+
+    @reactive.effect
+    def _set_specmatch_ready_when_inputs_complete():
+        if current_page() != "run_spec_lib_matching":
+            return
+        q_ok = bool(input.query_data() and len(input.query_data()) > 0)
+        r_ok = bool(input.reference_data() and len(input.reference_data()) > 0)
+        f = input.compound_ID_output_file()
+        f_ok = bool(f is not None and len(f) > 0)
+        qid_ok = bool(input.q_spec())
+        rid_ok = bool(input.r_spec())
+        specmatch_ready_rv.set(q_ok and r_ok and f_ok and qid_ok and rid_ok)
+
+
     def _build_spectra_figure(annotate_fig,display_within_app_flag):
         spectrum_ID1 = input.spectrum_ID1() or None
         spectrum_ID2 = input.spectrum_ID2() or None
 
-        """
-        weights_list = [float(w.strip()) for w in input.weights().split(",") if w.strip()]
-        weights = {"Cosine": weights_list[0], "Shannon": weights_list[1], "Renyi": weights_list[2], "Tsallis": weights_list[3]}
-        """
         weights = {"cosine":input.w_cosine(),
                    "shannon":input.w_shannon(),
                    "renyi":input.w_renyi(),
@@ -4195,6 +4228,7 @@ def server(input, output, session):
 
     @reactive.calc
     def _fig_obj():
+        req(plot_ready_rv.get())
         req(input.query_data(), input.reference_data())
         return _build_spectra_figure(annotate_fig=False,display_within_app_flag=True)
 
@@ -4268,11 +4302,10 @@ def server(input, output, session):
 
     @reactive.calc
     def _fig_within_spec():
+        req(specmatch_ready_rv.get())
         req(input.query_data(), input.reference_data(), input.compound_ID_output_file())
-
         spectrum_ID1 = input.q_spec() or None
         spectrum_ID2 = input.r_spec() or None
-
         hq = input.high_quality_reference_library()
         if isinstance(hq, str):
             hq = hq.lower() == "true"

@@ -264,7 +264,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
-            #build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
@@ -440,19 +439,16 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
             2, 3,
             width_ratios=[1, 1, 2],
             left=0.06, right=0.995, top=0.94, bottom=0.115,
-            wspace=0.30, hspace=0.25   # <<< tighter vertical gap
+            wspace=0.30, hspace=0.25
         )
         ax_top = fig.add_subplot(gs[0, 0:2])
-        ax_bot = fig.add_subplot(gs[1, 0:2], sharex=ax_top)  # <<< share x
+        ax_bot = fig.add_subplot(gs[1, 0:2], sharex=ax_top)
         ax_txt = fig.add_subplot(gs[:, 2])
         ax_txt.axis("off")
         ax_txt.set_xlim(0,1); ax_txt.set_ylim(0,1)
         plt.sca(ax_top)
     else:
-        #fig.set_size_inches(14, 5.5)
-        #plt.subplots_adjust(left=0.08, right=0.985, top=0.88,  bottom=0.18, hspace=0.22)
         plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-        #plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
 
     if display_within_app_flag == True:
         plt.sca(ax_top)
@@ -483,15 +479,14 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
     else:
         plt.title('Untransformed Spectra', fontsize=10)
 
-
     if display_within_app_flag == True:
         try:
             top_ax = ax_top
         except NameError:
             top_ax = plt.gcf().axes[0]
         h, l = top_ax.get_legend_handles_labels()
-        if l:
-            top_ax.legend(h, l, loc="upper left", frameon=False, fontsize=5, handlelength=1.0, borderaxespad=0.2)
+        top_ax.figure.subplots_adjust(right=0.82)
+        top_ax.legend(h, l, loc="upper left", bbox_to_anchor=(1.15, -0.65), frameon=False, fontsize=6, handlelength=1.0, borderaxespad=0.2)
     else:
         try:
             top_ax = axes[0]
@@ -597,9 +592,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
         fig.text(0.05, 0.08, f'Window Size (Centroiding): {window_size_centroiding}', fontsize=7)
         fig.text(0.05, 0.05, f'Window Size (Matching): {window_size_matching}', fontsize=7)
-        #if similarity_measure == 'mixture':
-        #    fig.text(0.05, 0.02, f'Weights for mixture similarity: {weights}', fontsize=7)
-
         fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]', fontsize=7)
         fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
         fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
@@ -634,13 +626,12 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         def _wrap_cols_for_axes(ax, fontsize_pt=6, pad_px=6):
             fig = ax.figure
             try:
-                fig.canvas.draw()  # safe no-op if already drawn
+                fig.canvas.draw()
             except Exception:
                 pass
             renderer = fig.canvas.get_renderer()
             bbox = ax.get_window_extent(renderer=renderer)
-            width_px = max(1, bbox.width - pad_px)  # available width in pixels
-            # Approximate average character width as 0.6em
+            width_px = max(1, bbox.width - pad_px)
             char_px = (fontsize_pt * fig.dpi / 72.0) * 0.6
             cols = max(20, int(width_px / max(1e-6, char_px)))
             return cols
@@ -676,10 +667,6 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
         put(f"Window Size (Centroiding): {window_size_centroiding}")
         put(f"Window Size (Matching): {window_size_matching}")
-        #if similarity_measure == "mixture":
-        #    put(f"Weights for mixture similarity: {weights}")
-
-        #y -= dy * 0.4
         put(f"Raw-Scale M/Z Range: [{mz_min_tmp},{mz_max_tmp}]")
         put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
         put(f"Noise Threshold: {noise_threshold}")
@@ -833,10 +820,6 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
     q_spec = convert_spec(q_spec,mzs)
     r_spec = convert_spec(r_spec,mzs)
 
-    #int_min_tmp_q = min(q_spec[q_spec[:,1].nonzero(),1][0])
-    #int_min_tmp_r = min(r_spec[r_spec[:,1].nonzero(),1][0])
-    #int_max_tmp_q = max(q_spec[q_spec[:,1].nonzero(),1][0])
-    #int_max_tmp_r = max(r_spec[r_spec[:,1].nonzero(),1][0])
     int_min_tmp_q = min(q_spec[:,1])
     int_min_tmp_r = min(r_spec[:,1])
     int_max_tmp_q = max(q_spec[:,1])
@@ -853,19 +836,14 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
             2, 3,
             width_ratios=[1, 1, 2],
             left=0.06, right=0.995, top=0.94, bottom=0.115,
-            wspace=0.30, hspace=0.25   # <<< tighter vertical gap
+            wspace=0.30, hspace=0.25
         )
         ax_top = fig.add_subplot(gs[0, 0:2])
-        ax_bot = fig.add_subplot(gs[1, 0:2], sharex=ax_top)  # <<< share x
+        ax_bot = fig.add_subplot(gs[1, 0:2], sharex=ax_top)
         ax_txt = fig.add_subplot(gs[:, 2])
         ax_txt.axis("off")
         ax_txt.set_xlim(0,1); ax_txt.set_ylim(0,1)
         plt.sca(ax_top)
-    #else:
-    #fig.set_size_inches(14, 5.5)
-    #plt.subplots_adjust(left=0.08, right=0.985, top=0.88,  bottom=0.18, hspace=0.22)
-    #plt.subplots_adjust(top=0.8, hspace=0.8, bottom=0.3)
-    #plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
 
     if display_within_app_flag == True:
         plt.sca(ax_top)
@@ -917,8 +895,8 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         except NameError:
             top_ax = plt.gcf().axes[0]
         h, l = top_ax.get_legend_handles_labels()
-        if l:
-            top_ax.legend(h, l, loc="upper left", frameon=False, fontsize=5, handlelength=1.0, borderaxespad=0.2)
+        top_ax.figure.subplots_adjust(right=0.82)
+        top_ax.legend(h, l, loc="upper left", bbox_to_anchor=(1.15, -0.3), frameon=False, fontsize=6, handlelength=1.0, borderaxespad=0.2)
     else:
         try:
             top_ax = axes[0]
@@ -1002,11 +980,9 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
                 axes[0].tick_params(axis='x', labelbottom=False)
                 axes[0].set_title(axes[0].get_title(), pad=6)
                 axes[1].set_title(axes[1].get_title(), pad=6)
-        #plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0, fontsize=6)
         plt.gcf().subplots_adjust(hspace=0.18)
     else:
         plt.subplots_adjust(top=0.8, hspace=0.92, bottom=0.3)
-        #plt.figlegend(loc='upper center', bbox_to_anchor=(0.5,0.93), ncol=2, frameon=False, borderaxespad=0.0)
         plt.gcf().subplots_adjust(hspace=0.7)
 
 
@@ -1016,8 +992,6 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         fig.text(0.05, 0.14, f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}", fontsize=7)
         fig.text(0.05, 0.11, f'High Quality Reference Library: {str(high_quality_reference_library)}', fontsize=7)
         fig.text(0.05, 0.08, f'Weight Factors (m/z,intensity): ({wf_mz},{wf_intensity})', fontsize=7)
-        #if similarity_measure == 'mixture':
-        #    fig.text(0.05, 0.05, f'Weights for mixture similarity: {weights}', fontsize=7)
         fig.text(0.40, 0.20, f'Raw-Scale M/Z Range: [{min_mz},{max_mz}]', fontsize=7)
         fig.text(0.40, 0.17, f'Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]', fontsize=7)
         fig.text(0.40, 0.14, f'Noise Threshold: {noise_threshold}', fontsize=7)
@@ -1076,9 +1050,6 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         put(f"Similarity Score: {round(similarity_score, 4)}")
         put(f"Spectrum Preprocessing Order: {''.join(spectrum_preprocessing_order)}")
         put(f"High Quality Reference Library: {str(high_quality_reference_library)}")
-        #if similarity_measure == "mixture":
-        #    put(f"Weights for mixture similarity: {weights}")
-        #y -= dy * 0.4
         put(f"Raw-Scale M/Z Range: [{min_mz},{max_mz}]")
         put(f"Raw-Scale Intensity Range: [{int_min_tmp},{int_max_tmp}]")
         put(f"Noise Threshold: {noise_threshold}")
@@ -2327,7 +2298,6 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
             build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
-            #build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')
@@ -3133,8 +3103,6 @@ def run_spec_lib_matching_ui(platform: str):
         ui.input_file( "compound_ID_output_file", ui.span(ui.strong("Upload output")," from spectral library matching to plot top matches")),
         ui.input_selectize("q_spec", ui.span("Select ",ui.strong("query spectrum")," (only applicable for plotting; default is the first spectrum in the compound ID output):"), choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
         ui.input_selectize( "r_spec", ui.span("Select ",ui.strong("reference spectrum")," (only applicable for plotting; default is the rank 1 reference spectrum):"), choices=[], multiple=False, options={"placeholder": "Upload compound ID output..."}),
-        #ui.input_select("print_url_spectrum1", ui.span(ui.strong("Print PubChem URL")," for query spectrum (only applicable for plotting):"), ["No", "Yes"]),
-        #ui.input_select("print_url_spectrum2", ui.span(ui.strong("Print PubChem URL")," for reference spectrum (only applicable for plotting):"), ["No", "Yes"], selected="Yes"),
         ui.input_checkbox('print_url_spectrum1', ui.span(ui.strong('Print PubChem URL'),': Spectrum 1'), value=False),
         ui.output_ui('pubchem1_area_spec_lib_matching'),
         ui.input_checkbox('print_url_spectrum2', ui.span(ui.strong('Print PubChem URL'),': Spectrum 2'), value=False),
@@ -3226,7 +3194,7 @@ def run_spec_lib_matching_ui(platform: str):
         ui.div(
             {"class": "form-control",
              "style": "max-width: 800px; max-height: 200px; padding: 10px; "
-                      "background:#f8f9fa; overflow:auto;"},   # <- add overflow
+                      "background:#f8f9fa; overflow:auto;"},
             ui.p("Detailed descriptions found on GitHub:"),
 
             ui.p(
@@ -3271,8 +3239,6 @@ def run_parameter_tuning_grid_ui(platform: str):
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_selectize("similarity_measure", ui.span("Select ",ui.strong("similarity measure(s)"),":"), ["cosine","shannon","renyi","tsallis","mixture","jaccard","dice","3w_jaccard","sokal_sneath","binary_cosine","mountford","mcconnaughey","driver_kroeber","simpson","braun_banquet","fager_mcgowan","kulczynski","intersection","hamming","hellinger"], multiple=True, selected='cosine'),
-        #ui.panel_conditional("input.similarity_measure && input.similarity_measure.indexOf('mixture') !== -1", ui.input_text("weights",ui.span(ui.strong("Weights for mixture similarity measure")," (only applicable for 'mixture' similarity measure; order: cosine, shannon, renyi, tsallis):"), "0.25, 0.25, 0.25, 0.25")),
-        #ui.panel_conditional("input.similarity_measure == 'mixture'",
         ui.panel_conditional("input.similarity_measure && input.similarity_measure.indexOf('mixture') !== -1",
                              ui.h5("Mixture weights"),
                              ui.input_numeric("w_cosine", "Cosine", value=0.25),
@@ -3492,7 +3458,6 @@ app_ui = ui.page_fluid(
 
 
 def server(input, output, session):
-
     current_page = reactive.Value("main_menu")
     
     run_status_plot_spectra = reactive.Value("")
@@ -3525,7 +3490,6 @@ def server(input, output, session):
 
     df_rv = reactive.Value(None)
 
-
     def _discover_rank_cols(df: pd.DataFrame):
         pred_pat = re.compile(r"^RANK\.(\d+)\.PRED$")
         score_pat = re.compile(r"^RANK\.(\d+)\.SIMILARITY\.SCORE$")
@@ -3557,9 +3521,9 @@ def server(input, output, session):
             score = row.get(score_col, None) if score_col else None
             score_str = f"{float(score):.6f}" if (score is not None and pd.notna(score)) else "NA"
             label = f"Rank {k} — {score_str} — {pred}"
-            choices[label] = pred                 # values are plain names
+            choices[label] = pred
             if k == 1:
-                default_value = pred              # default = Rank 1 name
+                default_value = pred
 
         if default_value is None and choices:
             default_value = next(iter(choices.values()))
@@ -3904,57 +3868,23 @@ def server(input, output, session):
                             'target="_blank" rel="noopener noreferrer">'
                             'README → Parameter Descriptions </a>')),
                 ui.div("Select options:", style="margin-top:30px; text-align:left; font-size:24px; font-weight:bold"),
-                ui.div(ui.input_radio_buttons("chromatography_platform", "Specify chromatography platform:", ["HRMS","NRMS"]), style="font-size:18px; margin-top:10px; max-width:none"),
-                ui.input_action_button("plot_spectra", "Plot two spectra before and after preprocessing transformations.", style="font-size:18px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),
-                ui.input_action_button("run_spec_lib_matching", "Run spectral library matching to perform compound identification on a query library of spectra.", style="font-size:18px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),
-                ui.input_action_button("run_parameter_tuning_grid", "Grid search: Tune parameters to maximize accuracy of compound identification given a query library with known spectrum IDs.", style="font-size:18px; padding:20px 40px; width:450px; height:120px; margin-top:10px; margin-right:50px"),
-                ui.input_action_button("run_parameter_tuning_DE", "Differential evolution optimization: Tune parameters to maximize accuracy of compound identification given a query library with known spectrum IDs.", style="font-size:18px; padding:20px 40px; width:500px; height:150px; margin-top:10px; margin-right:50px"),
-                ui.div(
-                    "References:",
-                    style="margin-top:35px; text-align:left; font-size:24px; font-weight:bold"
-                ),
-                ui.div(
-                    "If Shannon Entropy similarity measure, low-entropy transformation, or centroiding are used:",
-                    style="margin-top:10px; text-align:left; font-size:14px; font-weight:500"
-                ),
-                ui.div(
-                    ui.HTML(
-                        'Li, Y., Kind, T., Folz, J. et al. (2021) Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. Nat Methods, 18 1524–1531. <a href="https://doi.org/10.1038/s41592-021-01331-z" target="_blank">https://doi.org/10.1038/s41592-021-01331-z</a>.'
-                    ),
-                    style="text-align:left; font-size:14px; font-weight:500"
-                ),
-                ui.div(
-                    "If Tsallis Entropy similarity measure or series of preprocessing transformations are used:",
-                    style="margin-top:10px; text-align:left; font-size:14px; font-weight:500"
-                ),
-                ui.div(
-                    ui.HTML(
-                        'Dlugas, H., Zhang, X., Kim, S. (2025) Comparative analysis of continuous similarity measures for compound identification in mass spectrometry-based metabolomics. Chemometrics and Intelligent Laboratory Systems, 263, 105417. <a href="https://doi.org/10.1016/j.chemolab.2025.105417", target="_blank">https://doi.org/10.1016/j.chemolab.2025.105417</a>.'
-                    ),
-                    style="text-align:left; font-size:14px; font-weight:500"
-                ),
-                ui.div(
-                    "If binary similarity measures are used:",
-                    style="margin-top:10px; text-align:left; font-size:14px; font-weight:500"
-                ),
-                ui.div(
-                    ui.HTML(
-                        'Kim, S., Kato, I., & Zhang, X. (2022). Comparative Analysis of Binary Similarity Measures for Compound Identification in Mass Spectrometry-Based Metabolomics. Metabolites, 12(8), 694. <a href="https://doi.org/10.3390/metabo12080694" target="_blank">https://doi.org/10.3390/metabo12080694</a>.'
-                    ),
-                    style="text-align:left; font-size:14px; font-weight:500"
-                ),
-
-                ui.div(
-                    "If weight factor transformation is used:",
-                    style="margin-top:10px; text-align:left; font-size:14px; font-weight:500"
-                ),
-                ui.div(
-                    ui.HTML(
-                        'Kim, S., Koo, I., Wei, X., & Zhang, X. (2012). A method of finding optimal weight factors for compound identification in gas chromatography-mass spectrometry. Bioinformatics, 28(8), 1158-1163. <a href="https://doi.org/10.1093/bioinformatics/bts083" target="_blank">https://doi.org/10.1093/bioinformatics/bts083</a>.'
-                    ),
-                    style="margin-bottom:40px; text-align:left; font-size:14px; font-weight:500"
-                ),
-            )
+                ui.div(ui.input_radio_buttons("chromatography_platform",
+                                              "Specify chromatography platform:",
+                                              {"HRMS": "HRMS (e.g. LC-MS/MS)", "NRMS": "NRMS (e.g. GC-MS)"}),
+                       style="font-size:18px; margin-top:10px; max-width:none"),
+                ui.input_action_button("plot_spectra", "Plot & compare two spectra", style="font-size:24px; padding:20px 40px; width:400px; height:100px; margin-top:10px; margin-right:50px"),
+                ui.input_action_button("run_spec_lib_matching", "Identify compounds", style="font-size:24px; padding:20px 40px; width:340px; height:100px; margin-top:10px; margin-right:50px"),
+                ui.input_action_button("run_parameter_tuning_grid", "Tune parameters (grid search)", style="font-size:24px; padding:20px 40px; width:450px; height:100px; margin-top:10px; margin-right:50px"),
+                ui.input_action_button("run_parameter_tuning_DE", "Tune parameters (DE optimization)", style="font-size:24px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),
+                ui.div("Key references:", style="margin-top:35px; text-align:left; font-size:24px; font-weight:bold"),
+                ui.div(ui.HTML('Dlugas, H., Kato, I., Bao, J., Li, J., Zhang, X., Kim, S. (2025) PyCompound: a versatile Python package for flextible spectral-library matching in mass spectrometry-based compound identification. Submitted.'), style="text-align:left; font-size:14px; font-weight:500"),
+                ui.div(ui.HTML('Dlugas, H., Zhang, X., Kim, S. (2025) Comparative analysis of continuous similarity measures for compound identification in mass spectrometry-based metabolomics. Chemometrics and Intelligent Laboratory Systems, 263, 105417. <a href="https://doi.org/10.1016/j.chemolab.2025.105417", target="_blank">https://doi.org/10.1016/j.chemolab.2025.105417</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
+                ui.div(ui.HTML('Kim, S., Kato, I., & Zhang, X. (2022). Comparative Analysis of Binary Similarity Measures for Compound Identification in Mass Spectrometry-Based Metabolomics. Metabolites, 12(8), 694. <a href="https://doi.org/10.3390/metabo12080694" target="_blank">https://doi.org/10.3390/metabo12080694</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
+                ui.div(ui.HTML('Li, Y., Kind, T., Folz, J. et al. (2021) Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. Nat Methods, 18 1524–1531. <a href="https://doi.org/10.1038/s41592-021-01331-z" target="_blank">https://doi.org/10.1038/s41592-021-01331-z</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
+                ui.div(ui.HTML('Kim, S., Koo, I., Wei, X., & Zhang, X. (2012). A method of finding optimal weight factors for compound identification in gas chromatography-mass spectrometry. Bioinformatics, 28(8), 1158-1163. <a href="https://doi.org/10.1093/bioinformatics/bts083" target="_blank">https://doi.org/10.1093/bioinformatics/bts083</a>.'), style="margin-bottom:40px; text-align:left; font-size:14px; font-weight:500"),
+                ui.div("Contact information:", style="margin-top:35px; text-align:left; font-size:24px; font-weight:bold"),
+                ui.div(ui.HTML("Hunter Dlugas (fy7392 at wayne dot edu)"), style="text-align:left; font-size:16px; font-weight:500"),
+                ui.div(ui.HTML("Seongho Kim (kimse at karmanos dot org)"), style="text-align:left; font-size:16px; font-weight:500"))
         elif current_page() == "plot_spectra":
             return plot_spectra_ui(input.chromatography_platform())
         elif current_page() == "run_spec_lib_matching":
@@ -4209,7 +4139,7 @@ def server(input, output, session):
             wf_mz=input.wf_mz(), wf_intensity=input.wf_int(),
             LET_threshold=input.LET_threshold(),
             entropy_dimension=input.entropy_dimension(),
-            y_axis_transformation=y_axis_transform,   # <-- use safe value
+            y_axis_transformation=y_axis_transform,
             return_plot=True,
             annotate_fig=annotate_fig,
             display_within_app_flag=display_within_app_flag
@@ -4500,7 +4430,6 @@ def server(input, output, session):
         wf_int_tmp = strip_numeric(input.wf_int())
         LET_threshold_tmp = strip_numeric(input.LET_threshold())
         entropy_dimension_tmp = strip_numeric(input.entropy_dimension())
-        #weights_tmp = strip_weights(input.weights())
         weights_tmp = {'cosine':input.w_cosine(),
                        'shannon':input.w_shannon(),
                        'renyi':input.w_renyi(),

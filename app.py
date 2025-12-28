@@ -3040,29 +3040,11 @@ def plot_spectra_ui(platform: str):
         ui.div(
             {"class": "form-control",
              "style": "max-width:800px; max-height:140px; padding:10px; "
-                      "background:#f8f9fa; 2verflow:auto; margin-bottom:8px;"},
-            ui.p("Detailed descriptions on GitHub:"),
-            ui.p(
-                "Spectrum preprocessing transformations: ",
-                ui.tags.a(
-                    "README → Spectrum Preprocessing Transformations",
-                    href=("https://github.com/hdlugas/pycompound"
-                          "?tab=readme-ov-file#spec-preprocessing-transformations"),
-                    target="_blank",
-                    rel="noopener noreferrer",
-                ),
+                      "background:#f8f9fa; overflow:auto; margin-bottom:8px;"},
+            ui.p("Detailed descriptions on GitHub:", style='margin:0'),
+            ui.p(ui.tags.a("Spectrum preprocessing transformations", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations"), target="_blank", rel="noopener noreferrer"), style='margin:0'),
+            ui.p(ui.tags.a("Parameters",href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions"), target="_blank", rel="noopener noreferrer"), style='margin:0')
             ),
-            ui.p(
-                "Parameters: ",
-                ui.tags.a(
-                    "README → Parameter Descriptions",
-                    href=("https://github.com/hdlugas/pycompound"
-                          "?tab=readme-ov-file#param_descriptions"),
-                    target="_blank",
-                    rel="noopener noreferrer",
-                ),
-            ),
-        ),
         inputs_columns,
         run_button_plot_spectra,
         back_button,
@@ -3195,35 +3177,11 @@ def run_spec_lib_matching_ui(platform: str):
             {"class": "form-control",
              "style": "max-width: 800px; max-height: 200px; padding: 10px; "
                       "background:#f8f9fa; overflow:auto;"},
-            ui.p("Detailed descriptions found on GitHub:"),
+            ui.p("Detailed descriptions found on GitHub:", style='margin:0'),
 
-            ui.p(
-                "Spectrum preprocessing transformations: ",
-                ui.tags.a(
-                    "README → Spectrum Preprocessing Transformations",
-                    href=(
-                        "https://github.com/hdlugas/pycompound"
-                        "?tab=readme-ov-file#spec-preprocessing-transformations"
-                    ),
-                    target="_blank",
-                    rel="noopener noreferrer",
-                ),
+            ui.p(ui.tags.a("Spectrum preprocessing transformations", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations"), target="_blank", rel="noopener noreferrer"), style='margin:0'),
+            ui.p(ui.tags.a("Parameters", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions"), target="_blank", rel="noopener noreferrer"), style='margin:0')
             ),
-
-            ui.p(
-                "Parameters: ",
-                ui.tags.a(
-                    "README → Parameter Descriptions",
-                    href=(
-                        "https://github.com/hdlugas/pycompound"
-                        "?tab=readme-ov-file#param_descriptions"
-                    ),
-                    target="_blank",
-                    rel="noopener noreferrer",
-                ),
-            ),
-        ),
-
         inputs_columns,
         run_button_spec_lib_matching,
         back_button,
@@ -3449,7 +3407,7 @@ def run_parameter_tuning_DE_ui(platform: str):
 
 app_ui = ui.page_fluid(
     ui.head_content(ui.tags.link(rel="icon", href="emblem.png")),
-    ui.div(ui.output_image("image"), style=("display:block; margin:20px auto; max-width:320px; height:auto; text-align:center")),
+    ui.div(ui.output_image("image"), style=("display:block; margin:5px auto; max-width:320px; height:auto; text-align:center")),
     ui.output_ui("main_ui"),
     ui.output_text("status_output"),
 )
@@ -3853,20 +3811,38 @@ def server(input, output, session):
     def main_ui():
         if current_page() == "main_menu":
             return ui.page_fluid(
-                ui.h2("Main Menu"),
-                ui.div("Overview:", style="text-align:left; font-size:24px; font-weight:bold"),
-                ui.div("PyCompound is a Python-based tool designed for performing spectral library matching on either high-resolution mass spectrometry data (HRMS) or low-resolution mass spectrometry data (NRMS). PyCompound offers a range of spectrum preprocessing transformations and similarity measures. These spectrum preprocessing transformations include filtering on mass/charge and/or intensity values, weight factor transformation, low-entropy transformation, centroiding, noise removal, and matching. The available similarity measures include the canonical Cosine similarity measure, three entropy-based similarity measures, and a variety of binary similarity measures: Jaccard, Dice, 3W-Jaccard, Sokal-Sneath, Binary Cosine, Mountford, McConnaughey, Driver-Kroeber, Simpson, Braun-Banquet, Fager-McGowan, Kulczynski, Intersection, Hamming, and Hellinger.", style="margin-top:10px; text-align:left; font-size:16px; font-weight:500"),
+                ui.div(
+                    ui.p(
+                        "PyCompound is a Python-based tool designed for performing spectral library matching "
+                        "on either high-resolution mass spectrometry data (HRMS) or nominal-resolution mass "
+                        "spectrometry data (NRMS)."
+                    ),
+                    ui.p(
+                        "PyCompound offers a range of spectrum preprocessing transformations and similarity measures. "
+                        "These spectrum preprocessing transformations include filtering on mass/charge and/or "
+                        "intensity values, weight factor transformation, low-entropy transformation, centroiding, "
+                        "noise removal, and matching."
+                    ),
+                    ui.p(
+                        "The available similarity measures include the canonical Cosine similarity measure, "
+                        "three entropy-based similarity measures, and a variety of binary similarity measures: "
+                        "Jaccard, Dice, 3W-Jaccard, Sokal-Sneath, Binary Cosine, Mountford, McConnaughey, "
+                        "Driver-Kroeber, Simpson, Braun-Banquet, Fager-McGowan, Kulczynski, Intersection, "
+                        "Hamming, and Hellinger."
+                    ),
+                    style="margin-top:10px; text-align:left; font-size:18px; font-weight:500"
+                ),
                 ui.div({"class":"form-control", "style": "max-width: 800px; max-height: 200px; padding: 10px; background:#f8f9fa"},
-                       ui.p("Detailed descriptions found on GitHub:"),
-                        ui.HTML('Spectrum preprocessing transformations: '
+                       ui.p("Detailed descriptions found on GitHub:", style='margin:0'),
+                        ui.HTML(''
                             '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations" '
                             'target="_blank" rel="noopener noreferrer">'
-                            'README → Spectrum Preprocessing Transformations </a>'),
+                            'Spectrum preprocessing transformations </a>'),
                        ui.HTML("<br>"),
-                        ui.HTML('Parameters: '
+                        ui.HTML(''
                             '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions" '
                             'target="_blank" rel="noopener noreferrer">'
-                            'README → Parameter Descriptions </a>')),
+                            'Parameters </a>')),
                 ui.div("Select options:", style="margin-top:30px; text-align:left; font-size:24px; font-weight:bold"),
                 ui.div(ui.input_radio_buttons("chromatography_platform",
                                               "Specify chromatography platform:",
@@ -3877,10 +3853,10 @@ def server(input, output, session):
                 ui.input_action_button("run_parameter_tuning_grid", "Tune parameters (grid search)", style="font-size:24px; padding:20px 40px; width:450px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.input_action_button("run_parameter_tuning_DE", "Tune parameters (DE optimization)", style="font-size:24px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.div("Key references:", style="margin-top:35px; text-align:left; font-size:24px; font-weight:bold"),
-                ui.div(ui.HTML('Dlugas, H., Kato, I., Bao, J., Li, J., Zhang, X., Kim, S. (2025) PyCompound: a versatile Python package for flextible spectral-library matching in mass spectrometry-based compound identification. Submitted.'), style="text-align:left; font-size:14px; font-weight:500"),
-                ui.div(ui.HTML('Dlugas, H., Zhang, X., Kim, S. (2025) Comparative analysis of continuous similarity measures for compound identification in mass spectrometry-based metabolomics. Chemometrics and Intelligent Laboratory Systems, 263, 105417. <a href="https://doi.org/10.1016/j.chemolab.2025.105417", target="_blank">https://doi.org/10.1016/j.chemolab.2025.105417</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
+                ui.div(ui.HTML('Dlugas, H., Kato, I., Bao, J., Li, J., Zhang, X., Kim, S. (2025). PyCompound: a versatile Python package for flextible spectral-library matching in mass spectrometry-based compound identification. Submitted.'), style="text-align:left; font-size:14px; font-weight:500"),
+                ui.div(ui.HTML('Dlugas, H., Zhang, X., Kim, S. (2025). Comparative analysis of continuous similarity measures for compound identification in mass spectrometry-based metabolomics. Chemometrics and Intelligent Laboratory Systems, 263, 105417. <a href="https://doi.org/10.1016/j.chemolab.2025.105417", target="_blank">https://doi.org/10.1016/j.chemolab.2025.105417</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
                 ui.div(ui.HTML('Kim, S., Kato, I., & Zhang, X. (2022). Comparative Analysis of Binary Similarity Measures for Compound Identification in Mass Spectrometry-Based Metabolomics. Metabolites, 12(8), 694. <a href="https://doi.org/10.3390/metabo12080694" target="_blank">https://doi.org/10.3390/metabo12080694</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
-                ui.div(ui.HTML('Li, Y., Kind, T., Folz, J. et al. (2021) Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. Nat Methods, 18 1524–1531. <a href="https://doi.org/10.1038/s41592-021-01331-z" target="_blank">https://doi.org/10.1038/s41592-021-01331-z</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
+                ui.div(ui.HTML('Li, Y., Kind, T., Folz, J. et al. (2021). Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. Nat Methods, 18 1524–1531. <a href="https://doi.org/10.1038/s41592-021-01331-z" target="_blank">https://doi.org/10.1038/s41592-021-01331-z</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
                 ui.div(ui.HTML('Kim, S., Koo, I., Wei, X., & Zhang, X. (2012). A method of finding optimal weight factors for compound identification in gas chromatography-mass spectrometry. Bioinformatics, 28(8), 1158-1163. <a href="https://doi.org/10.1093/bioinformatics/bts083" target="_blank">https://doi.org/10.1093/bioinformatics/bts083</a>.'), style="margin-bottom:40px; text-align:left; font-size:14px; font-weight:500"),
                 ui.div("Contact information:", style="margin-top:35px; text-align:left; font-size:24px; font-weight:bold"),
                 ui.div(ui.HTML("Hunter Dlugas (fy7392 at wayne dot edu)"), style="text-align:left; font-size:16px; font-weight:500"),

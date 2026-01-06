@@ -3812,24 +3812,9 @@ def server(input, output, session):
         if current_page() == "main_menu":
             return ui.page_fluid(
                 ui.div(
-                    ui.p(
-                        "PyCompound is a Python-based tool designed for performing spectral library matching "
-                        "on either high-resolution mass spectrometry data (HRMS) or nominal-resolution mass "
-                        "spectrometry data (NRMS)."
-                    ),
-                    ui.p(
-                        "PyCompound offers a range of spectrum preprocessing transformations and similarity measures. "
-                        "These spectrum preprocessing transformations include filtering on mass/charge and/or "
-                        "intensity values, weight factor transformation, low-entropy transformation, centroiding, "
-                        "noise removal, and matching."
-                    ),
-                    ui.p(
-                        "The available similarity measures include the canonical Cosine similarity measure, "
-                        "three entropy-based similarity measures, and a variety of binary similarity measures: "
-                        "Jaccard, Dice, 3W-Jaccard, Sokal-Sneath, Binary Cosine, Mountford, McConnaughey, "
-                        "Driver-Kroeber, Simpson, Braun-Banquet, Fager-McGowan, Kulczynski, Intersection, "
-                        "Hamming, and Hellinger."
-                    ),
+                    ui.p("PyCompound is a Python-based tool for spectral library matching of both high-resolution mass spectrometry (HRMS) data, such as liquid chromatography-tandem mass spectrometry (LC-MS/MS), and nominal-resolution mass spectrometry (NRMS) data, such as gas chromatography-mass spectrometry (GC-MS)."),
+                    ui.p("PyCompound provides a flexible framework for spectrum preprocessing and similarity assessment. Available preprocessing transformations include filtering by mass-to-charge (m/z) and/or intensity, weight-factor transformation, low-entropy transformation, centroiding, noise removal, and spectral matching. Users can flexibly choose the order of these preprocessing steps and tune their associated parameters using either grid search or differential evolution (DE) optimization."),
+                    ui.p("PyCompound supports a broad set of similarity measures, including the Cosine similarity (dot product), three entropy-based similarity measures (Shannon, Tsallis, and Rényi), and 15 binary similarity measures (Jaccard, Dice, 3W-Jaccard, Sokal–Sneath, Binary Cosine, Mountford, McConnaughey, Driver-Kroeber, Simpson, Braun-Banquet, Fager-McGowan, Kulczynski, Intersection, Hamming, and Hellinger). In addition, users can construct mixture similarity scores that combine all of a selected subset of the 19 supported similarity measures."),
                     style="margin-top:10px; text-align:left; font-size:18px; font-weight:500"
                 ),
                 ui.div({"class":"form-control", "style": "max-width: 800px; max-height: 200px; padding: 10px; background:#f8f9fa"},

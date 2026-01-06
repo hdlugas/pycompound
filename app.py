@@ -1,6 +1,7 @@
 
 from shiny import App, ui, reactive, render, req
 from shiny.types import SilentException
+from shiny import types
 from pathlib import Path
 from contextlib import redirect_stdout, redirect_stderr
 import contextlib
@@ -4422,22 +4423,23 @@ def server(input, output, session):
         rw = ReactiveWriter(loop)
 
         try:
-            if input.precursor_ion_mz_tolerance() == None:
-                precursor_ion_mz_tolerance_tmp = None
-            else:
-                precursor_ion_mz_tolerance_tmp = float(input.precursor_ion_mz_tolerance())
-
-            if input.ionization_mode() == None:
-                ionization_mode_tmp = None
-            else:
-                ionization_mode_tmp = input.ionization_mode()
-
-            if input.adduct() == None:
-                adduct_tmp = None
-            else:
-                adduct_tmp = input.adduct()
-
             if input.chromatography_platform() == "HRMS":
+
+                if input.precursor_ion_mz_tolerance() == None:
+                    precursor_ion_mz_tolerance_tmp = None
+                else:
+                    precursor_ion_mz_tolerance_tmp = float(input.precursor_ion_mz_tolerance())
+
+                if input.ionization_mode() == None:
+                    ionization_mode_tmp = None
+                else:
+                    ionization_mode_tmp = input.ionization_mode()
+
+                if input.adduct() == None:
+                    adduct_tmp = None
+                else:
+                    adduct_tmp = input.adduct()
+
                 window_size_centroiding_tmp = strip_numeric(input.window_size_centroiding())
                 window_size_matching_tmp = strip_numeric(input.window_size_matching())
                 grid = {

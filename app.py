@@ -3178,7 +3178,7 @@ def run_spec_lib_matching_ui(platform: str):
             {"class": "form-control",
              "style": "max-width: 800px; max-height: 200px; padding: 10px; "
                       "background:#f8f9fa; overflow:auto;"},
-            ui.p("Detailed descriptions found on GitHub:", style='margin:0'),
+            ui.p(ui.strong("Detailed documentation:"), style='margin:0'),
 
             ui.p(ui.tags.a("Spectrum preprocessing transformations", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations"), target="_blank", rel="noopener noreferrer"), style='margin:0'),
             ui.p(ui.tags.a("Parameters", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions"), target="_blank", rel="noopener noreferrer"), style='margin:0')
@@ -3819,7 +3819,7 @@ def server(input, output, session):
                     style="margin-top:10px; text-align:left; font-size:18px; font-weight:500"
                 ),
                 ui.div({"class":"form-control", "style": "max-width: 800px; max-height: 200px; padding: 10px; background:#f8f9fa"},
-                       ui.p("Detailed descriptions found on GitHub:", style='margin:0'),
+                       ui.p(ui.strong("Detailed documentation:"), style='margin:0'),
                         ui.HTML(''
                             '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations" '
                             'target="_blank" rel="noopener noreferrer">'

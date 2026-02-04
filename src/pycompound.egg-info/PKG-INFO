@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: pycompound
-Version: 0.1.10
+Version: 0.1.11
 Summary: Python package to perform compound identification in mass spectrometry via spectral library matching.
 Author-email: Hunter Dlugas <fy7392@wayne.edu>
 License-Expression: MIT
@@ -16,7 +16,7 @@ Requires-Dist: numpy==1.26.4
 Requires-Dist: pandas==2.2.2
 Requires-Dist: scipy==1.13.1
 Requires-Dist: pyteomics==4.7.2
-Requires-Dist: netCDF4==1.6.5
+Requires-Dist: netCDF4==1.7.2
 Requires-Dist: lxml>=5.1.0
 Requires-Dist: orjson==3.11.0
 Requires-Dist: shiny==1.4.0

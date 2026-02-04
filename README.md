@@ -21,7 +21,7 @@ PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Py
 ```
 conda create -n pycompound_env python=3.12 -y
 conda activate pycompound_env
-pip install pycompound==0.1.10
+pip install pycompound==0.1.11
 ```
 
 <a name="functionality"></a>

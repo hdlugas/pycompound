@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pycompound"
-version = "0.1.10"
+version = "0.1.11"
 authors = [
   { name="Hunter Dlugas", email="fy7392@wayne.edu" },
 ]
@@ -24,7 +24,7 @@ dependencies = [
     "pandas==2.2.2",
     "scipy==1.13.1",
     "pyteomics==4.7.2",
-    "netCDF4==1.6.5",
+    "netCDF4==1.7.2",
     "lxml>=5.1.0",
     "orjson==3.11.0",
     "shiny==1.4.0",

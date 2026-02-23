@@ -3828,7 +3828,12 @@ def server(input, output, session):
                         ui.HTML(''
                             '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions" '
                             'target="_blank" rel="noopener noreferrer">'
-                            'Parameters </a>')),
+                            'Parameters </a>'),
+                       ui.HTML("<br>"),
+                        ui.HTML(''
+                            '<a href="https://www.youtube.com/@PyCompound" '
+                            'target="_blank" rel="noopener noreferrer">'
+                            'YouTube tutorial</a>')),
                 ui.div("Select options:", style="margin-top:30px; text-align:left; font-size:24px; font-weight:bold"),
                 ui.div(ui.input_radio_buttons("chromatography_platform",
                                               "Specify chromatography platform:",

@@ -3819,7 +3819,7 @@ def server(input, output, session):
                     style="margin-top:10px; text-align:left; font-size:18px; font-weight:500"
                 ),
                 ui.div({"class":"form-control", "style": "max-width: 800px; max-height: 200px; padding: 10px; background:#f8f9fa"},
-                       ui.p(ui.strong("Detailed documentation:"), style='margin:0'),
+                       ui.p(ui.strong("Documentation and Resources:"), style='margin:0'),
                         ui.HTML(''
                             '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations" '
                             'target="_blank" rel="noopener noreferrer">'
@@ -3828,12 +3828,27 @@ def server(input, output, session):
                         ui.HTML(''
                             '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions" '
                             'target="_blank" rel="noopener noreferrer">'
-                            'Parameters </a>'),
+                            'Parameters to tune </a>'),
                        ui.HTML("<br>"),
                         ui.HTML(''
                             '<a href="https://www.youtube.com/@PyCompound" '
                             'target="_blank" rel="noopener noreferrer">'
-                            'YouTube tutorial</a>')),
+                            'Video tutorial (YouTube) </a>'),
+                       ui.HTML("<br>"),
+                        ui.HTML(''
+                            '<a href="https://pypi.org/project/pycompound/" '
+                            'target="_blank" rel="noopener noreferrer">'
+                            'Python API version </a>'),
+                       ui.HTML("<br>"),
+                        ui.HTML(''
+                            '<a href="https://github.com/hdlugas/pycompound" '
+                            'target="_blank" rel="noopener noreferrer">'
+                            'Command-line interface (CLI) version </a>'),
+                       ui.HTML("<br>"),
+                        ui.HTML(''
+                            '<a href="https://zenodo.org/records/12786324" '
+                            'target="_blank" rel="noopener noreferrer">'
+                            'EI-based WebNIST GC-MS and ESI-based GNPS LC-MS/MS datasets </a>')),
                 ui.div("Select options:", style="margin-top:30px; text-align:left; font-size:24px; font-weight:bold"),
                 ui.div(ui.input_radio_buttons("chromatography_platform",
                                               "Specify chromatography platform:",
@@ -3844,7 +3859,7 @@ def server(input, output, session):
                 ui.input_action_button("run_parameter_tuning_grid", "Tune parameters (grid search)", style="font-size:24px; padding:20px 40px; width:450px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.input_action_button("run_parameter_tuning_DE", "Tune parameters (DE optimization)", style="font-size:24px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.div("Key references:", style="margin-top:35px; text-align:left; font-size:24px; font-weight:bold"),
-                ui.div(ui.HTML('Dlugas, H., Kato, I., Bao, J., Li, J., Zhang, X., Kim, S. (2025). PyCompound: a versatile Python package for flextible spectral-library matching in mass spectrometry-based compound identification. Submitted.'), style="text-align:left; font-size:14px; font-weight:500"),
+                ui.div(ui.HTML('Dlugas, H., Zhang, X., Bao, J., Li, J., Kato, I., Kim, S. (2026). PyCompound: a versatile Python package for flexible spectral-library matching in mass spectrometry-based compound identification. Submitted.'), style="text-align:left; font-size:14px; font-weight:500"),
                 ui.div(ui.HTML('Dlugas, H., Zhang, X., Kim, S. (2025). Comparative analysis of continuous similarity measures for compound identification in mass spectrometry-based metabolomics. Chemometrics and Intelligent Laboratory Systems, 263, 105417. <a href="https://doi.org/10.1016/j.chemolab.2025.105417", target="_blank">https://doi.org/10.1016/j.chemolab.2025.105417</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
                 ui.div(ui.HTML('Kim, S., Kato, I., & Zhang, X. (2022). Comparative Analysis of Binary Similarity Measures for Compound Identification in Mass Spectrometry-Based Metabolomics. Metabolites, 12(8), 694. <a href="https://doi.org/10.3390/metabo12080694" target="_blank">https://doi.org/10.3390/metabo12080694</a>.'), style="text-align:left; font-size:14px; font-weight:500"),
                 ui.div(ui.HTML('Li, Y., Kind, T., Folz, J. et al. (2021). Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. Nat Methods, 18 1524–1531. <a href="https://doi.org/10.1038/s41592-021-01331-z" target="_blank">https://doi.org/10.1038/s41592-021-01331-z</a>.'), style="text-align:left; font-size:14px; font-weight:500"),

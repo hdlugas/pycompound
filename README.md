@@ -1,5 +1,5 @@
 # PyCompound
-A Python-based tool for spectral library matching, PyCompound is available as a Python package with a command-line interface (CLI) available and as a GUI application build with Python/Shiny. It performs spectral library matching to identify chemical compounds, offering a range of spectrum preprocessing transformations and similarity measures, including Cosine and three entropy-based similarity measures. PyCompound supports both high-resolution mass spectrometry (HRMS) data (e.g., LC-MS/MS) and nominal-resolution mass spectrometry (NRMS) data (e.g., GC-MS).
+A Python-based tool for spectral library matching, PyCompound is available as a Python package (link to PyPI page: [https://pypi.org/project/pycompound/](https://pypi.org/project/pycompound/)) with a command-line interface (CLI) available and as a GUI application build with Python/Shiny. It performs spectral library matching to identify chemical compounds, offering a range of spectrum preprocessing transformations and similarity measures, including Cosine and three entropy-based similarity measures. PyCompound supports both high-resolution mass spectrometry (HRMS) data (e.g., LC-MS/MS) and nominal-resolution mass spectrometry (NRMS) data (e.g., GC-MS).
 
 ## Table of Contents
 - [1. Install dependencies](#create-conda-env)
@@ -790,7 +790,7 @@ This plot compares two MS/MS spectra: Spectrum ID 1 (unknown, in blue) and Spect
 
 <a name="shiny"></a>
 ### 3.6 Shiny application
-PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script src/pycompound_shiny.py with a command such as <shiny run --launch-browser pycompound_shiny.py> to launch the Shiny application. Alternatively, one can you the publicly available web version at [https://0199ee0c-c2ce-4fdc-5ade-623633df1622.share.connect.posit.cloud/](https://0199ee0c-c2ce-4fdc-5ade-623633df1622.share.connect.posit.cloud/). If you plan to perform some heavy computations such as parameter tuning on large datasets, we recommend either using the Python package, its CLI wrapper, or running the Shiny app on your local machine to take advantage of multithreading (which isn't offered on the POSIT-hosted Shiny app).
+PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script src/pycompound_shiny.py with a command such as <shiny run --launch-browser pycompound_shiny.py> to launch the Shiny application. Alternatively, one can you the publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392). If you plan to perform some heavy computations such as parameter tuning on large datasets, we recommend either using the Python package, its CLI wrapper, or running the Shiny app on your local machine to take advantage of multithreading (which isn't offered on the POSIT-hosted Shiny app).
 
 
 <a name="bugs-questions"></a>

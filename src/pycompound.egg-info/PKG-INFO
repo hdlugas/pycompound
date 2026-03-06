@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: pycompound
-Version: 0.1.13
+Version: 0.1.14
 Summary: Python package to perform compound identification in mass spectrometry via spectral library matching.
 Author-email: Hunter Dlugas <fy7392@wayne.edu>
 License-Expression: MIT
@@ -33,7 +33,7 @@ A Python-based tool for spectral library matching, PyCompound is available as a 
 ```
 conda create -n pycompound_env python=3.12 -y
 conda activate pycompound_env
-pip install pycompound==0.1.13
+pip install pycompound==0.1.14
 ```
 
 ## Source

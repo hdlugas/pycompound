@@ -139,7 +139,7 @@ default_HRMS_grid = {'similarity_measure':['cosine'], 'weight':[{'Cosine':0.25,'
 default_NRMS_grid = {'similarity_measure':['cosine'], 'weight':[{'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}], 'spectrum_preprocessing_order':['FCNMWL'], 'mz_min':[0], 'mz_max':[9999999], 'int_min':[0], 'int_max':[99999999], 'noise_threshold':[0.0], 'wf_mz':[0.0], 'wf_int':[1.0], 'LET_threshold':[0.0], 'entropy_dimension':[1.1], 'high_quality_reference_library':[False]}
 
 
-def _eval_one_HRMS(df_query, df_reference, precursor_ion_mz_tolerance_tmp, ionization_mode_tmp, adduct_tmp, similarity_measure_tmp, weight, spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp, int_min_tmp, int_max_tmp, noise_threshold_tmp, window_size_centroiding_tmp, window_size_matching_tmp, wf_mz_tmp, wf_int_tmp, LET_threshold_tmp, entropy_dimension_tmp, high_quality_reference_library_tmp, exact_match_required_tmp):
+def _eval_one_HRMS(df_query, df_reference, precursor_ion_mz_tolerance_tmp, ionization_mode_tmp, adduct_tmp, similarity_measure_tmp, weight, spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp, int_min_tmp, int_max_tmp, noise_threshold_tmp, window_size_centroiding_tmp, window_size_matching_tmp, wf_mz_tmp, wf_int_tmp, LET_threshold_tmp, entropy_dimension_tmp, high_quality_reference_library_tmp, exact_match_required):
 
     acc = get_acc_HRMS(
         df_query=df_query, df_reference=df_reference,
@@ -157,7 +157,7 @@ def _eval_one_HRMS(df_query, df_reference, precursor_ion_mz_tolerance_tmp, ioniz
         entropy_dimension=entropy_dimension_tmp,
         high_quality_reference_library=high_quality_reference_library_tmp,
         verbose=False,
-        exact_match_required=exact_match_required_tmp
+        exact_match_required=exact_match_required
     )
 
     return (
@@ -184,7 +184,7 @@ def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_id
         entropy_dimension=entropy_dimension_tmp,
         high_quality_reference_library=high_quality_reference_library_tmp,
         verbose=False,
-        exact_match_required=exact_match_required_tmp
+        exact_match_required=exact_match_required
     )
 
     return (

@@ -16,7 +16,11 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
    - [3.4 Tune parameters](#tuning)
    - [3.5 Plot a query spectrum against a reference spectrum before and after spectrum preprocessing transformations](#plotting)
    - [3.6 Shiny application](#shiny)
-- [4. Bugs/Questions?](#bugs-questions)
+- [4. Toy examples](#toy-examples)
+  - [4.1 Python package](#toy-examples-python-package)
+  - [4.2 CLI wrapper](#toy-examples-cli-wrapper)
+  - [4.3 Shiny](#toy-examples-shiny)
+- [5. Bugs/Questions?](#bugs-questions)
 
 <a name="create-conda-env"></a>
 ## 1. Install dependencies
@@ -24,7 +28,7 @@ PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Py
 ```
 conda create -n pycompound_env python=3.12 -y
 conda activate pycompound_env
-pip install pycompound==0.1.13
+pip install pycompound==0.1.14
 ```
 
 <a name="functionality"></a>
@@ -166,7 +170,7 @@ PyCompound has three main capabilities:
 2. Running spectral library matching to identify compounds based on their mass spectrometry data
 3. Tuning parameters to maximize accuracy given a query dataset with known compuond IDs (e.g. from targeted metabolomics experiments).
 
-These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in NRMS vs HRMS data. Example scripts which implement these tasks can be found in the pycompound/tests directory.
+These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in NRMS vs HRMS data. Example scripts which implement these tasks can be found in the tests directory.
 
 <a name="param_descriptions"></a>
 ### 3.1 Parameter descriptions
@@ -797,7 +801,117 @@ This plot compares two MS/MS spectra: Spectrum ID 1 (unknown, in blue) and Spect
 PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script src/pycompound_shiny.py with a command such as <shiny run --launch-browser pycompound_shiny.py> to launch the Shiny application. Alternatively, one can you the publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392). If you plan to perform some heavy computations such as parameter tuning on large datasets, we recommend either using the Python package, its CLI wrapper, or running the Shiny app on your local machine to take advantage of multithreading (which isn't offered on the POSIT-hosted Shiny app).
 
 
+<a name="toy-examples"></a>
+## 4. Toy examples
+In this section, code snippets illustrating some of PyCompound's functionality are provided. To run these examples, one must be in the parent directory of the clone PyCompound GitHub repository and have the necessary dependencies installed. Scripts which implement a wider variety of test cases can be found in the tests directory.
+
+<a name="toy-examples-python-package"></a>
+## 4.1 Python package
+```
+from pycompound.plot_spectra import generate_plots_on_NRMS_data
+from pycompound.spec_lib_matching import run_spec_lib_matching_on_NRMS_data
+from pycompound.spec_lib_matching import tune_params_on_NRMS_data_grid
+from pycompound.spec_lib_matching import tune_params_DE
+from pathlib import Path
+import os
+
+path_to_query1 = f'{Path.cwd()}/tests/data/gcms_query.txt'
+path_to_query2 = f'{Path.cwd()}/tests/data/gcms_query_tuning.txt'
+path_to_ref = f'{Path.cwd()}/tests/data/trimmed_gcms_reference_library.txt'
+
+##### plot spectra #####
+generate_plots_on_NRMS_data(
+        query_data = path_to_query1,
+        reference_data = path_to_ref,
+        similarity_measure = 'cosine',
+        spectrum_ID1 = 'ID_1',
+        spectrum_ID2 = '463-51-4',
+        output_path = f'{Path.cwd()}/python_package_plotting_example.pdf')
+
+
+##### run spectral library matching #####
+run_spec_lib_matching_on_NRMS_data(
+        query_data = path_to_query2,
+        reference_data = path_to_ref,
+        similarity_measure = 'cosine',
+        print_id_results = True)
+
+
+##### tune parameters via exhaustive grid search #####
+tune_params_on_NRMS_data_grid(
+        query_data = path_to_query2,
+        reference_data = path_to_ref,
+        grid={'wf_mz':[0.0,2.0], 'wf_int':[1.0,2.0]},
+        output_path=f'{Path.cwd()}/test_grid_tuning.txt')
+
+
+##### tune parameters via differential evolution optimization #####
+tune_params_DE(
+        query_data = path_to_query2,
+        reference_data = path_to_ref,
+        chromatography_platform = 'NRMS',
+        similarity_measure = 'cosine',
+        optimize_params = ["wf_mz","wf_int"],
+        param_bounds = {"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0)},
+        maxiters = 10,
+        de_workers = 1)
+```
+
+<a name="toy-examples-CLI-wrapper"></a>
+## 4.2 CLI wrapper 
+```
+QUERY_PATH1=${PWD}/tests/data/gcms_query.txt
+QUERY_PATH2=${PWD}/tests/data/gcms_query_tuning.txt
+REF_PATH=${PWD}/tests/data/trimmed_gcms_reference_library.txt
+
+
+##### plot spectra #####
+python src/pycompound/plot_spectra_CLI.py \
+        --query_data $QUERY_PATH1 \
+        --reference_data $REF_PATH \
+        --similarity_measure cosine \
+        --chromatography_platform NRMS \
+        --spectrum_ID1 "ID_1" \
+        --spectrum_ID2 "463-51-4" \
+        --output_path ${PWD}/CLI_plotting_example.pdf
+
+
+##### run spectral library matching #####
+python src/pycompound/spec_lib_matching_CLI.py \
+        --query_data $QUERY_PATH2 \
+        --reference_data $REF_PATH \
+        --chromatography_platform NRMS \
+        --output_identification ${PWD}/CLI_identification_output_example.txt \
+        --output_similarity_scores ${PWD}/CLI_similarity_scores_output_example.txt
+
+
+##### tune parameters via exhaustive grid search #####
+python src/pycompound/tuning_CLI_grid.py \
+        --query_data $QUERY_PATH2 \
+        --reference_data $REF_PATH \
+        --chromatography_platform NRMS \
+        --wf_int 1,2 \
+        --wf_mz 0,2 \
+        --output_path ${PWD}/CLI_grid_tuning_output_example.txt
+
+##### tune parameters via differential evolution optimization #####
+python src/pycompound/tuning_CLI_DE.py \
+        --query_data $QUERY_PATH2 \
+        --reference_data $REF_PATH \
+        --chromatography_platform NRMS \ 
+        --opt wf_mz wf_int \
+        --bound wf_mz=0.0:5.0 \
+        --bound wf_int=0.0:5.0 \
+        --maxiter 10 \
+        --workers 5
+```
+
+<a name="toy-examples-shiny"></a>
+## 4.3 Shiny
+Video tutorials of the PyCompound shiny application are available on YouTube (https://www.youtube.com/@PyCompound).
+
+
 <a name="bugs-questions"></a>
-## 4. Bugs/Questions?
+## 5. Bugs/Questions?
 If you notice any bugs in this software or have any questions, please create a new issue in this repository.
 

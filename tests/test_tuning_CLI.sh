@@ -28,7 +28,7 @@ python ../src/pycompound/tuning_CLI_grid.py \
         --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --window_size_matching 0.5 \
         --chromatography_platform HRMS \
-        --output_path ${PWD}/output_tuning_HRMS_CLI_3.txt \
+        --output_path ${PWD}/output_tuning_HRMS_CLI_3.txt
 
 echo $'\n\n\ntest #4'
 python ../src/pycompound/tuning_CLI_grid.py \
@@ -38,7 +38,7 @@ python ../src/pycompound/tuning_CLI_grid.py \
         --wf_mz 0,2,3 \
         --noise_threshold 0,0.1 \
         --chromatography_platform NRMS \
-        --output_path ${PWD}/output_tuning_NRMS_CLI.txt \
+        --output_path ${PWD}/output_tuning_NRMS_CLI.txt
 
 echo $'\n\n\ntest #5'
 python ../src/pycompound/tuning_CLI_DE.py \

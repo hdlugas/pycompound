@@ -8,7 +8,7 @@ A Python-based tool for spectral library matching, PyCompound is available as a 
 ```
 conda create -n pycompound_env python=3.12 -y
 conda activate pycompound_env
-pip install pycompound==0.1.13
+pip install pycompound==0.1.14
 ```
 
 ## Source

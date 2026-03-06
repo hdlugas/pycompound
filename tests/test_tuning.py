@@ -5,16 +5,6 @@ from pycompound.spec_lib_matching import tune_params_DE
 from pathlib import Path
 import os
 
-print('\n\ntest #9:')
-tune_params_DE(query_data=f'{Path.cwd()}/data/gcms_query_tuning.msp',
-               reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
-               chromatography_platform='NRMS',
-               similarity_measure='tsallis',
-               optimize_params=["wf_mz","wf_int","LET_threshold","entropy_dimension"],
-               param_bounds={"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0,5),"entropy_dimension":(1.01,3)},
-               default_params={"noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1},
-               maxiters=10,
-               de_workers=5)
 
 """
 print('\n\ntest #1:')
@@ -34,12 +24,14 @@ tune_params_on_HRMS_data_grid(query_data=f'{Path.cwd()}/data/lcms_query_tuning.t
                               adduct='H',
                               grid={'similarity_measure':['renyi'], 'spectrum_preprocessing_order':['FCNMWL'], 'mz_min':[0], 'mz_max':[9999999], 'int_min':[0], 'int_max':[99999999], 'window_size_centroiding':[0.5], 'window_size_matching':[0.1,0.5], 'noise_threshold':[0.0], 'wf_mz':[0.0], 'wf_int':[1.0], 'LET_threshold':[0.0], 'entropy_dimension':[1.1], 'high_quality_reference_library':[False]},
                               output_path=f'{Path.cwd()}/tuning_param_output_test2.txt')
+"""
 
 print('\n\ntest #3:')
 tune_params_on_NRMS_data_grid(query_data=f'{Path.cwd()}/data/gcms_query_tuning.txt',
                               reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
                               output_path=f'{Path.cwd()}/tuning_param_output_test3.txt')
 
+"""
 print('\n\ntest #4:')
 tune_params_on_NRMS_data_grid(query_data=f'{Path.cwd()}/data/gcms_query_tuning.txt',
                               reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
@@ -93,5 +85,16 @@ tune_params_DE(query_data=f'{Path.cwd()}/data/lcms_query_tuning.msp',
                default_params={"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1},
                maxiters=10,
                de_workers=6)
+
+print('\n\ntest #9:')
+tune_params_DE(query_data=f'{Path.cwd()}/data/gcms_query_tuning.msp',
+               reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
+               chromatography_platform='NRMS',
+               similarity_measure='tsallis',
+               optimize_params=["wf_mz","wf_int","LET_threshold","entropy_dimension"],
+               param_bounds={"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0,5),"entropy_dimension":(1.01,3)},
+               default_params={"noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1},
+               maxiters=10,
+               de_workers=5)
 """
 

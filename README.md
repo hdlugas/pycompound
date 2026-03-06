@@ -757,7 +757,7 @@ An example of such a generated plot is seen below.
 
 <br />
 
-~[fig](images/example_plot.png)
+~[image](images/example_plot.png)
 
 <br />
 

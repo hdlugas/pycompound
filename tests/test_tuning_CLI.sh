@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 echo $'\n\n\ntest #1'
 python ../src/pycompound/tuning_CLI_grid.py \
         --query_data ${PWD}/data/lcms_query_tuning.txt \
@@ -50,7 +51,7 @@ python ../src/pycompound/tuning_CLI_DE.py \
   --bound noise_threshold=0.05:0.10 \
   --bound wf_mz=0.5:1.5 \
   --bound wf_int=0.5:1.5 \
-  --maxiter 10 \
+  --maxiter 5 \
   --seed 1 \
   --workers 6
 

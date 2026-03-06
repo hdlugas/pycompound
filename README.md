@@ -898,7 +898,7 @@ python src/pycompound/tuning_CLI_grid.py \
 python src/pycompound/tuning_CLI_DE.py \
         --query_data $QUERY_PATH2 \
         --reference_data $REF_PATH \
-        --chromatography_platform NRMS \ 
+        --chromatography_platform NRMS \
         --opt wf_mz wf_int \
         --bound wf_mz=0.0:5.0 \
         --bound wf_int=0.0:5.0 \

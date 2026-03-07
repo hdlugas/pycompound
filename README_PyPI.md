@@ -21,5 +21,8 @@ conda activate pycompound_env
 pip install git+https://github.com/hdlugas/pycompound.git
 ```
 
-## Shiny app
+## Toy examples
+Toy examples are available at https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples
+
+# Shiny app
 The Shiny app is available at https://connect.posit.cloud/fy7392. Video tutorials of the PyCompound Shiny application are available on YouTube (https://www.youtube.com/@PyCompound).

@@ -10,7 +10,7 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
   - [1.2 Install from PyPi](#install-from-pypi)
   - [1.3 Install the Shiny app](#install-shiny)
 - [2. Functionality](#functionality)
-   - [2.1 Spectrum Preprocessing Transformations](#spec-preprocessing-transformations)
+   - [2.1 Spectrum Preprocessing and Transformations](#spec-preprocessing-transformations)
    - [2.2 Similarity Measures](#similarity-measures)
 - [3. Usage](#usage)
    - [3.1 Parameter descriptions](#param_descriptions)

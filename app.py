@@ -3848,69 +3848,7 @@ def server(input, output, session):
                         ui.HTML(''
                             '<a href="https://zenodo.org/records/12786324" '
                             'target="_blank" rel="noopener noreferrer">'
-                            'EI-based WebNIST GC-MS and ESI-based GNPS LC-MS/MS datasets </a>')),
-
-ui.div({"class":"form-control", "style": "max-width: 800px; max-height: 200px; padding: 10px; background:#f8f9fa"},
-       ui.p(ui.strong("Documentation and Resources:"), style='margin:0'),
-
-       ui.HTML('<b>Documentation</b>'),
-       ui.HTML("<br>"),
-       ui.HTML(
-            '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations" '
-            'target="_blank" rel="noopener noreferrer">'
-            'Spectrum preprocessing and transformations</a>'
-       ),
-       ui.HTML("<br>"),
-       ui.HTML(
-            '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions" '
-            'target="_blank" rel="noopener noreferrer">'
-            'Parameters to tune</a>'
-       ),
-       ui.HTML("<br><br>"),
-
-       ui.HTML('<b>Tutorial</b>'),
-       ui.HTML("<br>"),
-       ui.HTML(
-            '<a href="https://www.youtube.com/@PyCompound" '
-            'target="_blank" rel="noopener noreferrer">'
-            'Video tutorial (YouTube)</a>'
-       ),
-       ui.HTML("<br><br>"),
-
-       ui.HTML('<b>Interfaces</b>'),
-       ui.HTML("<br>"),
-       ui.HTML(
-            '<a href="https://pypi.org/project/pycompound/" '
-            'target="_blank" rel="noopener noreferrer">'
-            'Python API (PyPI)</a>'
-       ),
-       ui.HTML("<br>"),
-       ui.HTML(
-            '<a href="https://github.com/hdlugas/pycompound" '
-            'target="_blank" rel="noopener noreferrer">'
-            'Command-line interface (CLI) version (GitHub)</a>'
-       ),
-       ui.HTML("<br><br>"),
-
-       ui.HTML('<b>Source Code</b>'),
-       ui.HTML("<br>"),
-       ui.HTML(
-            '<a href="https://github.com/hdlugas/pycompound" '
-            'target="_blank" rel="noopener noreferrer">'
-            'GitHub repository</a>'
-       ),
-       ui.HTML("<br><br>"),
-
-       ui.HTML('<b>Datasets</b>'),
-       ui.HTML("<br>"),
-       ui.HTML(
-            '<a href="https://zenodo.org/records/12786324" '
-            'target="_blank" rel="noopener noreferrer">'
-            'EI-based WebNIST GC-MS and ESI-based GNPS LC-MS/MS datasets</a>'
-       )
-),
-
-                
+                            'EI-based WebNIST GC-MS and ESI-based GNPS LC-MS/MS datasets </a>')),                
                 ui.div("Select options:", style="margin-top:30px; text-align:left; font-size:24px; font-weight:bold"),
                 ui.div(ui.input_radio_buttons("chromatography_platform",
                                               "Specify chromatography platform:",

@@ -67,6 +67,6 @@ Note: If the browser does not open automatically, navigate to the address shown 
 
 Publicly available web version: [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392)
 
-#### Toy examples of the Python package and CLI versions are available [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) on the GitHub repository.
+#### Toy examples of the Python package and CLI versions are available in the [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) on the GitHub repository.
 
 #### Toy examples and video tutorials for the PyCompound Shiny application are available on YouTube (https://www.youtube.com/@PyCompound).

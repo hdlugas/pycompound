@@ -5,7 +5,10 @@
 PyCompound is a Python-based tool for spectral library matching designed to identify chemical compounds from mass spectrometry data. It is available in three formats: a Python package, a command-line interface (CLI), and a graphical user interface (GUI) built with Python/Shiny. PyCompound provides a flexible and extensible framework for spectral library matching and introduces several key features. These include entropy-based similarity measures such as Shannon, Tsallis, and the Rényi entropy similarity measure introduced here for the first time, as well as conventional similarity metrics, including cosine and binary similarity measures. PyCompound supports customizable preprocessing workflows that allow users to explicitly control the order of spectral preprocessing steps. In addition, PyCompound includes transformation parameter optimization using grid search and metaheuristic algorithms, and it supports the construction of user-defined mixture or composite similarity measures by combining two or more similarity metrics. PyCompound supports both high-resolution mass spectrometry (HRMS) data (e.g., LC-MS/MS) and nominal-resolution mass spectrometry (NRMS) data (e.g., GC-MS). The Python package is available on PyPI at [https://pypi.org/project/pycompound/](https://pypi.org/project/pycompound/), and the Shiny app is available at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392).
 
 ## Table of Contents
-- [1. Install dependencies](#create-conda-env)
+- [1. Installation](#create-conda-env)
+  - [1.1 Install from GitHub](#install-from-github)
+  - [1.2 Install from PyPi](#install-from-pypi)
+  - [1.3 Install the Shiny app](#install-shiny)
 - [2. Functionality](#functionality)
    - [2.1 Spectrum Preprocessing Transformations](#spec-preprocessing-transformations)
    - [2.2 Similarity Measures](#similarity-measures)
@@ -23,20 +26,45 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
 - [5. Bugs/Questions?](#bugs-questions)
 
 <a name="create-conda-env"></a>
-## 1. Install dependencies
-PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Pyteomics, and netCDF4. Specifically, this software was validated with python=3.12.4, matplotlib=3.8.4, numpy=1.26.4, pandas=2.2.2, scipy=1.13.1, pyteomics=4.7.2, netCDF4=1.6.5, lxml=5.1.0, joblib=1.5.2, and shiny=1.4.0, although it may work with other versions of these tools. A user may consider creating a conda environment (see [https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for guidance on getting started with conda if you are unfamiliar). For a system with conda installed, one can create the environment pycompound_env, activate it, and install the necessary dependencies with:
+## 1. Installation
+PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Pyteomics, and netCDF4. Specifically, PyCompound was validated with python=3.12.4, matplotlib=3.8.4, numpy=1.26.4, pandas=2.2.2, scipy=1.13.1, pyteomics=4.7.2, netCDF4=1.6.5, lxml=5.1.0, joblib=1.5.2, and shiny=1.4.0, although it may work with other versions of these tools. A user may consider creating a conda environment (see [https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for guidance on getting started with conda if you are unfamiliar). For a system with conda installed, one can create the environment pycompound_env, activate it, and install the necessary dependencies with:
+<!---```
+conda create -n pycompound_env python=3.12 -y
+conda activate pycompound_env
+pip install pycompound==0.1.14
+```
+--->
+
+<a name="install-from-github"></a>
+## 1.1 Install from GitHub
+```
+conda create -n pycompound_env -y python=3.12
+conda activate pycompound_env
+pip install git+https://github.com/hdlugas/pycompound.git
+```
+
+<a name="install-from-pypi"></a>
+## 1.2 Install from PyPI:
 ```
 conda create -n pycompound_env python=3.12 -y
 conda activate pycompound_env
 pip install pycompound==0.1.14
 ```
 
+<a name="install-shiny"></a>
+## 1.3 Install the Shiny app:
+```
+shiny run --lanch-browser app.py
+```
+or
+Publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392).
+
 <a name="functionality"></a>
 ## 2. Functionality
 
 <a name="spec-preprocessing-transformations"></a>
-## 2.1 Spectrum Preprocessing Transformations
-The following spectrum preprocessing transformations are offered:
+## 2.1 Spectrum Preprocessing and Transformations
+The following spectrum preprocessing and transformations are offered:
 
 -   Filtering: Given user-defined parameters (mz_min,mz_max),
     (int_min,int_max) and spectrum $I$ with m/z values
@@ -86,7 +114,7 @@ The following spectrum preprocessing transformations are offered:
     m/z ratios $(a_{1},a_{2},...,a_{n}), (b_{1},b_{2},...,b_{m})$ and
     intensities $(x_{1},x_{2},...,x_{n}), (y_{1},y_{2},...,y_{m})$,
     respectively, of which we would like to measure the similarity
-    between, the matching procedure outputs two spectra
+    between the matching procedure outputs two spectra
     $I^{\star},J^{\star}$ containing the same number of peaks with
     $I^{\star}$ and $J^{\star}$ having intensities and
     identical m/z ratios. Specifically, for a given peak $(a_{i},x_{i})$
@@ -161,16 +189,16 @@ H_{Renyi}(I,q)=\frac{1}{1-q}ln(\sum_{i=1}^{n}a_{i}^{q}),
 q\neq 1, \ q>0
 ```
 
-Additionally, the plethora of binary similarity measures considered in https://doi.org/10.3390/metabo12080694 are available along with a mixture similarity measure that is a weighted sum of the four non-binary similarity measures (i.e. Cosine, Shannon Entropy, Renyi, and Tsallis).
+Additionally, the plethora of binary similarity measures considered in https://doi.org/10.3390/metabo12080694 is available, along with a mixture similarity measure that is a weighted sum of these non-binary and binary similarity measures.
 
 <a name="usage"></a>
 ## 3. Usage
 PyCompound has three main capabilities:
 1. Plotting a query spectrum vs. a reference spectrum before and after preprocessing transformations.
 2. Running spectral library matching to identify compounds based on their mass spectrometry data
-3. Tuning parameters to maximize accuracy given a query dataset with known compuond IDs (e.g. from targeted metabolomics experiments).
+3. Tuning parameters to maximize accuracy given a query dataset with known compound IDs (e.g., from targeted metabolomics experiments).
 
-These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in NRMS vs HRMS data. Example scripts which implement these tasks can be found in the tests directory.
+These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in NRMS vs HRMS data. Example scripts that implement these tasks can be found in the tests directory.
 
 <a name="param_descriptions"></a>
 ### 3.1 Parameter descriptions
@@ -187,24 +215,24 @@ For the function build_library_from_raw_data:
 Common parameters:
 ```
 --query_data (mandatory argument):
-  * HRMS case: mgf, mzML, msp, json, or txt file of query mass spectrum/spectra to be identified. If txt file, must have at least 3 columns with each row corresponding to a single ion fragment of a mass spectrum, one 'id' column containing an identifier, one 'mz_ratio' column corresponding to the mass to charge (m/z) ratios, and one 'intensity' column containing the intensities. For example, if spectrum A has 3 ion fragments, then there would be three rows in this text file corresponding to spectrum A. Optional columns for the text file are 'precursor_ion_mz', 'ionization_mode', and 'adduct'.
-  * NRMS case: cdf or txt file of query mass spectrum/spectra to be identified. If txt file, same format as in HRMS case is required.
+  * HRMS case: mgf, mzML, msp, json, or txt file of query mass spectrum/spectra to be identified. If a txt file, it must have at least 3 columns, with each row corresponding to a single ion fragment of a mass spectrum: one 'id' column containing an identifier, one 'mz_ratio' column corresponding to the mass to charge (m/z) ratios, and one 'intensity' column containing the intensities. For example, if spectrum A has 3 ion fragments, then there would be three rows in this text file corresponding to spectrum A. Optional columns for the text file are 'precursor_ion_mz', 'ionization_mode', and 'adduct'.
+  * NRMS case: cdf or txt file of query mass spectrum/spectra to be identified. If a txt file, the same format as in the HRMS case is required.
 
---reference_data (mandatory argument): Same format text file as query_data except of reference library spectra. We recommend using the reference libraries from our Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324); stored on Zenodo due to file size limitations on GitHub).
+--reference_data (mandatory argument): Same format text file as query_data except for reference library spectra. We recommend using the reference libraries from our Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324); stored on Zenodo due to file size limitations on GitHub).
 
---precursor_ion_mz_tolerance (only applicable to HRMS): positive float representing a window size around each query spectrum's precursor ion mass:charge ratio in which candidate reference spectra must lie to be considered in compound identification. Default: None. 
+--precursor_ion_mz_tolerance (only applicable to HRMS): positive float representing a window size around each query spectrum's precursor ion mass to charge (m/z) ratio in which candidate reference spectra must lie to be considered in compound identification. Default: None. 
 
 --ionization_mode (only applicable to HRMS): Positive, Negative, or None. Default: None.
 
 --adduct (only applicable to HRMS): Options: H, NH3, NH4, Na, K, N/A. Default: N/A.
 
---likely_reference_IDs: text file with one column containing the IDs of a subset of all compounds in the reference_data to be used in spectral library matching. Each ID in this file must be an ID in the reference library. Default: None (i.e. default is to use entire reference library)
+--likely_reference_IDs: text file with one column containing the IDs of a subset of all compounds in the reference_data to be used in spectral library matching. Each ID in this file must be an ID in the reference library. Default: None (i.e., default is to use the entire reference library)
 
 --similarity_measure: cosine, shannon, renyi, tsallis, mixture, jaccard, dice, 3w_jaccard, sokal_sneath, binary_cosine, mountford, mcconnaughey, driver_kroeber, simpson, braun_banquet, fager_mcgowan, kulczynski, intersection, hamming, hellinger. Default: cosine.
 
---weights: dict of weights to give to each non-binary similarity measure (i.e. cosine, shannon, renyi, and tsallis) when the mixture similarity measure is specified. Default: 0.25 for each of the four non-binary similarity measures.
+--weights: dict of weights to give to each non-binary similarity measure (i.e., cosine, shannon, renyi, and tsallis) when the mixture similarity measure is specified. Default: 0.25 for each of the four non-binary similarity measures.
 
---spectrum_preprocessing_order: The spectrum preprocessing transformations and the order in which they are to be applied. Note that these transformations are applied prior to computing similarity scores. Format must be a string with 2-6 characters chosen from C, F, M, N, L, W representing centroiding, filtering based on mass/charge and intensity values, matching, noise removal, low-entropy trannsformation, and weight-factor-transformation, respectively. For example, if \'WCM\' is passed, then each spectrum will undergo a weight factor transformation, then centroiding, and then matching. Note that if an argument is passed, then \'M\' must be contained in the argument, since matching is a required preprocessing step in spectral library matching of HRMS data. Furthermore, \'C\' must be performed before matching since centroiding can change the number of ion fragments in a given spectrum. Note that C and M are not applicable to NRMS data. Default: FCNMWL for HRMS and FNLW for NRMS.')
+--spectrum_preprocessing_order: The spectrum preprocessing transformations and the order in which they are to be applied. Note that these transformations are applied prior to computing similarity scores. Format must be a string with 2-6 characters chosen from C, F, M, N, L, W representing centroiding, filtering based on mass/charge and intensity values, matching, noise removal, low-entropy transformation, and weight-factor-transformation, respectively. For example, if \'WCM\' is passed, then each spectrum will undergo a weight factor transformation, then centroiding, and then matching. Note that if an argument is passed, then \'M\' must be contained in the argument, since matching is a required preprocessing step in spectral library matching of HRMS data. Furthermore, \'C\' must be performed before matching since centroiding can change the number of ion fragments in a given spectrum. Note that C and M are not applicable to NRMS data. Default: FCNMWL for HRMS and FNLW for NRMS.')
 
 --high_quality_reference_library: True/False flag indicating whether the reference library is considered to be of high quality. If True, then the spectrum preprocessing transformations of filtering and noise removal are performed only on the query spectrum/spectra. If False, all spectrum preprocessing transformations specified will be applied to both the query and reference spectra. Default: False')
 
@@ -220,7 +248,7 @@ Common parameters:
 
 --window_size_matching (only for HRMS): Window size parameter used in matching a query spectrum and a reference library spectrum. Default: 0.5
 
---noise_threshold: Ion fragments (i.e. points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.0
+--noise_threshold: Ion fragments (i.e., points in a given mass spectrum) with intensity less than max(intensities)*noise_threshold are removed. Default: 0.0
 
 --wf_mz: Mass/charge weight factor parameter. Default: 0.0
 
@@ -228,7 +256,7 @@ Common parameters:
 
 --LET_threshold: Low-entropy transformation threshold parameter. Spectra with Shannon entropy less than LET_threshold are transformed according to intensitiesNew=intensitiesOriginal^{(1+S)/(1+LET_threshold)}. Default: 0.0
 
---entropy_dimension: Entropy dimension parameter. Must have positive value other than 1. When the entropy dimension is 1, then Renyi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the renyi and tsallis similarity measures. This parameter will be ignored if similarity measure cosine or shannon is chosen. Default: 1.1
+--entropy_dimension: Entropy dimension parameter. Must have a positive value other than 1. When the entropy dimension is 1, then Rényi and Tsallis entropy are equivalent to Shannon entropy. Therefore, this parameter only applies to the Rényi and Tsallis similarity measures. This parameter will be ignored if the similarity measure cosine or Shannon is chosen. Default: 1.1
 ```
 
 Parameters specific to run_spec_lib_matching_on_HRMS_data and run_spec_lib_matching_on_NRMS_data:
@@ -238,9 +266,9 @@ Parameters specific to run_spec_lib_matching_on_HRMS_data and run_spec_lib_match
 
 --print_id_results: Flag that prints identification results if True. Default: False
 
---output_identification: Output text file containing the most-similar reference spectra for each query spectrum along with the corresponding similarity scores. Default is to save identification output in current working directory with filename 'output_identification.txt'.
+--output_identification: Output text file containing the most-similar reference spectra for each query spectrum along with the corresponding similarity scores. Default is to save the identification output in the current working directory with the filename 'output_identification.txt'.
 
---output_similarity_scores: Output text file containing similarity scores between all query spectrum/spectra and all reference spectra. Each row corresponds to a query spectrum, the left-most column contains the query spectrum/spectra identifier, and the remaining column contain the similarity scores with respect to all reference library spectra. If no argument passed, then this text file is written to the current working directory with filename output_all_similarity_scores.txt.
+--output_similarity_scores: Output text file containing similarity scores between all query spectrum/spectra and all reference spectra. Each row corresponds to a query spectrum, the left-most column contains the query spectrum/spectra identifier, and the remaining column contains the similarity scores with respect to all reference library spectra. If no argument is passed, then this text file is written to the current working directory with the filename output_all_similarity_scores.txt.
 ```
 
 Parameters specific to tune_params_on_HRMS_data_grid and tune_params_on_NRMS_data_grid:
@@ -252,7 +280,7 @@ Parameters specific to tune_params_on_HRMS_data_grid and tune_params_on_NRMS_dat
 
 Parameters specific to tune_params_DE:
 ```
--- optimize_params: list of continuous parameters (i.e. window_size_centroiding, window_size_matching, noise_threshold, wf_mz, wf_int, LET_threshold; window_size parameters only applicable to HRMS data) to optimize via differential evolution.
+-- optimize_params: list of continuous parameters (i.e., window_size_centroiding, window_size_matching, noise_threshold, wf_mz, wf_int, LET_threshold; window_size parameters only applicable to HRMS data) to optimize via differential evolution.
 
 -- param_bounds: dict with keys being the parameters to optimize and values being a tuple of length 2 of the lower and upper bounds of acceptable parameter values. 
 
@@ -263,11 +291,11 @@ Parameters specific to tune_params_DE:
 
 Parameters specific to generate_plots_on_HRMS_data and generate_plots_on_NRMS_data:
 ```
---spectrum_ID1: ID of one spectrum to be plotted. Default is first spectrum in the query library. Optional argument.
+--spectrum_ID1: ID of one spectrum to be plotted. Default is the first spectrum in the query library. Optional argument.
 
---spectrum_ID2: ID of another spectrum to be plotted. Default is first spectrum in the reference library. Optional argument.
+--spectrum_ID2: ID of another spectrum to be plotted. Default is the first spectrum in the reference library. Optional argument.
 
---y_axis_transformation: transformation to apply to y-axis (i.e. intensity axis) of plots. Options: 'normalized', 'none', 'log10', and 'sqrt'. Default: 'normalized.')
+--y_axis_transformation: transformation to apply to the y-axis (i.e., intensity axis) of plots. Options: 'normalized', 'none', 'log10', and 'sqrt'. Default: 'normalized.')
 
 --output_path: path to output PDF file containing the plots of the spectra before and after preprocessing transformations. If no argument is passed, then the plots will be saved to the PDF ./spectrum1_{spectrum_ID1}_spectrum2_{spectrum_ID2}_plot.pdf in the current working directory.
 ```
@@ -282,7 +310,7 @@ from pycompound.build_library import build_library_from_raw_data
 build_library_from_raw_data(input_path='path_to_input_file', output_path='path_to_output_file', is_reference=False)
 ```
 
-Since the other functionality provided by pycompound is capable of being directly run on mgf, mzML, msp, json, and cdf files, you may not need to directly build a library yourself. Some example mgf and json files one can use to build an LC-MS/MS library can be found from the Global Natural Products Social Molecular Networking (GNPS) databases here: [https://external.gnps2.org/gnpslibrary](https://external.gnps2.org/gnpslibrary). Some example mzML files one can use to build an LC-MS/MS library can be found in this repository: [https://github.com/HUPO-PSI/mzML](https://github.com/HUPO-PSI/mzML). Some example MSP files can be found here: [https://mona.fiehnlab.ucdavis.edu/downloads](https://mona.fiehnlab.ucdavis.edu/downloads). The mgf, mzML, msp, and json files provided in this repository are trimmed versions of files found in these referenced repositories. The script tests/test_build_libraries.py demonstrates this usage.
+Since the other functionality provided by PyCompound is capable of being directly run on mgf, mzML, msp, json, and cdf files, you may not need to directly build a library yourself. Some example mgf and json files one can use to build an LC-MS/MS library can be found from the Global Natural Products Social Molecular Networking (GNPS) databases here: [https://external.gnps2.org/gnpslibrary](https://external.gnps2.org/gnpslibrary). Some example mzML files one can use to build an LC-MS/MS library can be found in this repository: [https://github.com/HUPO-PSI/mzML](https://github.com/HUPO-PSI/mzML). Some example MSP files can be found here: [https://mona.fiehnlab.ucdavis.edu/downloads](https://mona.fiehnlab.ucdavis.edu/downloads). The mgf, mzML, msp, and json files provided in this repository are trimmed versions of files found in these referenced repositories. The script tests/test_build_libraries.py demonstrates this usage.
 
 Full LC-MS/MS and GC-MS reference libraries are available at the Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324)). 
 
@@ -405,7 +433,7 @@ Returns:
 # Low-entropy transformation
 LE_transform(intensity, thresh, normalization_method)
 """
-Transforms spectrum's intensities if the Shannon entropy of the intensities is below some threshold
+Transforms the spectrum's intensities if the Shannon entropy of the intensities is below some threshold
 Args:
    intensity: 1d numpy array
    thresh: nonnegative float
@@ -499,7 +527,7 @@ Returns:
    float: float between 0 and 1 indicating the similarity of the two spectra
 """
 
-# Shnnon entropy similarity
+# Shannon entropy similarity
 S_shannon(ints_a, ints_b)
 """
 Shannon entropy similarity measure
@@ -510,10 +538,10 @@ Returns:
    float: float between 0 and 1 indicating the similarity of the two spectra
 """
 
-# Renyi entropy similarity
+# Rényi entropy similarity
 S_renyi(ints_a, ints_b, q)
 """
-Renyi entropy similarity measure
+Rényi entropy similarity measure
 Args:
    ints_a: 1d numpy array of intensities of a spectrum
    ints_b: 1d numpy array of intensities of a spectrum
@@ -538,7 +566,7 @@ Returns:
 
 <a name="tuning"></a>
 ### 3.4 Tune parameters
-Note that in order to tune parameters such as noise_threshold, LET_threshold etc., one must have a query library with compounds whose ground truth ID is known (e.g. from targeted metabolomics experiments). PyCompound offers two different methods of tuning parameters: one being an exhaustive grid search of pre-specified values, and the other being an optimization approach using differential evolution to optimize continuous parameters with respect to accuracy. The usage of the functions to tune parameters within Python is:
+Note that in order to tune parameters such as noise_threshold, LET_threshold, etc., one must have a query library with compounds whose ground truth ID is known (e.g., from targeted metabolomics experiments). PyCompound offers two different methods of tuning parameters: one being an exhaustive grid search of pre-specified values, and the other being an optimization approach using differential evolution to optimize continuous parameters with respect to accuracy. The usage of the functions to tune parameters within Python is:
 ```
 from pycompound.spec_lib_matching import tune_params_on_HRMS_data_grid
 from pycompound.spec_lib_matching import tune_params_on_NRMS_data_grid
@@ -798,12 +826,12 @@ This plot compares two MS/MS spectra: Spectrum ID 1 (unknown, in blue) and Spect
 
 <a name="shiny"></a>
 ### 3.6 Shiny application
-PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script app.py with a command such as <shiny run --launch-browser app.py> to launch the Shiny application. Alternatively, one can use the publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392). If you plan to perform some heavy computations such as parameter tuning on large datasets, we recommend either using the Python package, its CLI wrapper, or running the Shiny app on your local machine to take advantage of multithreading (which isn't offered on the POSIT-hosted Shiny app).
+PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script app.py with a command such as <shiny run --launch-browser app.py> to launch the Shiny application. Alternatively, one can use the publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392). If you plan to perform some heavy computations, such as parameter tuning on large datasets, we recommend either using the Python package, its CLI wrapper, or running the Shiny app on your local machine to take advantage of multithreading (which isn't offered on the POSIT-hosted Shiny app).
 
 
 <a name="toy-examples"></a>
 ## 4. Toy examples
-In this section, code snippets illustrating some of PyCompound's functionality are provided. To run these examples, one must be in the parent directory of the clone PyCompound GitHub repository and have the necessary dependencies installed. Scripts which implement a wider variety of test cases can be found in the tests directory.
+In this section, code snippets illustrating some of PyCompound's functionality are provided. To run these examples, one must be in the parent directory of the cloned PyCompound GitHub repository and have the necessary dependencies installed. Scripts that implement a wider variety of test cases can be found in the tests directory.
 
 <a name="toy-examples-python-package"></a>
 ## 4.1 Python package
@@ -857,7 +885,7 @@ tune_params_DE(
         de_workers = 1)
 ```
 
-<a name="toy-examples-CLI-wrapper"></a>
+<a name="toy-examples-cli-wrapper"></a>
 ## 4.2 CLI wrapper 
 ```
 QUERY_PATH1=${PWD}/tests/data/gcms_query.txt

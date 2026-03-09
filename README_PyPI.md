@@ -6,23 +6,27 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
 
 # Installation
 
-## Install directly from PyPI (recommended):
+## Install from PyPI (recommended):
 ```
 conda create -n pycompound_env python=3.12 -y
 conda activate pycompound_env
 pip install pycompound==0.1.14
 ```
 
-## Source
-Install directly from GitHub:
+## Install from GitHub:
 ```
 conda create -n pycompound_env -y python=3.12
 conda activate pycompound_env
 pip install git+https://github.com/hdlugas/pycompound.git
 ```
 
-## Toy examples
-Toy examples are available at https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples
+## Install the Shiny app:
+```
+shiny run --lanch-browser app.py
+```
+The Shiny app is also publicly available at https://connect.posit.cloud/fy7392. 
 
-# Shiny app
-The Shiny app is available at https://connect.posit.cloud/fy7392. Video tutorials of the PyCompound Shiny application are available on YouTube (https://www.youtube.com/@PyCompound).
+# Toy examples:
+Toy examples of the Python package and CLI versions are available at https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples
+
+Toy examples and video tutorials for the PyCompound Shiny application are available on YouTube (https://www.youtube.com/@PyCompound).

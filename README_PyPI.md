@@ -42,7 +42,7 @@ conda create -n pycompound_env -y python=3.12
 conda activate pycompound_env
 ```
 
-## 3 Install PyCompound
+## 3. Install PyCompound
 ### Option A: Install from PyPI (Stable)
 ```
 pip install pycompound
@@ -54,7 +54,7 @@ Note: To install a specific version, for example, you can install version 0.1.16
 pip install git+https://github.com/hdlugas/pycompound.git
 ```
 
-## 4 Running PyCompound
+## 4. Running PyCompound
 ### Run the Toy Examples
 With the repository cloned and the environment active, you can now run the Python package examples. Navigate to the [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) section below and copy the code into a Python script or interpreter. Since you are in the pycompound root directory, the paths to tests/data/ will work automatically.
 

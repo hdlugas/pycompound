@@ -3823,7 +3823,7 @@ def server(input, output, session):
                         ui.HTML(''
                             '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations" '
                             'target="_blank" rel="noopener noreferrer">'
-                            'Spectrum preprocessing transformations </a>'),
+                            'Spectrum preprocessing and transformations </a>'),
                        ui.HTML("<br>"),
                         ui.HTML(''
                             '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions" '

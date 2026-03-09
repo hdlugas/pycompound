@@ -798,7 +798,7 @@ This plot compares two MS/MS spectra: Spectrum ID 1 (unknown, in blue) and Spect
 
 <a name="shiny"></a>
 ### 3.6 Shiny application
-PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script src/pycompound_shiny.py with a command such as <shiny run --launch-browser pycompound_shiny.py> to launch the Shiny application. Alternatively, one can you the publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392). If you plan to perform some heavy computations such as parameter tuning on large datasets, we recommend either using the Python package, its CLI wrapper, or running the Shiny app on your local machine to take advantage of multithreading (which isn't offered on the POSIT-hosted Shiny app).
+PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script app.py with a command such as <shiny run --launch-browser app.py> to launch the Shiny application. Alternatively, one can you the publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392). If you plan to perform some heavy computations such as parameter tuning on large datasets, we recommend either using the Python package, its CLI wrapper, or running the Shiny app on your local machine to take advantage of multithreading (which isn't offered on the POSIT-hosted Shiny app).
 
 
 <a name="toy-examples"></a>

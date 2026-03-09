@@ -66,21 +66,21 @@ Publicly available web version at [https://connect.posit.cloud/fy7392](https://c
 ## 2.1 Spectrum Preprocessing and Transformations
 The following spectrum preprocessing and transformations are offered:
 
--   Filtering: Given user-defined parameters (mz_min,mz_max),
+-   Filtering (F): Given user-defined parameters (mz_min,mz_max),
     (int_min,int_max) and spectrum $I$ with m/z values
     $(m_{1},m_{2},...,m_{n})$ and intensities $(x_{1},x_{2},...,x_{n})$,
     the transformed spectrum $I^{\star}$ consists of the peaks
     $(m_{i},x_{i})$ in $I$ such that mz_min $\leq m_{i}\leq$ mz_max and
     int_min $\leq x_{i}\leq$ int_max.
     
--   Weight Factor Transformation: Given a pair of user-defined weight
+-   Weight Factor Transformation (W): Given a pair of user-defined weight
     factor parameters $(\text{a,b})$ and spectrum $I$ with m/z values
     $(m_{1},m_{2},...,m_{n})$ and intensities $(x_{1},x_{2},...,x_{n})$,
     the transformed spectrum $I^{\star}$ has the same m/z values as $I$
     and has intensities given by
     $I^{\star}:=(m_{1}^{\text{a}}\cdot x_{1}^{\text{b}},m_{2}^{\text{a}}\cdot x_{2}^{\text{b}},...,m_{n}^{\text{a}}\cdot x_{n}^{\text{b}})$.
 
--   Low-Entropy Transformation: Given a user-defined low-entropy
+-   Low-Entropy Transformation (L): Given a user-defined low-entropy
     threshold parameter $T$ and spectrum $I$ with intensities
     $(x_{1},x_{2},...,x_{n})$, $\sum_{i=1}^nx_i = 1$, and Shannon
     entropy $H_{Shannon}(I)=-\sum_{i=1}^{n}x_{i}\cdot ln(x_{i})$, the
@@ -91,7 +91,7 @@ The following spectrum preprocessing and transformations are offered:
     $x_{i}^{\star}=x_{i}^{\frac{1+H_{Shannon}(I)}{1+T}}$ if
     $H_{Shannon}(I)<T$.
 
--   Centroiding (only applicable to HRMS data): Given a user-defined
+-   Centroiding (C) (only applicable to HRMS data): Given a user-defined
     window-size parameter $w_{centroiding}$ and a spectrum $I$ with m/z
     values $(m_{1},m_{2},...,m_{n})$ and intensities
     $(x_{1},x_{2},...,x_{n})$, the transformed spectrum $I^{\star}$
@@ -103,13 +103,13 @@ The following spectrum preprocessing and transformations are offered:
     more than two peaks whose m/z values are within a distance
     $w_{centroiding}$ of each other.
 
--   Noise Removal: Given a user-defined noise removal parameter $r$ and
+-   Noise Removal (N): Given a user-defined noise removal parameter $r$ and
     a spectrum $I$ with intensities $(x_{1},x_{2},...,x_{n})$, noise
     removal removes peaks from $I$ with
     $x_{j}< r\cdot\text{max}(\{x_{1},x_{2},...,x_{n}\})$ for
     $j\in\{1,2,...,n\}$.
 
--   Matching (only applicable to HRMS data): Given a user-defined
+-   Matching (M) (only applicable to HRMS data): Given a user-defined
     window-size parameter $w_{matching}$ and two spectra $I$, $J$ with
     m/z ratios $(a_{1},a_{2},...,a_{n}), (b_{1},b_{2},...,b_{m})$ and
     intensities $(x_{1},x_{2},...,x_{n}), (y_{1},y_{2},...,y_{m})$,

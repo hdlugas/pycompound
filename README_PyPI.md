@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/PyCompound_logo.png" alt="PyCompound Logo" width="180"/>
+  <img src="https://raw.githubusercontent.com/hdlugas/pycompound/main/images/PyCompound_logo.png" alt="PyCompound Logo" width="180"/>
 </p>
 
 PyCompound is a Python-based tool for spectral library matching designed to identify chemical compounds from mass spectrometry data. It is available in three formats: a Python package, a command-line interface (CLI), and a graphical user interface (GUI) built with Python/Shiny. PyCompound provides a flexible and extensible framework for spectral library matching and introduces several key features. These include entropy-based similarity measures such as Shannon, Tsallis, and the Rényi entropy similarity measure introduced here for the first time, as well as conventional similarity metrics, including cosine and binary similarity measures. PyCompound supports customizable preprocessing workflows that allow users to explicitly control the order of spectral preprocessing steps. In addition, PyCompound includes transformation parameter optimization using grid search and metaheuristic algorithms, and it supports the construction of user-defined mixture or composite similarity measures by combining two or more similarity metrics. PyCompound supports both high-resolution mass spectrometry (HRMS) data (e.g., LC-MS/MS) and nominal-resolution mass spectrometry (NRMS) data (e.g., GC-MS). For the full documentation, including toy examples, see the GitHub repository (https://github.com/hdlugas/pycompound).
@@ -47,7 +47,7 @@ conda activate pycompound_env
 ```
 pip install pycompound
 ```
-Note: To install a specific version, for example, you can install version 0.1.15 by: `pip install pycompound==0.1.15`
+Note: To install a specific version, for example, you can install version 0.1.16 by: `pip install pycompound==0.1.16`
 
 ### Option B: Install from GitHub (Development)
 ```

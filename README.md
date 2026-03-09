@@ -54,7 +54,7 @@ pip install pycompound==0.1.14
 <a name="install-shiny"></a>
 ## 1.3 Install the Shiny app:
 ```
-shiny run --lanch-browser app.py
+shiny run --launch-browser app.py
 ```
 or
 Publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392).

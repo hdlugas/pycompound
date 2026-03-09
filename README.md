@@ -6,9 +6,10 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
 
 ## Table of Contents
 - [1. Installation](#create-conda-env)
-  - [1.1 Install from GitHub](#install-from-github)
-  - [1.2 Install from PyPi](#install-from-pypi)
-  - [1.3 Install the Shiny app](#install-shiny)
+  - [1.1 Prerequisites by Operating System](#prerequisites)
+  - [1.2 Environment Setup & Cloning the Repository](#environment-setup)
+  - [1.3 Install PyCompound](#install-pycompound)
+  - [1.4 Running PyCompoud](#run-pycompound)
 - [2. Functionality](#functionality)
    - [2.1 Spectrum Preprocessing and Transformations](#spec-preprocessing-transformations)
    - [2.2 Similarity Measures](#similarity-measures)
@@ -35,29 +36,68 @@ pip install pycompound==0.1.14
 ```
 --->
 
-<a name="install-from-github"></a>
-## 1.1 Install from GitHub
+<a name="prerequisites"></a>
+## 1.1 Prerequisites by Operating System
+Before installing, ensure your system is prepared for the specific requirements of your operating system.
+
+### Windows Users (Setup & Dependencies)
+Windows users should use the Anaconda PowerShell Prompt to ensure all paths are configured correctly.
+
+1. Initial Setup: If you do not have a Python manager, download and install Miniconda [https://docs.anaconda.com/miniconda/](https://docs.anaconda.com/miniconda/).
+2. Open the Prompt: Click Start, search for "Anaconda PowerShell Prompt", and open it.
+3. Install Core Tools: Run the following to install the required data libraries and Git:
 ```
-conda create -n pycompound_env -y python=3.12
-conda activate pycompound_env
-pip install git+https://github.com/hdlugas/pycompound.git
+conda install -c conda-forge netcdf4 lxml git -y
 ```
 
-<a name="install-from-pypi"></a>
-## 1.2 Install from PyPI:
+### Linux Users
+To ensure Git is available within your environment, run:
 ```
-conda create -n pycompound_env python=3.12 -y
+conda install -c conda-forge git -y
+```
+Note: If you are on an older system and see a C++ Compiler does not support -std=c++17 error, run this command instead:
+```
+conda install -c conda-forge gxx_linux-64 gcc_linux-64 git -y
+```
+
+<a name="environment-setup"></a>
+## 1.2 Environment Setup & Cloning the Repository
+To run the provided examples or the Shiny app, you must clone the repository to access the sample data and visual assets.
+```
+# 1. Clone the repository
+git clone https://github.com/hdlugas/pycompound.git
+cd pycompound
+
+# 2. Create and activate the environment
+conda create -n pycompound_env -y python=3.12
 conda activate pycompound_env
+```
+
+<a name="install-pycompound"></a>
+## 1.3 Install PyCompound
+### Option A: Install from PyPI (Stable)
+```
 pip install pycompound==0.1.14
 ```
 
-<a name="install-shiny"></a>
-## 1.3 Install the Shiny app:
+### Option B: Install from GitHub (Development)
+```
+pip install git+https://github.com/hdlugas/pycompound.git
+```
+
+<a name="run-pycompound"></a>
+## 1.4 Running PyCompound
+### A. Run the Toy Examples
+With the repository cloned and the environment active, you can now run the Python package examples. Navigate to the [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) section below and copy the code into a Python script or interpreter. Since you are in the pycompound root directory, the paths to tests/data/ will work automatically.
+
+### B. Launch the Shiny App
+The Shiny app requires the www/ folder to display correctly. Since you have cloned the repository, you can launch it immediately:
 ```
 shiny run --launch-browser app.py
 ```
-or
-Publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392).
+Note: If the browser does not open automatically, navigate to the address shown in your terminal (usually http://127.0.0.1:8000).
+
+Publicly available web version: [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392)
 
 <a name="functionality"></a>
 ## 2. Functionality

@@ -22,7 +22,7 @@ pip install git+https://github.com/hdlugas/pycompound.git
 
 ## Install the Shiny app:
 ```
-shiny run --lanch-browser app.py
+shiny run --launch-browser app.py
 ```
 The Shiny app is also publicly available at https://connect.posit.cloud/fy7392. 
 

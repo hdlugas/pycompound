@@ -936,7 +936,7 @@ python src/pycompound/tuning_CLI_DE.py \
 
 <a name="toy-examples-shiny"></a>
 ## 4.3 Shiny app
-Video tutorials of the PyCompound Shiny application are available on YouTube (https://www.youtube.com/@PyCompound).
+Video tutorials for the PyCompound Shiny application are available on YouTube (https://www.youtube.com/@PyCompound).
 
 
 <a name="bugs-questions"></a>

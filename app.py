@@ -3043,8 +3043,8 @@ def plot_spectra_ui(platform: str):
              "style": "max-width:800px; max-height:140px; padding:10px; "
                       "background:#f8f9fa; overflow:auto; margin-bottom:8px;"},
             ui.p("Detailed descriptions on GitHub:", style='margin:0'),
-            ui.p(ui.tags.a("Spectrum preprocessing transformations", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations"), target="_blank", rel="noopener noreferrer"), style='margin:0'),
-            ui.p(ui.tags.a("Parameters",href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions"), target="_blank", rel="noopener noreferrer"), style='margin:0')
+            ui.p(ui.tags.a("Spectrum preprocessing and transformations", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations"), target="_blank", rel="noopener noreferrer"), style='margin:0'),
+            ui.p(ui.tags.a("Parameters to tune",href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions"), target="_blank", rel="noopener noreferrer"), style='margin:0')
             ),
         inputs_columns,
         run_button_plot_spectra,
@@ -3180,8 +3180,8 @@ def run_spec_lib_matching_ui(platform: str):
                       "background:#f8f9fa; overflow:auto;"},
             ui.p(ui.strong("Detailed documentation:"), style='margin:0'),
 
-            ui.p(ui.tags.a("Spectrum preprocessing transformations", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations"), target="_blank", rel="noopener noreferrer"), style='margin:0'),
-            ui.p(ui.tags.a("Parameters", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions"), target="_blank", rel="noopener noreferrer"), style='margin:0')
+            ui.p(ui.tags.a("Spectrum preprocessing and transformations", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations"), target="_blank", rel="noopener noreferrer"), style='margin:0'),
+            ui.p(ui.tags.a("Parameters to tune", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions"), target="_blank", rel="noopener noreferrer"), style='margin:0')
             ),
         inputs_columns,
         run_button_spec_lib_matching,

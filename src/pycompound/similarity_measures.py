@@ -1,7 +1,7 @@
 
 ##### Similarity Score Functions #####
-# Note that the input for all similarity measures are two 1-d np arrays of the same length. 
-# These 1-d arrays must be normalized to sum to 1 for the Shannon, Renyi, and Tsallis Entropy Similarity Measures.
+# Note that the input for all similarity measures is two 1-d np arrays of the same length. 
+# These 1-d arrays must be normalized to sum to 1 for the Shannon, Rényi, and Tsallis Entropy Similarity Measures.
 
 from .processing import *
 import scipy.stats
@@ -31,7 +31,7 @@ def S_shannon(ints_a, ints_b):
     This similarity function was presented by: 
     Li, Y.; Kind, T.; Folz, J.; Vaniya, A.; Mehta, S. S.; Fiehn, O.
     Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. 
-    * Note that since scipy.stats.entropy normalizes the input vector to sum to 1, vec1 and vec1 need not be normalized when computing ent_ab
+    * Note that since scipy.stats.entropy normalizes the input vector to sum to 1, vec1 and vec2 need not be normalized when computing ent_ab
     '''
 
     ent_a = scipy.stats.entropy(ints_a)
@@ -42,9 +42,9 @@ def S_shannon(ints_a, ints_b):
 
 def S_renyi(ints_a, ints_b, q):
     '''
-    Renyi Entropy Similarity Measure
-    * This is a novel similarity measure which generalizes the Shannon Entropy Similarity Measure
-    * The Renyi Similarity Measure approaches the Shannon Entropy Similiarity Measure as q approaches 1
+    Rényi Entropy Similarity Measure
+    * This is a novel similarity measure that generalizes the Shannon Entropy Similarity Measure
+    * The Rényi Similarity Measure approaches the Shannon Entropy Similarity Measure as q approaches 1
     * ints_a and ints_b must be normalized to sum to 1
     '''
     if q == 1:
@@ -61,8 +61,8 @@ def S_renyi(ints_a, ints_b, q):
 def S_tsallis(ints_a, ints_b, q):
     '''
     Tsallis Entropy Similarity Measure
-    * This is a novel similarity measure which generalizes the Shannon Entropy Similarity Measure
-    * The Tsallis Similarity Measure approaches the Shannon Entropy Similiarity Measure as q approaches 1
+    * This is a novel similarity measure that generalizes the Shannon Entropy Similarity Measure
+    * The Tsallis Similarity Measure approaches the Shannon Entropy Similarity Measure as q approaches 1
     * ints_a and ints_b must be normalized to sum to 1
     '''
     if q == 1:

@@ -136,7 +136,7 @@ def remove_noise(spec, nr):
     nr: positive float
 
     output:
-    Nx2 np array representing a mass spectrum with low-intensity peaks assigned intensity of 0
+    Nx2 np array representing a mass spectrum with low-intensity peaks assigned an intensity of 0
     '''
 
     if spec.shape[0] > 1:
@@ -223,8 +223,8 @@ def match_peaks_in_spectra(spec_a, spec_b, window_size):
     to obtain two lists of intensities of the same length
 
     input:
-    spec_a: Nx2 np array with first column being mass/charge and second column being intensity
-    spec_b: Mx2 np array with first column being mass/charge and second column being intensity
+    spec_a: Nx2 np array with the first column being mass/charge and the second column being intensity
+    spec_b: Mx2 np array with the first column being mass/charge and the second column being intensity
     window_size: window-size parameter
 
     output:

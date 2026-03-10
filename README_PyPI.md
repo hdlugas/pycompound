@@ -56,7 +56,7 @@ pip install git+https://github.com/hdlugas/pycompound.git
 
 ## 4. Running PyCompound
 ### Run the Toy Examples
-With the repository cloned and the environment active, you can now run the Python package examples. Navigate to the [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) section below and copy the code into a Python script or interpreter. Since you are in the pycompound root directory, the paths to tests/data/ will work automatically.
+With the repository cloned and the environment active, you can now run the Python package examples. Navigate to the [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) section on the GitHub repository and copy the code into a Python script or interpreter. Since you are in the pycompound root directory, the paths to tests/data/ will work automatically.
 
 ### Launch the Shiny App
 The Shiny app requires the www/ folder to display correctly. Since you have cloned the repository, you can launch it immediately:

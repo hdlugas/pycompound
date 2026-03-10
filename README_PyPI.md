@@ -13,7 +13,7 @@ Before installing, ensure your system is prepared for the specific requirements 
 ### Windows Users (Setup & Dependencies)
 Windows users should use the Anaconda PowerShell Prompt to ensure all paths are configured correctly.
 
-1. Initial Setup: If you do not have a Python manager, download and install Miniconda [(https://docs.anaconda.com/miniconda/)](https://docs.anaconda.com/miniconda/).
+1. Initial Setup: If you do not have a Python manager, download and install Miniconda ([https://docs.anaconda.com/miniconda/](https://docs.anaconda.com/miniconda/)).
 2. Open the Prompt: Click Start, search for "Anaconda PowerShell Prompt", and open it.
 3. Install Core Tools: Run the following to install the required data libraries and Git:
 ```

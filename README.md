@@ -14,16 +14,16 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
    - [2.1 Spectrum Preprocessing and Transformations](#spec-preprocessing-transformations)
    - [2.2 Similarity Measures](#similarity-measures)
 - [3. Usage](#usage)
-   - [3.1 Parameter descriptions](#param_descriptions)
-   - [3.2 Obtain LC-MS/MS or GC-MS library from MGF, mzML, or cdf file](#process-data)
-   - [3.3 Run spectral library matching](#run-spec-lib-matching)
-   - [3.4 Tune parameters](#tuning)
-   - [3.5 Plot a query spectrum against a reference spectrum before and after spectrum preprocessing transformations](#plotting)
-   - [3.6 Shiny application](#shiny)
-- [4. Toy examples](#toy-examples)
-  - [4.1 Python package](#toy-examples-python-package)
-  - [4.2 CLI wrapper](#toy-examples-cli-wrapper)
-  - [4.3 Shiny](#toy-examples-shiny)
+   - [3.1 Parameter Descriptions](#param_descriptions)
+   - [3.2 Obtain an LC-MS/MS or GC-MS Library from MGF, mzML, cdf, msp, or json Files](#process-data)
+   - [3.3 Run Spectral Library Matching](#run-spec-lib-matching)
+   - [3.4 Tune Parameters](#tuning)
+   - [3.5 Plot a Query Spectrum Against a Reference Spectrum Before and After Spectrum Preprocessing and Transformations](#plotting)
+   - [3.6 Shiny Application](#shiny)
+- [4. Toy Examples](#toy-examples)
+  - [4.1 Python Package](#toy-examples-python-package)
+  - [4.2 CLI Wrapper](#toy-examples-cli-wrapper)
+  - [4.3 Shiny Application](#toy-examples-shiny)
 - [5. Key References](#key-references)
 - [6. Bugs/Questions?](#bugs-questions)
 
@@ -237,7 +237,7 @@ PyCompound has three main capabilities:
 These tasks are implemented separately for the cases of (i) NRMS and (ii) HRMS data due to the different spectrum preprocessing transformations stemming from a different format in the mass to charge (m/z) ratios in NRMS vs HRMS data. Example scripts that implement these tasks can be found in the tests directory.
 
 <a name="param_descriptions"></a>
-### 3.1 Parameter descriptions
+### 3.1 Parameter Descriptions
 
 For the function build_library_from_raw_data:
 ```
@@ -338,7 +338,7 @@ Parameters specific to generate_plots_on_HRMS_data and generate_plots_on_NRMS_da
 
 
 <a name="process-data"></a>
-### 3.2 Obtain LC-MS/MS or GC-MS library from MGF, mzML, cdf, msp, or json file
+### 3.2 Obtain an LC-MS/MS or GC-MS Library from MGF, mzML, cdf, msp, or json Files
 To obtain a text file of LC-MS/MS spectra in the format necessary for spectral library matching from raw data in the form of an mgf, mzML, msp, json, or cdf file inside Python, one can run:
 ```
 from pycompound.build_library import build_library_from_raw_data
@@ -351,7 +351,7 @@ Since the other functionality provided by PyCompound is capable of being directl
 Full LC-MS/MS and GC-MS reference libraries are available at the Zenodo database ([https://zenodo.org/records/12786324](https://zenodo.org/records/12786324)). 
 
 <a name="run-spec-lib-matching"></a>
-### 3.3 Run spectral library matching
+### 3.3 Run Spectral Library Matching
 The files tests/test_spec_lib_matching.py, tests/test_spec_lib_matching_CLI, and tests/example_code_for_python_use.py demonstrate how some of the spectrum preprocessing functionality and similarity measures can be implemented either directly in Python or in the CLI wrapper. The two main functions - one for HRMS data and one for NRMS data - can be implemented as shown below inside Python:
 ```
 from pycompound.spec_lib_matching import run_spec_lib_matching_on_HRMS_data
@@ -451,12 +451,12 @@ python spec_lib_matching_CLI.py \
         --output_similarity_scores ${PWD}/../tests/output_similarity_scores_NRMS.txt
 ```
 
-For a user who may wish to incorporate our transformations and similarity measures directly in their python code similar to the example script tests/example_code_for_python_use.py, the available transformations and similarity measures are:
+For a user who may wish to incorporate our transformations and similarity measures directly in their Python code, similar to the example script tests/example_code_for_python_use.py, the available transformations and similarity measures are:
 ```
 # Weight factor transformation
 wf_transform(spec_mzs, spec_ints, wf_mz, wf_int)
 """
-Perform weight factor transformation on a spectrum
+Perform a weight factor transformation on a spectrum
 Args:
    spec_mzs: 1d numpy array representing mass/charge values 
    spec_ints: 1d numpy array representing intensity values 
@@ -601,7 +601,7 @@ Returns:
 
 
 <a name="tuning"></a>
-### 3.4 Tune parameters
+### 3.4 Tune Parameters
 Note that in order to tune parameters such as noise_threshold, LET_threshold, etc., one must have a query library with compounds whose ground truth ID is known (e.g., from targeted metabolomics experiments). PyCompound offers two different methods of tuning parameters: one being an exhaustive grid search of pre-specified values, and the other being an optimization approach using differential evolution to optimize continuous parameters with respect to accuracy. The usage of the functions to tune parameters within Python is:
 ```
 from pycompound.spec_lib_matching import tune_params_on_HRMS_data_grid
@@ -728,7 +728,7 @@ python ../src/pycompound/tuning_CLI_DE.py \
 
 
 <a name="plotting"></a>
-### 3.5 Plot a query spectrum against a reference spectrum before and after spectrum preprocessing transformations
+### 3.5 Plot a Query Spectrum Against a Reference Spectrum Before and After Spectrum Preprocessing and Transformations
 These functions plot a query spectrum against a reference spectrum, both before and after preprocessing. They support HRMS and NRMS data and can be used directly within Python with usage:
 ```
 from pycompound.plot_spectra import generate_plots_on_HRMS_data
@@ -861,16 +861,16 @@ This plot compares two MS/MS spectra: Spectrum ID 1 (unknown, in blue) and Spect
 
 
 <a name="shiny"></a>
-### 3.6 Shiny application
+### 3.6 Shiny Application
 PyCompound is also available as a Shiny application. The Shiny application offers the same functionality as the Python package and its CLI interface. Simply run the Python script app.py with a command such as <shiny run --launch-browser app.py> to launch the Shiny application. Alternatively, one can use the publicly available web version at [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392). If you plan to perform some heavy computations, such as parameter tuning on large datasets, we recommend either using the Python package, its CLI wrapper, or running the Shiny app on your local machine to take advantage of multithreading (which isn't offered on the POSIT-hosted Shiny app).
 
 
 <a name="toy-examples"></a>
-## 4. Toy examples
+## 4. Toy Examples
 In this section, code snippets illustrating some of PyCompound's functionality are provided. To run these examples, one must be in the parent directory of the cloned PyCompound GitHub repository and have the necessary dependencies installed. Scripts that implement a wider variety of test cases can be found in the tests directory.
 
 <a name="toy-examples-python-package"></a>
-## 4.1 Python package
+## 4.1 Python Package
 ```
 from pycompound.plot_spectra import generate_plots_on_NRMS_data
 from pycompound.spec_lib_matching import run_spec_lib_matching_on_NRMS_data
@@ -922,7 +922,7 @@ tune_params_DE(
 ```
 
 <a name="toy-examples-cli-wrapper"></a>
-## 4.2 CLI wrapper 
+## 4.2 CLI Wrapper 
 ```
 QUERY_PATH1=${PWD}/tests/data/gcms_query.txt
 QUERY_PATH2=${PWD}/tests/data/gcms_query_tuning.txt
@@ -971,11 +971,11 @@ python src/pycompound/tuning_CLI_DE.py \
 ```
 
 <a name="toy-examples-shiny"></a>
-## 4.3 Shiny app
+## 4.3 Shiny Application
 Video tutorials for the PyCompound Shiny application are available on YouTube (https://www.youtube.com/@PyCompound).
 
 <a name="key-references"></a>
-## 5. Key references
+## 5. Key References
 Dlugas, H., Zhang, X., Bao, J., Li, J., Kato, I., Kim, S. (2026). PyCompound: a versatile Python package for flexible spectral-library matching in mass spectrometry-based compound identification. Submitted.
 
 Dlugas, H., Zhang, X., Kim, S. (2025). Comparative analysis of continuous similarity measures for compound identification in mass spectrometry-based metabolomics. Chemometrics and Intelligent Laboratory Systems, 263, 105417. https://doi.org/10.1016/j.chemolab.2025.105417.

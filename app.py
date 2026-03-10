@@ -3038,14 +3038,38 @@ def plot_spectra_ui(platform: str):
     return ui.div(
     ui.TagList(
         ui.h2("Plot Spectra"),
-        ui.div(
-            {"class": "form-control",
-             "style": "max-width:800px; max-height:140px; padding:10px; "
-                      "background:#f8f9fa; overflow:auto; margin-bottom:8px;"},
-            ui.p("Detailed descriptions on GitHub:", style='margin:0'),
-            ui.p(ui.tags.a("Spectrum preprocessing and transformations", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations"), target="_blank", rel="noopener noreferrer"), style='margin:0'),
-            ui.p(ui.tags.a("Parameters to tune",href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions"), target="_blank", rel="noopener noreferrer"), style='margin:0')
-            ),
+        
+ui.div(
+    {"class": "form-control",
+     "style": "max-width:800px; max-height:140px; padding:10px; "
+              "background:#f8f9fa; overflow:auto; margin-bottom:8px;"},
+
+    ui.p(ui.strong("Detailed descriptions (GitHub):"), style="margin-bottom:4px"),
+
+    ui.tags.ul(
+
+        ui.tags.li(
+            ui.tags.a(
+                "Spectrum preprocessing and transformation methods",
+                href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations",
+                target="_blank",
+                rel="noopener noreferrer"
+            )
+        ),
+
+        ui.tags.li(
+            ui.tags.a(
+                "Tunable preprocessing parameters",
+                href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions",
+                target="_blank",
+                rel="noopener noreferrer"
+            )
+        ),
+
+        style="margin-top:0px; margin-bottom:0px;"
+    )
+),
+        
         inputs_columns,
         run_button_plot_spectra,
         back_button,
@@ -3174,15 +3198,37 @@ def run_spec_lib_matching_ui(platform: str):
     return ui.div(
         ui.h2("Run Spectral Library Matching"),
 
-        ui.div(
-            {"class": "form-control",
-             "style": "max-width: 800px; max-height: 200px; padding: 10px; "
-                      "background:#f8f9fa; overflow:auto;"},
-            ui.p(ui.strong("Detailed documentation:"), style='margin:0'),
+ui.div(
+    {"class": "form-control",
+     "style": "max-width:800px; max-height:140px; padding:10px; "
+              "background:#f8f9fa; overflow:auto; margin-bottom:8px;"},
 
-            ui.p(ui.tags.a("Spectrum preprocessing and transformations", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations"), target="_blank", rel="noopener noreferrer"), style='margin:0'),
-            ui.p(ui.tags.a("Parameters to tune", href=("https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions"), target="_blank", rel="noopener noreferrer"), style='margin:0')
-            ),
+    ui.p(ui.strong("Detailed descriptions (GitHub):"), style="margin-bottom:4px"),
+
+    ui.tags.ul(
+
+        ui.tags.li(
+            ui.tags.a(
+                "Spectrum preprocessing and transformation methods",
+                href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations",
+                target="_blank",
+                rel="noopener noreferrer"
+            )
+        ),
+
+        ui.tags.li(
+            ui.tags.a(
+                "Tunable preprocessing parameters",
+                href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions",
+                target="_blank",
+                rel="noopener noreferrer"
+            )
+        ),
+
+        style="margin-top:0px; margin-bottom:0px;"
+    )
+),
+        
         inputs_columns,
         run_button_spec_lib_matching,
         back_button,
@@ -3816,39 +3862,11 @@ def server(input, output, session):
                     ui.p("PyCompound is a Python-based tool for spectral library matching of both high-resolution mass spectrometry (HRMS) data, such as liquid chromatography-tandem mass spectrometry (LC-MS/MS), and nominal-resolution mass spectrometry (NRMS) data, such as gas chromatography-mass spectrometry (GC-MS)."),
                     ui.p("PyCompound provides a flexible framework for spectrum preprocessing and similarity assessment. Available preprocessing transformations include filtering by mass-to-charge (m/z) and/or intensity, weight-factor transformation, low-entropy transformation, centroiding, noise removal, and spectral matching. Users can flexibly choose the order of these preprocessing steps and tune their associated parameters using either grid search or differential evolution (DE) optimization."),
                     ui.p("PyCompound supports a broad set of similarity measures, including the Cosine similarity (dot product), three entropy-based similarity measures (Shannon, Tsallis, and Rényi), and 15 binary similarity measures (Jaccard, Dice, 3W-Jaccard, Sokal–Sneath, Binary Cosine, Mountford, McConnaughey, Driver-Kroeber, Simpson, Braun-Banquet, Fager-McGowan, Kulczynski, Intersection, Hamming, and Hellinger). In addition, users can construct mixture similarity scores that combine all of a selected subset of the 19 supported similarity measures."),
-                    style="margin-top:10px; text-align:left; font-size:18px; font-weight:500"
+                    style="margin-top:0px; text-align:left; font-size:18px; font-weight:500"
                 ),
-                ui.div({"class":"form-control", "style": "max-width: 800px; max-height: 200px; padding: 10px; background:#f8f9fa"},
-                       ui.p(ui.strong("Documentation and Resources:"), style='margin:0'),
-                        ui.HTML(''
-                            '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations" '
-                            'target="_blank" rel="noopener noreferrer">'
-                            'Spectrum preprocessing and transformations </a>'),
-                       ui.HTML("<br>"),
-                        ui.HTML(''
-                            '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions" '
-                            'target="_blank" rel="noopener noreferrer">'
-                            'Parameters to tune </a>'),
-                       ui.HTML("<br>"),
-                        ui.HTML(''
-                            '<a href="https://www.youtube.com/@PyCompound" '
-                            'target="_blank" rel="noopener noreferrer">'
-                            'Video tutorial (YouTube) </a>'),
-                       ui.HTML("<br>"),
-                        ui.HTML(''
-                            '<a href="https://pypi.org/project/pycompound/" '
-                            'target="_blank" rel="noopener noreferrer">'
-                            'Python API version </a>'),
-                       ui.HTML("<br>"),
-                        ui.HTML(''
-                            '<a href="https://github.com/hdlugas/pycompound" '
-                            'target="_blank" rel="noopener noreferrer">'
-                            'Command-line interface (CLI) version </a>'),
-                       ui.HTML("<br>"),
-                        ui.HTML(''
-                            '<a href="https://zenodo.org/records/12786324" '
-                            'target="_blank" rel="noopener noreferrer">'
-                            'EI-based WebNIST GC-MS and ESI-based GNPS LC-MS/MS datasets </a>')),                
+
+ui.hr(style="margin-top:20px; margin-bottom:20px; border-top:2px solid #87CEEB"),
+                
                 ui.div("Select options:", style="margin-top:30px; text-align:left; font-size:24px; font-weight:bold"),
                 ui.div(ui.input_radio_buttons("chromatography_platform",
                                               "Specify chromatography platform:",
@@ -3858,6 +3876,135 @@ def server(input, output, session):
                 ui.input_action_button("run_spec_lib_matching", "Identify compounds", style="font-size:24px; padding:20px 40px; width:340px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.input_action_button("run_parameter_tuning_grid", "Tune parameters (grid search)", style="font-size:24px; padding:20px 40px; width:450px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.input_action_button("run_parameter_tuning_DE", "Tune parameters (DE optimization)", style="font-size:24px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),
+ui.hr(style="margin-top:20px; margin-bottom:20px; border-top:2px solid #87CEEB"),
+
+ui.div(style="height:20px"),
+
+ui.div(
+    {
+        "class": "form-control",
+        "style": "max-width:800px; min-height:380px; padding:12px; background:#f8f9fa"
+    },
+
+    ui.p(ui.strong("Documentation and Resources"), style="margin-bottom:8px"),
+
+    # Project homepage line
+    ui.p(
+        ui.HTML(
+            '🌐 <a href="https://github.com/hdlugas/pycompound" '
+            'target="_blank" rel="noopener noreferrer" '
+            'title="Main PyCompound project repository with documentation, source code, and updates">'
+            'PyCompound project homepage (GitHub)</a>'
+        ),
+        style="margin-top:0px; margin-bottom:14px;"
+    ),
+
+    # Learn section
+    ui.p(ui.strong("📘 Learn about PyCompound"),
+         style="margin-top:6px; margin-bottom:2px"),
+    ui.p(
+        "Read about preprocessing methods, parameter tuning, and how to use this Shiny app.",
+        style="font-size:15px; margin-top:0px; margin-bottom:4px"
+    ),
+
+    ui.tags.ul(
+
+        ui.tags.li(
+            ui.HTML(
+                '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations" '
+                'target="_blank" rel="noopener noreferrer" '
+                'title="Overview of preprocessing methods such as filtering, centroiding, noise removal, and spectral transformations">'
+                'Spectrum preprocessing and transformation methods</a>'
+            )
+        ),
+
+        ui.tags.li(
+            ui.HTML(
+                '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions" '
+                'target="_blank" rel="noopener noreferrer" '
+                'title="Descriptions of parameters used in preprocessing and optimization">'
+                'Tunable preprocessing parameters</a>'
+            )
+        ),
+
+        ui.tags.li(
+            ui.HTML(
+                '<a href="https://www.youtube.com/@PyCompound" '
+                'target="_blank" rel="noopener noreferrer" '
+                'title="Step-by-step tutorial demonstrating how to use the PyCompound Shiny interface">'
+                'Shiny app tutorial video (YouTube)</a>'
+            )
+        ),
+
+        style="margin-top:0px; margin-bottom:14px;"
+    ),
+
+    # Local installation
+    ui.p(
+        ui.HTML(
+            '🚀 <a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#create-conda-env" '
+            'target="_blank" rel="noopener noreferrer" '
+            'title="Instructions for installing and running the PyCompound Shiny interface locally using a conda environment">'
+            'Install and run the PyCompound Shiny app locally</a>'
+        ),
+        style="margin-top:4px; margin-bottom:14px;"
+    ),
+
+    # Other interfaces section
+    ui.p(ui.strong("⚙️ Other PyCompound Interfaces"),
+         style="margin-top:20px; margin-bottom:2px"),
+    ui.p(
+        "Alternative ways to run PyCompound outside the Shiny app for scripting, batch processing, or computationally intensive analyses.",
+        style="font-size:15px; margin-top:0px; margin-bottom:4px"
+    ),
+
+    ui.tags.ul(
+
+        ui.tags.li(
+            ui.HTML(
+                '<a href="https://pypi.org/project/pycompound/" '
+                'target="_blank" rel="noopener noreferrer" '
+                'title="Python package for scripted workflows and notebook-based analyses">'
+                'Python package (PyPI)</a>'
+            )
+        ),
+
+        ui.tags.li(
+            ui.HTML(
+                '<a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#usage" '
+                'target="_blank" rel="noopener noreferrer" '
+                'title="Command-line interface for batch spectral matching and larger workflows">'
+                'Command-line interface (CLI)</a>'
+            )
+        ),
+
+        style="margin-top:0px; margin-bottom:6px;"
+    ),
+
+    # Data section
+    ui.p(ui.strong("📦 Reference Spectral Libraries"),
+         style="margin-top:20px; margin-bottom:2px"),
+    ui.p(
+        "Download the large reference libraries used for compound identification with PyCompound.",
+        style="font-size:15px; margin-top:0px; margin-bottom:4px"
+    ),
+
+    ui.tags.ul(
+
+        ui.tags.li(
+            ui.HTML(
+                '<a href="https://zenodo.org/records/12786324" '
+                'target="_blank" rel="noopener noreferrer" '
+                'title="Large reference spectral libraries from WebNIST for GC-MS and GNPS for LC-MS/MS">'
+                'WebNIST (GC-MS) and GNPS (LC-MS/MS) spectral library datasets</a>'
+            )
+        ),
+
+        style="margin-top:0px; margin-bottom:0px;"
+    )
+),
+              
+                
                 ui.div("Key references:", style="margin-top:35px; text-align:left; font-size:24px; font-weight:bold"),
                 ui.div(ui.HTML('Dlugas, H., Zhang, X., Bao, J., Li, J., Kato, I., Kim, S. (2026). PyCompound: a versatile Python package for flexible spectral-library matching in mass spectrometry-based compound identification. Submitted.'), style="text-align:left; font-size:14px; font-weight:500"),
                 ui.div(ui.HTML('Dlugas, H., Zhang, X., Kim, S. (2025). Comparative analysis of continuous similarity measures for compound identification in mass spectrometry-based metabolomics. Chemometrics and Intelligent Laboratory Systems, 263, 105417. <a href="https://doi.org/10.1016/j.chemolab.2025.105417", target="_blank">https://doi.org/10.1016/j.chemolab.2025.105417</a>.'), style="text-align:left; font-size:14px; font-weight:500"),

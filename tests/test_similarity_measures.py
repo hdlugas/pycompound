@@ -1,5 +1,5 @@
 
-# this script runs some tests on the similarity measures to ensure they have the expected behavior when computing the similarity between (1) two completely dissimilar spectra and (2) two identical spectra
+# This script runs some tests on the similarity measures to ensure they have the expected behavior when computing the similarity between (1) two completely dissimilar spectra and (2) two identical spectra
 from pycompound.similarity_measures import *
 import numpy as np
 

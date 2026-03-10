@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pycompound"
-version = "0.1.16"
+version = "0.1.17"
 authors = [
   { name="Hunter Dlugas", email="fy7392@wayne.edu" },
 ]

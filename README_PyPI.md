@@ -47,7 +47,7 @@ conda activate pycompound_env
 ```
 pip install pycompound
 ```
-Note: To install a specific version, for example, you can install version 0.1.16 by: `pip install pycompound==0.1.16`
+Note: To install a specific version, for example, you can install version 0.1.17 by: `pip install pycompound==0.1.17`
 
 ### Option B: Install from GitHub (Development)
 ```

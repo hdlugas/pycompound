@@ -3883,7 +3883,7 @@ ui.div(style="height:20px"),
 ui.div(
     {
         "class": "form-control",
-        "style": "max-width:800px; min-height:380px; padding:12px; background:#f8f9fa"
+        "style": "max-width:1200px; min-height:380px; padding:12px; background:#f8f9fa"
     },
 
     ui.p(ui.strong("Documentation and Resources"), style="font-size:22px; margin-bottom:12px; color:#2c3e50;"),

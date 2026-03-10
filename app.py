@@ -3872,7 +3872,7 @@ ui.hr(style="margin-top:20px; margin-bottom:20px; border-top:2px solid #87CEEB")
                                               "Specify chromatography platform:",
                                               {"HRMS": "HRMS (e.g. LC-MS/MS)", "NRMS": "NRMS (e.g. GC-MS)"}),
                        style="font-size:18px; margin-top:10px; max-width:none"),
-                ui.input_action_button("plot_spectra", ui.HTML("Plot & Compare<br>two spectra"), style="font-size:24px; padding:20px 40px; width:310px; height:100px; margin-top:10px; margin-right:50px"),
+                ui.input_action_button("plot_spectra", ui.HTML("Plot & Compare<br>two spectra"), style="font-size:24px; width:310px; height:100px; margin-top:10px; margin-right:50px; display:flex; align-items:center; justify-content:center; text-align:center;"),
                 ui.input_action_button("run_spec_lib_matching", ui.HTML("Identify<br>compounds"), style="font-size:24px; padding:20px 40px; width:310px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.input_action_button("run_parameter_tuning_grid", ui.HTML("Tune parameters<br>(Grid search)"), style="font-size:24px; padding:20px 40px; width:310px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.input_action_button("run_parameter_tuning_DE", ui.HTML("Tune parameters<br>(DE optimization)"), style="font-size:24px; padding:20px 40px; width:310px; height:100px; margin-top:10px; margin-right:50px"),

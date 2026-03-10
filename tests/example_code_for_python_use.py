@@ -28,7 +28,7 @@ df_reference = pd.read_csv(f'{Path.cwd()}/data/trimmed_GNPS_reference_library.tx
 unique_query_ids = df_query['id'].unique()
 unique_reference_ids = df_reference['id'].unique()
 
-# compute the similarity score between each query spectrum/spectra and all reference spectra and record the predicted compound for each query along with its corresponding similarity score
+# compute the similarity score between each query spectrum/spectra and all reference spectra, and record the predicted compound for each query along with its corresponding similarity score
 preds_cosine = []
 preds_shannon = []
 preds_tsallis = []
@@ -119,7 +119,7 @@ min_mz = np.min([np.min(df_query['mz_ratio']), np.min(df_reference['mz_ratio'])]
 max_mz = np.max([np.max(df_query['mz_ratio']), np.max(df_reference['mz_ratio'])])
 mzs = np.linspace(min_mz,max_mz,(max_mz-min_mz+1))
 
-# compute the similarity score between each query spectrum/spectra and all reference spectra and record the predicted compound for each query along with its corresponding similarity score
+# compute the similarity score between each query spectrum/spectra and all reference spectra, and record the predicted compound for each query along with its corresponding similarity score
 preds_cosine = []
 preds_shannon = []
 preds_tsallis = []

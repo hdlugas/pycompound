@@ -3886,21 +3886,21 @@ ui.div(
         "style": "max-width:800px; min-height:380px; padding:12px; background:#f8f9fa"
     },
 
-    ui.p(ui.strong("Documentation and Resources"), style="margin-bottom:8px"),
+    ui.p(ui.strong("Documentation and Resources"), style="font-size:22px; margin-bottom:12px; color:#2c3e50;"),
 
     # Project homepage line
     ui.p(
         ui.HTML(
-            '■ <a href="https://github.com/hdlugas/pycompound" '
+            '▷ <a href="https://github.com/hdlugas/pycompound" '
             'target="_blank" rel="noopener noreferrer" '
             'title="Main PyCompound project repository with documentation, source code, and updates">'
-            'PyCompound project homepage (GitHub)</a>'
+            '<strong>PyCompound project homepage (GitHub)</strong></a>'
         ),
         style="margin-top:0px; margin-bottom:14px;"
     ),
 
     # Learn section
-    ui.p(ui.strong("■ Learn about PyCompound"),
+    ui.p(ui.strong("▷ Learn about PyCompound"),
          style="margin-top:6px; margin-bottom:2px"),
     ui.p(
         "Read about preprocessing methods, parameter tuning, and how to use this Shiny app.",
@@ -3942,16 +3942,16 @@ ui.div(
     # Local installation
     ui.p(
         ui.HTML(
-            '■ <a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#create-conda-env" '
+            '▷ <a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#create-conda-env" '
             'target="_blank" rel="noopener noreferrer" '
             'title="Instructions for installing and running the PyCompound Shiny interface locally using a conda environment">'
-            'Install and run the PyCompound Shiny app locally</a>'
+            '<strong>Install and run the PyCompound Shiny app locally</strong></a>'
         ),
         style="margin-top:4px; margin-bottom:14px;"
     ),
 
     # Other interfaces section
-    ui.p(ui.strong("■ Other PyCompound Interfaces"),
+    ui.p(ui.strong("▷ Other PyCompound Interfaces"),
          style="margin-top:20px; margin-bottom:2px"),
     ui.p(
         "Alternative ways to run PyCompound outside the Shiny app for scripting, batch processing, or computationally intensive analyses.",
@@ -3982,7 +3982,7 @@ ui.div(
     ),
 
     # Data section
-    ui.p(ui.strong("■ Reference Spectral Libraries"),
+    ui.p(ui.strong("▷ Reference Spectral Libraries"),
          style="margin-top:20px; margin-bottom:2px"),
     ui.p(
         "Download the large reference libraries used for compound identification with PyCompound.",

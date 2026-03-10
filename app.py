@@ -3891,10 +3891,10 @@ ui.div(
     # Project homepage line
     ui.p(
         ui.HTML(
-            '▷ <a href="https://github.com/hdlugas/pycompound" '
+            '<strong>▷ <a href="https://github.com/hdlugas/pycompound" '
             'target="_blank" rel="noopener noreferrer" '
             'title="Main PyCompound project repository with documentation, source code, and updates">'
-            '<strong>PyCompound project homepage (GitHub)</strong></a>'
+            'PyCompound project homepage (GitHub)</a></strong>'
         ),
         style="margin-top:0px; margin-bottom:14px;"
     ),
@@ -3942,10 +3942,10 @@ ui.div(
     # Local installation
     ui.p(
         ui.HTML(
-            '▷ <a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#create-conda-env" '
+            '<strong>▷ <a href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#create-conda-env" '
             'target="_blank" rel="noopener noreferrer" '
             'title="Instructions for installing and running the PyCompound Shiny interface locally using a conda environment">'
-            '<strong>Install and run the PyCompound Shiny app locally</strong></a>'
+            'Install and run the PyCompound Shiny app locally</a></strong>'
         ),
         style="margin-top:4px; margin-bottom:14px;"
     ),

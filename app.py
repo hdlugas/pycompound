@@ -3875,7 +3875,7 @@ ui.hr(style="margin-top:20px; margin-bottom:20px; border-top:2px solid #87CEEB")
                 ui.input_action_button("plot_spectra", "Plot & compare two spectra", style="font-size:24px; padding:20px 40px; width:400px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.input_action_button("run_spec_lib_matching", "Identify compounds", style="font-size:24px; padding:20px 40px; width:340px; height:100px; margin-top:10px; margin-right:50px"),
                 ui.input_action_button("run_parameter_tuning_grid", "Tune parameters (grid search)", style="font-size:24px; padding:20px 40px; width:450px; height:100px; margin-top:10px; margin-right:50px"),
-                ui.input_action_button("run_parameter_tuning_DE", "Tune parameters (DE optimization)", style="font-size:24px; padding:20px 40px; width:550px; height:100px; margin-top:10px; margin-right:50px"),
+                ui.input_action_button("run_parameter_tuning_DE", "Tune parameters (DE optimization)", style="font-size:24px; padding:20px 40px; width:500px; height:100px; margin-top:10px; margin-right:50px"),
 ui.hr(style="margin-top:20px; margin-bottom:20px; border-top:2px solid #87CEEB"),
 
 ui.div(style="height:20px"),

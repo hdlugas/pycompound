@@ -3865,18 +3865,29 @@ def server(input, output, session):
                     style="margin-top:0px; text-align:left; font-size:18px; font-weight:500"
                 ),
 
-ui.hr(style="margin-top:20px; margin-bottom:20px; border-top:2px solid #87CEEB"),
-                
-                ui.div("Select options:", style="margin-top:30px; text-align:left; font-size:24px; font-weight:bold"),
+ui.hr(style="margin-top:20px; margin-bottom:25px; border-top:2px solid #87CEEB"),
+    
+    ui.div(            
+                ui.div("Step 1: Choose chromatography platform", style="font-size:24px; font-weight:bold; margin-bottom:10px;"),
                 ui.div(ui.input_radio_buttons("chromatography_platform",
-                                              "Specify chromatography platform:",
-                                              {"HRMS": "HRMS (e.g. LC-MS/MS)", "NRMS": "NRMS (e.g. GC-MS)"}),
-                       style="font-size:18px; margin-top:10px; max-width:none"),
+                                              None,
+                                              {
+                                                  "HRMS": "HRMS (e.g., LC-MS/MS)", 
+                                                  "NRMS": "NRMS (e.g., GC-MS)"
+                                              },
+                                              inline=True
+                                             ),
+                       style="font-size:20px; margin-bottom:30px;"
+                ),
+                ui.div("Step 2: Choose an analysis option", style="font-size:24px; font-weight:bold; margin-bottom:15px;"),
                 ui.input_action_button("plot_spectra", ui.HTML("Plot & Compare<br>two spectra"), style="font-size:24px; padding:15px 40px; width:310px; height:100px; line-height:1.2; margin-top:10px; margin-right:50px;"),
                 ui.input_action_button("run_spec_lib_matching", ui.HTML("Identify<br>compounds"), style="font-size:24px; padding:15px 40px; width:310px; height:100px; line-height:1.2; margin-top:10px; margin-right:50px;"),
                 ui.input_action_button("run_parameter_tuning_grid", ui.HTML("Tune parameters<br>(Grid search)"), style="font-size:24px; padding:15px 40px; width:310px; height:100px; line-height:1.2; margin-top:10px; margin-right:50px;"),
                 ui.input_action_button("run_parameter_tuning_DE", ui.HTML("Tune parameters<br>(DE optimization)"), style="font-size:24px; padding:15px 40px; width:310px; height:100px; line-height:1.2; margin-top:10px; margin-right:50px;"),
-ui.hr(style="margin-top:20px; margin-bottom:20px; border-top:2px solid #87CEEB"),
+        style="margin-top:25px; text-align:left;"
+    ),
+        
+ui.hr(style="margin-top:20px; margin-bottom:25px; border-top:2px solid #87CEEB"),
 
 ui.div(style="height:20px"),
 

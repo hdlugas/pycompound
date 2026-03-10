@@ -70,3 +70,14 @@ Publicly available web version: [https://connect.posit.cloud/fy7392](https://con
 #### Toy examples of the Python package and CLI versions are available in the [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) on the GitHub repository.
 
 #### Toy examples and video tutorials for the PyCompound Shiny application are available on YouTube (https://www.youtube.com/@PyCompound).
+
+# Key References
+Dlugas, H., Zhang, X., Bao, J., Li, J., Kato, I., Kim, S. (2026). PyCompound: a versatile Python package for flexible spectral-library matching in mass spectrometry-based compound identification. Submitted.
+
+Dlugas, H., Zhang, X., Kim, S. (2025). Comparative analysis of continuous similarity measures for compound identification in mass spectrometry-based metabolomics. Chemometrics and Intelligent Laboratory Systems, 263, 105417. https://doi.org/10.1016/j.chemolab.2025.105417.
+
+Kim, S., Kato, I., & Zhang, X. (2022). Comparative Analysis of Binary Similarity Measures for Compound Identification in Mass Spectrometry-Based Metabolomics. Metabolites, 12(8), 694. https://doi.org/10.3390/metabo12080694.
+
+Li, Y., Kind, T., Folz, J. et al. (2021). Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. Nat Methods, 18 1524–1531. https://doi.org/10.1038/s41592-021-01331-z.
+
+Kim, S., Koo, I., Wei, X., & Zhang, X. (2012). A method of finding optimal weight factors for compound identification in gas chromatography-mass spectrometry. Bioinformatics, 28(8), 1158-1163. https://doi.org/10.1093/bioinformatics/bts083.

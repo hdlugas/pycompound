@@ -10,7 +10,7 @@ import json
 
 def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
     '''
-    Converts mgf, mzML, cdf, json, or msp file to the necessary format for spectral library matching.
+    Converts mgf, mzML, cdf, json, or msp files to the necessary format for spectral library matching.
 
     --input_path: Path to input file (must be mgf, mzML, cdf, json, or msp file). Mandatory argument.
     --output_path: Path to output TXT file. Default: current working directory.

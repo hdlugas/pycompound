@@ -89,8 +89,8 @@ print('\n\ntest #11:')
 generate_plots_on_HRMS_data(
         query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
-        spectrum_ID1 = 212,
-        spectrum_ID2 = 100,
+        spectrum_ID1 = 'ID_1',
+        spectrum_ID2 = 'ID_2',
         LET_threshold=3,
         output_path=f'{Path.cwd()}/plots/test11.pdf')
 
@@ -266,18 +266,4 @@ generate_plots_on_HRMS_data(
         mz_min=100,
         output_path=f'{Path.cwd()}/plots/test34.pdf')
 
-print('\n\ntest #35:')
-generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query.msp',
-        reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
-        similarity_measure='shannon',
-        weights={'Cosine':0.5, 'Shannon':0.3, 'Renyi':0.1, 'Tsallis':0.1},
-        output_path=f'{Path.cwd()}/plots/test35.pdf')
-
-print('\n\ntest #36:')
-generate_plots_on_NRMS_data(
-        query_data=f'{Path.cwd()}/data/gcms_query.msp',
-        reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
-        similarity_measure='cosine',
-        output_path=f'{Path.cwd()}/plots/test36.pdf')
 

@@ -33,7 +33,7 @@ python spec_lib_matching_CLI.py \
 
 echo $'\n\n\ntest #3'
 python spec_lib_matching_CLI.py \
-        --query_data ../../tests/data/lcms_query.txt \
+        --query_data ../../tests/data/lcms_query_tuning.txt \
         --reference_data ../../tests/data/trimmed_GNPS_reference_library.txt \
         --chromatography_platform HRMS \
         --precursor_ion_mz 0.8 \

@@ -676,7 +676,8 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, pre
         q_spec_tmp = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
 
         if 'precursor_ion_mz' in df_query.columns.tolist() and 'precursor_ion_mz' in df_reference.columns.tolist() and precursor_ion_mz_tolerance != None:
-            precursor_ion_mz_tmp = df_query['precursor_ion_mz'].iloc[q_idxs_tmp[0]]
+            precursor_ion_mz_tmp = float(df_query['precursor_ion_mz'].iloc[q_idxs_tmp[0]])
+            precursor_ion_mz_tolerance = float(precursor_ion_mz_tolerance)
             df_reference_tmp = df_reference.loc[df_reference['precursor_ion_mz'].between(precursor_ion_mz_tmp-precursor_ion_mz_tolerance, precursor_ion_mz_tmp+precursor_ion_mz_tolerance, inclusive='both'),['id','mz_ratio','intensity']].copy()
         else:
             df_reference_tmp = df_reference.copy()
@@ -689,11 +690,8 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, pre
             q_spec = q_spec_tmp.copy()
             r_df = ref_groups[ref_id]
             r_spec = np.asarray(pd.concat([r_df['mz_ratio'], r_df['intensity']], axis=1).reset_index(drop=True))
-            #print('\nhere!!!!!!!!!!!!!!!')
-            #print(r_spec)
 
             is_matched = False
-
             for transformation in spectrum_preprocessing_order:
                 if np.isinf(q_spec[:, 1]).sum() > 0:
                     q_spec[:, 1] = np.zeros(q_spec.shape[0])

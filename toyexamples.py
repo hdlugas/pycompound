@@ -23,7 +23,7 @@ generate_plots_on_NRMS_data(
         output_path = f'{Path.cwd()}/python_package_plotting_example.pdf')
 
 print()
-print("Run Spectral Library Matching")
+print(">>> Run Spectral Library Matching")
 
 ##### run spectral library matching #####
 run_spec_lib_matching_on_NRMS_data(
@@ -33,7 +33,7 @@ run_spec_lib_matching_on_NRMS_data(
         print_id_results = True)
 
 print()
-print("Tune Parameters via Grid Search")
+print(">>> Tune Parameters via Grid Search")
 
 ##### tune parameters via exhaustive grid search #####
 tune_params_on_NRMS_data_grid(
@@ -43,7 +43,7 @@ tune_params_on_NRMS_data_grid(
         output_path=f'{Path.cwd()}/test_grid_tuning.txt')
 
 print()
-print("Tune Parameters via DE Optimization")
+print(">>> Tune Parameters via DE Optimization")
 
 ##### tune parameters via differential evolution optimization #####
 tune_params_DE(

@@ -177,18 +177,60 @@ Video tutorials (YouTube): https://www.youtube.com/@PyCompound
 
 Example datasets used by the Shiny app are located in `tests/data/`. The appropriate toy datasets depend on the **platform** and **analysis option**, as summarized below.
 
-| Platform | Option | Query File | Library File |
-|----------|--------|------------|--------------|
-| **NRMS** (e.g., GC-MS) | Plot & compare two spectra | `gcms_query.txt` | `trimmed_gcms_reference_library.txt` |
-| | Identify compounds | `gcms_query.txt` | `trimmed_gcms_reference_library.txt` |
-| | Tune parameters (Grid search) | `gcms_query_tuning.txt` | `trimmed_gcms_reference_library.txt` |
-| | Tune parameters (DE optimization) | `gcms_query_tuning.txt` | `trimmed_gcms_reference_library.txt` |
-| **HRMS** (e.g., LC-MS/MS) | Plot & compare two spectra | `lcms_query.txt` | `trimmed_GNPS_reference_library.txt` |
-| | Identify compounds | `lcms_query.txt` | `trimmed_GNPS_reference_library.txt` |
-| | Tune parameters (Grid search) | `lcms_query_tuning.txt` | `trimmed_GNPS_reference_library.txt` |
-| | Tune parameters (DE optimization) | `lcms_query_tuning.txt` | `trimmed_GNPS_reference_library.txt` |
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Option</th>
+<th>Query File</th>
+<th>Library File</th>
+</tr>
+</thead>
 
+<tbody>
 
+<tr>
+<td rowspan="4"><strong>NRMS</strong><br>(e.g., GC-MS)</td>
+<td>Plot &amp; Compare two spectra</td>
+<td rowspan="2"><code>gcms_query.txt</code></td>
+<td rowspan="4"><code>trimmed_gcms_reference_library.txt</code></td>
+</tr>
+
+<tr>
+<td>Identify compounds</td>
+</tr>
+
+<tr>
+<td>Tune parameters (Grid search)</td>
+<td rowspan="2"><code>gcms_query_tuning.txt</code></td>
+</tr>
+
+<tr>
+<td>Tune parameters (DE optimization)</td>
+</tr>
+
+<tr>
+<td rowspan="4"><strong>HRMS</strong><br>(e.g., LC-MS/MS)</td>
+<td>Plot &amp; Compare two spectra</td>
+<td rowspan="2"><code>lcms_query.txt</code></td>
+<td rowspan="4"><code>trimmed_GNPS_reference_library.txt</code></td>
+</tr>
+
+<tr>
+<td>Identify compounds</td>
+</tr>
+
+<tr>
+<td>Tune parameters (Grid search)</td>
+<td rowspan="2"><code>lcms_query_tuning.txt</code></td>
+</tr>
+
+<tr>
+<td>Tune parameters (DE optimization)</td>
+</tr>
+
+</tbody>
+</table>
 
 
 <a name="functionality"></a>
@@ -1119,16 +1161,60 @@ Video tutorials for the PyCompound Shiny application are available on YouTube (h
 
 Example datasets used by the Shiny app are located in `tests/data/`. The appropriate toy datasets depend on the **platform** and **analysis option**, as summarized below.
 
-| Platform | Option | Query File | Library File |
-|----------|--------|------------|--------------|
-| **NRMS** (e.g., GC-MS) | Plot & compare two spectra | `gcms_query.txt` | `trimmed_gcms_reference_library.txt` |
-| | Identify compounds | `gcms_query.txt` | `trimmed_gcms_reference_library.txt` |
-| | Tune parameters (Grid search) | `gcms_query_tuning.txt` | `trimmed_gcms_reference_library.txt` |
-| | Tune parameters (DE optimization) | `gcms_query_tuning.txt` | `trimmed_gcms_reference_library.txt` |
-| **HRMS** (e.g., LC-MS/MS) | Plot & compare two spectra | `lcms_query.txt` | `trimmed_GNPS_reference_library.txt` |
-| | Identify compounds | `lcms_query.txt` | `trimmed_GNPS_reference_library.txt` |
-| | Tune parameters (Grid search) | `lcms_query_tuning.txt` | `trimmed_GNPS_reference_library.txt` |
-| | Tune parameters (DE optimization) | `lcms_query_tuning.txt` | `trimmed_GNPS_reference_library.txt` |
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Option</th>
+<th>Query File</th>
+<th>Library File</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td rowspan="4"><strong>NRMS</strong><br>(e.g., GC-MS)</td>
+<td>Plot &amp; Compare two spectra</td>
+<td rowspan="2"><code>gcms_query.txt</code></td>
+<td rowspan="4"><code>trimmed_gcms_reference_library.txt</code></td>
+</tr>
+
+<tr>
+<td>Identify compounds</td>
+</tr>
+
+<tr>
+<td>Tune parameters (Grid search)</td>
+<td rowspan="2"><code>gcms_query_tuning.txt</code></td>
+</tr>
+
+<tr>
+<td>Tune parameters (DE optimization)</td>
+</tr>
+
+<tr>
+<td rowspan="4"><strong>HRMS</strong><br>(e.g., LC-MS/MS)</td>
+<td>Plot &amp; Compare two spectra</td>
+<td rowspan="2"><code>lcms_query.txt</code></td>
+<td rowspan="4"><code>trimmed_GNPS_reference_library.txt</code></td>
+</tr>
+
+<tr>
+<td>Identify compounds</td>
+</tr>
+
+<tr>
+<td>Tune parameters (Grid search)</td>
+<td rowspan="2"><code>lcms_query_tuning.txt</code></td>
+</tr>
+
+<tr>
+<td>Tune parameters (DE optimization)</td>
+</tr>
+
+</tbody>
+</table>
 
 <a name="key-references"></a>
 ## 5. Key References

@@ -83,8 +83,62 @@ pip install git+https://github.com/hdlugas/pycompound.git
 
 <a name="run-pycompound"></a>
 ## 1.4 Running PyCompound
+
 ### Run the Toy Examples
-With the repository cloned and the environment active, you can now run the Python package examples. Navigate to the [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) section below and copy the code into a Python script or interpreter. Since you are in the pycompound root directory, the paths to tests/data/ will work automatically.
+With the repository cloned and the environment active, navigate to the **root directory of the pycompound repository**. The example commands assume they are executed from this directory, so the paths to `tests/data/` will work automatically. The examples in the [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) section can be run either by saving them as scripts or by executing them interactively.
+
+#### Option 1: Run as Scripts (Recommended)
+
+**Python Package Example**
+1. Copy the code in [**Section 4.1 (Python Package)**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-python-package) into a file named
+   
+  `example.py`
+  
+2. Run the script:
+   
+```
+python example.py
+```
+
+**CLI Wrapper Example**
+
+*Linux*
+
+1. Copy the commands in [**Section 4.2 (CLI Wrapper – Linux Users)**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-cli-wrapper) into a file named
+   
+   `example.sh`
+   
+2. Add the following line at the top of the file:
+   
+   `#!/usr/bin/env bash`
+   
+3. Run the script:
+   
+```
+bash example.sh
+```
+*(Alternatively, make it executable with `chmod +x example.sh` and run `./example.sh`.)*
+
+*Windows*
+
+1. Copy the commands in [**Section 4.2 (CLI Wrapper – Windows Users)**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-cli-wrapper) into a file named:
+   
+  `example.bat`
+  
+2. Run the script from Command Prompt or Anaconda Prompt:
+   
+```
+example.bat
+```
+
+#### Option 2: Run Interactively
+
+You can also run the examples by copying and pasting the commands directly.
+
+- **Python Package Example:** Start a Python interpreter (`python`) and paste the code from [**Section 4.1**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-python-package) line by line.
+  
+- **CLI Wrapper Example:** Open a terminal in the repository root directory and paste the commands from [**Section 4.2**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-cli-wrapper) line by line (use Bash on Linux or Command Prompt/Anaconda Prompt on Windows).
+
 
 ### Launch the Shiny App
 The Shiny app requires the www/ folder to display correctly. Since you have cloned the repository, you can launch it immediately:

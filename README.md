@@ -149,18 +149,6 @@ You can also run the examples by copying and pasting the commands directly.
   
 - **CLI Wrapper Example:** Open a terminal in the repository root directory and paste the commands from [**Section 4.2**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-cli-wrapper) line by line (use Bash on Linux or Command Prompt/Anaconda Prompt on Windows).
 
-
-### 1.4.2 Launch the Shiny App
-The Shiny app requires the www/ folder to display correctly. Since you have cloned the repository, you can launch it immediately:
-```
-shiny run --launch-browser app.py
-```
-Note: If the browser does not open automatically, navigate to the address shown in your terminal (usually http://127.0.0.1:8000).
-
-Publicly available web version: [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392)
-
-
-
 ### 1.4.2 Launch the Shiny App
 
 The Shiny app requires the `www/` folder to display correctly. Since you have cloned the repository, you can launch it immediately:

@@ -1,4 +1,4 @@
-#1/bin/bash
+#!/bin/bash
 
 echo $'\n\n\ntest #0'
 python ../src/pycompound/plot_spectra_CLI.py \

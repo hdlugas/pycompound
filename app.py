@@ -4020,9 +4020,9 @@ ui.div(
 
     ui.p(
         ui.HTML(
-            "Example datasets for testing the Shiny interface are located in "
-            "<code>tests/data/</code>. The appropriate files depend on the "
-            "selected platform and analysis option."
+            "Example datasets for testing the Shiny interface are located in the "
+            "<code>tests/data/</code> directory of the PyCompound GitHub repository. "
+            "The appropriate files depend on the selected platform and analysis option."
         ),
         style="font-size:15px; margin-top:0px; margin-bottom:8px"
     ),

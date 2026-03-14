@@ -93,20 +93,20 @@ pip install git+https://github.com/hdlugas/pycompound.git
 <a name="run-pycompound"></a>
 ## 1.4 Running PyCompound
 
-### Run the Toy Examples
+### 1.4.1 Run the Toy Examples
 With the repository cloned and the environment active, navigate to the **root directory of the pycompound repository**. The example commands assume they are executed from this directory, so the paths to `tests/data/` will work automatically. The examples in the [Toy Examples](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples) section can be run either by saving them as scripts or by executing them interactively.
 
 #### Option 1: Run as Scripts (Recommended)
 
 Toy example scripts are provided in the repository. With the environment activated and your terminal in the **pycompound root directory**, you can run them directly.
 
-**Python Package Example**
+***Python Package Example***
 
 ```bash
 python toyexamples.py
 ```
 
-**CLI Wrapper Example**
+***CLI Wrapper Example***
 
 *Linux*
 
@@ -150,7 +150,7 @@ You can also run the examples by copying and pasting the commands directly.
 - **CLI Wrapper Example:** Open a terminal in the repository root directory and paste the commands from [**Section 4.2**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-cli-wrapper) line by line (use Bash on Linux or Command Prompt/Anaconda Prompt on Windows).
 
 
-### Launch the Shiny App
+### 1.4.2 Launch the Shiny App
 The Shiny app requires the www/ folder to display correctly. Since you have cloned the repository, you can launch it immediately:
 ```
 shiny run --launch-browser app.py
@@ -158,6 +158,38 @@ shiny run --launch-browser app.py
 Note: If the browser does not open automatically, navigate to the address shown in your terminal (usually http://127.0.0.1:8000).
 
 Publicly available web version: [https://connect.posit.cloud/fy7392](https://connect.posit.cloud/fy7392)
+
+
+
+### 1.4.2 Launch the Shiny App
+
+The Shiny app requires the `www/` folder to display correctly. Since you have cloned the repository, you can launch it immediately:
+
+```bash
+shiny run --launch-browser app.py
+```
+
+If the browser does not open automatically, navigate to the address shown in your terminal (usually `http://127.0.0.1:8000`).
+
+Publicly available web version: https://connect.posit.cloud/fy7392
+
+Video tutorials (YouTube): https://www.youtube.com/@PyCompound
+
+Example datasets used by the Shiny app are located in `tests/data/`. The appropriate toy datasets depend on the **platform** and **analysis option**, as summarized below.
+
+| Platform | Option | Query File | Library File |
+|----------|--------|------------|--------------|
+| **NRMS** (e.g., GC-MS) | Plot & compare two spectra | `gcms_query.txt` | `trimmed_gcms_reference_library.txt` |
+| | Identify compounds | `gcms_query.txt` | `trimmed_gcms_reference_library.txt` |
+| | Tune parameters (Grid search) | `gcms_query_tuning.txt` | `trimmed_gcms_reference_library.txt` |
+| | Tune parameters (DE optimization) | `gcms_query_tuning.txt` | `trimmed_gcms_reference_library.txt` |
+| **HRMS** (e.g., LC-MS/MS) | Plot & compare two spectra | `lcms_query.txt` | `trimmed_GNPS_reference_library.txt` |
+| | Identify compounds | `lcms_query.txt` | `trimmed_GNPS_reference_library.txt` |
+| | Tune parameters (Grid search) | `lcms_query_tuning.txt` | `trimmed_GNPS_reference_library.txt` |
+| | Tune parameters (DE optimization) | `lcms_query_tuning.txt` | `trimmed_GNPS_reference_library.txt` |
+
+
+
 
 <a name="functionality"></a>
 ## 2. Functionality
@@ -1084,6 +1116,19 @@ python src\pycompound\tuning_CLI_DE.py ^
 <a name="toy-examples-shiny"></a>
 ## 4.3 Shiny Application
 Video tutorials for the PyCompound Shiny application are available on YouTube (https://www.youtube.com/@PyCompound).
+
+Example datasets used by the Shiny app are located in `tests/data/`. The appropriate toy datasets depend on the **platform** and **analysis option**, as summarized below.
+
+| Platform | Option | Query File | Library File |
+|----------|--------|------------|--------------|
+| **NRMS** (e.g., GC-MS) | Plot & compare two spectra | `gcms_query.txt` | `trimmed_gcms_reference_library.txt` |
+| | Identify compounds | `gcms_query.txt` | `trimmed_gcms_reference_library.txt` |
+| | Tune parameters (Grid search) | `gcms_query_tuning.txt` | `trimmed_gcms_reference_library.txt` |
+| | Tune parameters (DE optimization) | `gcms_query_tuning.txt` | `trimmed_gcms_reference_library.txt` |
+| **HRMS** (e.g., LC-MS/MS) | Plot & compare two spectra | `lcms_query.txt` | `trimmed_GNPS_reference_library.txt` |
+| | Identify compounds | `lcms_query.txt` | `trimmed_GNPS_reference_library.txt` |
+| | Tune parameters (Grid search) | `lcms_query_tuning.txt` | `trimmed_GNPS_reference_library.txt` |
+| | Tune parameters (DE optimization) | `lcms_query_tuning.txt` | `trimmed_GNPS_reference_library.txt` |
 
 <a name="key-references"></a>
 ## 5. Key References

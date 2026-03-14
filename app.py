@@ -4013,6 +4013,74 @@ ui.div(
 
         style="margin-top:0px; margin-bottom:0px;"
     )
+
+    # Toy datasets section
+    ui.p(ui.strong("▷ Toy Datasets for the Shiny App"),
+         style="margin-top:20px; margin-bottom:2px"),
+
+    ui.p(
+        ui.HTML(
+            "Example datasets for testing the Shiny interface are located in "
+            "<code>tests/data/</code>. The appropriate files depend on the "
+            "selected platform and analysis option."
+        ),
+        style="font-size:15px; margin-top:0px; margin-bottom:8px"
+    ),
+
+    ui.HTML(
+        """
+        <table style="border-collapse:collapse; font-size:13.5px; width:100%; margin-top:4px;">
+            <thead>
+                <tr style="background:#e9ecef;">
+                    <th style="border:1px solid #ccc; padding:6px 10px;">Platform</th>
+                    <th style="border:1px solid #ccc; padding:6px 10px;">Option</th>
+                    <th style="border:1px solid #ccc; padding:6px 10px;">Query File</th>
+                    <th style="border:1px solid #ccc; padding:6px 10px;">Library File</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;"><b>NRMS</b><br>(e.g., GC-MS)</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;">Plot & Compare two spectra</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;"><code>gcms_query.txt</code></td>
+                    <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;"><code>trimmed_gcms_reference_library.txt</code></td>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #ccc; padding:6px 10px;">Identify compounds</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;"><code>gcms_query.txt</code></td>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #ccc; padding:6px 10px;">Tune parameters (Grid search)</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;"><code>gcms_query_tuning.txt</code></td>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #ccc; padding:6px 10px;">Tune parameters (DE optimization)</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;"><code>gcms_query_tuning.txt</code></td>
+                </tr>
+
+                <tr>
+                    <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;"><b>HRMS</b><br>(e.g., LC-MS/MS)</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;">Plot & Compare two spectra</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;"><code>lcms_query.txt</code></td>
+                    <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;"><code>trimmed_GNPS_reference_library.txt</code></td>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #ccc; padding:6px 10px;">Identify compounds</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;"><code>lcms_query.txt</code></td>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #ccc; padding:6px 10px;">Tune parameters (Grid search)</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;"><code>lcms_query_tuning.txt</code></td>
+                </tr>
+                <tr>
+                    <td style="border:1px solid #ccc; padding:6px 10px;">Tune parameters (DE optimization)</td>
+                    <td style="border:1px solid #ccc; padding:6px 10px;"><code>lcms_query_tuning.txt</code></td>
+                </tr>
+            </tbody>
+        </table>
+        """
+    )
+    
 ),
               
                 

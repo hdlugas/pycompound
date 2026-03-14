@@ -98,46 +98,47 @@ With the repository cloned and the environment active, navigate to the **root di
 
 #### Option 1: Run as Scripts (Recommended)
 
+Toy example scripts are provided in the repository. With the environment activated and your terminal in the **pycompound root directory**, you can run them directly.
+
 **Python Package Example**
-1. Copy the code in [**Section 4.1 (Python Package)**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-python-package) into a file named
-   
-  `example.py`
-  
-2. Run the script:
-   
-```
-python example.py
+
+```bash
+python toyexamples.py
 ```
 
 **CLI Wrapper Example**
 
 *Linux*
 
-1. Copy the commands in [**Section 4.2 (CLI Wrapper – Linux Users)**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-cli-wrapper) into a file named
-   
-   `example.sh`
-   
-2. Add the following line at the top of the file:
-   
-   `#!/usr/bin/env bash`
-   
-3. Run the script:
-   
+```bash
+bash toyexamples.sh
 ```
-bash example.sh
+
+Alternatively, make the script executable and run it directly:
+
+```bash
+chmod +x toyexamples.sh
+./toyexamples.sh
 ```
-*(Alternatively, make it executable with `chmod +x example.sh` and run `./example.sh`.)*
+
+If you encounter the error message `'\r': command not found`, convert the file to Unix line endings:
+
+```bash
+dos2unix toyexamples.sh
+```
+
+If `dos2unix` is not installed, install it with:
+
+```bash
+conda install -c conda-forge dos2unix -y
+```
 
 *Windows*
 
-1. Copy the commands in [**Section 4.2 (CLI Wrapper – Windows Users)**](https://github.com/hdlugas/pycompound?tab=readme-ov-file#toy-examples-cli-wrapper) into a file named:
-   
-  `example.bat`
-  
-2. Run the script from Command Prompt or Anaconda Prompt:
-   
-```
-example.bat
+Run the batch script from Command Prompt, Anaconda Prompt, or Anaconda PowerShell Prompt:
+
+```bat
+toyexamples.bat
 ```
 
 #### Option 2: Run Interactively

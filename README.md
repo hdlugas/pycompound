@@ -40,17 +40,17 @@ Windows users should use the Anaconda PowerShell Prompt to ensure all paths are 
 
 1. Initial Setup: If you do not have a Python manager, download and install Miniconda ([https://docs.anaconda.com/miniconda/](https://docs.anaconda.com/miniconda/)).
 2. Open the Prompt: Click Start, search for "Anaconda PowerShell Prompt", and open it.
-3. Install Core Tools: Run the following to install the required data libraries and Git:
+3. Install Core Tools: Run the following to install the required data libraries and **Git**:
 ```
 conda install -c conda-forge netcdf4 lxml git -y
 ```
 
 ### Linux Users
-To ensure Git is available within your environment, run:
+To ensure **Git** is available within your environment, run:
 ```
 conda install -c conda-forge git -y
 ```
-Note: If you are on an older system and see a C++ Compiler does not support -std=c++17 error, run this command instead:
+Note: If you are on an older system and see a **C++ Compiler** does not support -std=c++17 error, run this command instead:
 ```
 conda install -c conda-forge gxx_linux-64 gcc_linux-64 git -y
 ```
@@ -77,6 +77,15 @@ pip install pycompound
 Note: To install a specific version, for example, you can install version 0.1.18 by: `pip install pycompound==0.1.18`
 
 ### Option B: Install from GitHub (Development)
+
+Installing from GitHub requires **Git** to be available. On many Linux systems, Git is already available via the system PATH. However, Windows users may need to install Git in the active conda environment before installing from GitHub.
+
+```bash
+conda install -c conda-forge git -y
+```
+
+Then install PyCompound from GitHub:
+
 ```
 pip install git+https://github.com/hdlugas/pycompound.git
 ```

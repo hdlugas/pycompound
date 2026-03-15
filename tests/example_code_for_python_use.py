@@ -176,7 +176,7 @@ for query_idx in range(0,len(unique_query_ids)):
 
 df_gcms = pd.DataFrame({'QUERY_ID':unique_query_ids, 'PREDICTED_COMPOUND_COSINE':preds_cosine, 'SIMILARITY_SCORE_COSINE':scores_cosine, 'PREDICTED_COMPOUND_SHANNON':preds_shannon, 'SIMILARITY_SCORE_SHANNON':scores_shannon, 'PREDICTED_COMPOUND_TSALLIS':preds_tsallis, 'SIMILARITY_SCORE_TSALLIS':scores_tsallis})
 
-print('\n Example GC-MS/MS results:')
+print('\n Example GC-MS results:')
 print(df_gcms)
 
 

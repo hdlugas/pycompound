@@ -208,13 +208,6 @@ print('\n\ntest #28:')
 generate_plots_on_HRMS_data(
         query_data=f'{Path.cwd()}/data/lcms_query.txt',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
-        similarity_measure='jaccard',
-        output_path=f'{Path.cwd()}/plots/test28.pdf')
-
-print('\n\ntest #28:')
-generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query.txt',
-        reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
         similarity_measure='hamming',
         output_path=f'{Path.cwd()}/plots/test28.pdf')
 

@@ -24,7 +24,7 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
   - [4.1 Python Package](#toy-examples-python-package)
   - [4.2 CLI Wrapper](#toy-examples-cli-wrapper)
   - [4.3 Shiny Application](#toy-examples-shiny)
-  - [4.4 Additional Example and Test Scripts](#toy-examples-others")
+  - [4.4 Additional Example and Test Scripts](#toy-examples-others)
 - [5. Key References](#key-references)
 - [6. Bugs/Questions?](#bugs-questions)
 

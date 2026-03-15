@@ -24,6 +24,7 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
   - [4.1 Python Package](#toy-examples-python-package)
   - [4.2 CLI Wrapper](#toy-examples-cli-wrapper)
   - [4.3 Shiny Application](#toy-examples-shiny)
+  - [4.4 Additional Example and Test Scripts](#toy-examples-others")
 - [5. Key References](#key-references)
 - [6. Bugs/Questions?](#bugs-questions)
 
@@ -1203,6 +1204,25 @@ Example datasets used by the Shiny app are located in `tests/data/`. The appropr
 
 </tbody>
 </table>
+
+
+<a name="toy-examples-others"></a>
+## 4.4 Additional Example and Test Scripts
+
+The `tests/` directory also contains additional Python and shell scripts that demonstrate other PyCompound functionality beyond the toy examples.
+
+| Filename | Description |
+|----------|-------------|
+| `example_code_for_python_use.py` | End-to-end Python example showing manual use of the processing and similarity-measure functions for both LC-MS/MS and GC-MS data, including preprocessing, similarity calculation, and compound prediction. |
+| `test_build_library.py` | Example script for building PyCompound-compatible libraries from several raw spectral data formats, including JSON, MGF, mzML, and MSP inputs. |
+| `test_plot_spectra.py` | Python API examples for generating HRMS and NRMS spectrum comparison plots under many preprocessing, transformation, and similarity-measure settings. |
+| `test_plot_spectra_CLI.sh` | Shell script demonstrating the CLI wrapper for spectrum plotting on both HRMS and NRMS toy datasets. |
+| `test_similarity_measures.py` | Sanity-check script for the implemented similarity measures, comparing scores for dissimilar spectra and identical spectra across multiple metrics. |
+| `test_spec_lib_matching.py` | Comprehensive Python API examples for spectral library matching on HRMS and NRMS data, including multiple similarity measures, preprocessing settings, likely-reference filtering, mixed-library input, and several input file formats. |
+| `test_spec_lib_matching_CLI.sh` | Shell script demonstrating CLI-based spectral library matching for NRMS and HRMS examples, including output files for identifications and similarity scores. |
+| `test_tuning.py` | Python API examples for parameter tuning using both exhaustive grid search and differential evolution on HRMS and NRMS toy datasets. |
+| `test_tuning_CLI.sh` | Shell script demonstrating CLI-based parameter tuning with both grid search and differential evolution for HRMS and NRMS examples. |
+
 
 <a name="key-references"></a>
 ## 5. Key References

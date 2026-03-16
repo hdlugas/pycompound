@@ -244,8 +244,11 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
             precursor_ion_mzs.extend([data[i]['Precursor_MZ']] * len(mzs_tmp))
 
 
-    if len(precursor_ion_mzs) > 0:
-        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_ion_mz':precursor_ion_mzs})
+    if input_file_type != 'cdf':
+        if len(precursor_ion_mzs) > 0:
+            df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_ion_mz':precursor_ion_mzs})
+        else:
+            df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
     else:
         df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
 
@@ -264,7 +267,7 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         extension = extension[(len(extension)-1)]
         if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
             output_path_tmp = query_data[:-3] + 'txt'
-            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=True)
+            build_library_from_raw_data(input_path=query_data, output_path=output_path_tmp, is_reference=False)
             df_query = pd.read_csv(output_path_tmp, sep='\t')
         if extension == 'txt' or extension == 'TXT':
             df_query = pd.read_csv(query_data, sep='\t')

@@ -43,8 +43,6 @@ build_library_from_raw_data(input_path=f'{Path.cwd()}/data/MoNA-export-Human_Pla
                             output_path=f'{Path.cwd()}/data/MoNA-export-Human_Plasma_Quant_2.txt',
                             is_reference=True)
 
-
-# note that the CDF file is too large to store in a GitHub repo. So, this test won't work unless a CDF file that exists is specified
-#print('\nTest #10:')
-#build_library_from_raw_data(input_path=f'{Path.cwd()}/data/liver_9-1_MTBSTFA_split10.cdf', output_path=f'{Path.cwd()}/data/library_from_cdf.csv', is_reference=False)
+print('\nTest #8:')
+build_library_from_raw_data(input_path=f'{Path.cwd()}/data/W001A_1.CDF', output_path=f'{Path.cwd()}/data/library_from_cdf.csv', is_reference=False)
 

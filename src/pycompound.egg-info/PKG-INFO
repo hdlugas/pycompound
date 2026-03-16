@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: pycompound
-Version: 0.1.18
+Version: 0.1.19
 Summary: Python package to perform compound identification in mass spectrometry via spectral library matching.
 Author-email: Hunter Dlugas <fy7392@wayne.edu>
 License-Expression: MIT
@@ -72,7 +72,7 @@ conda activate pycompound_env
 ```
 pip install pycompound
 ```
-Note: To install a specific version, for example, you can install version 0.1.18 by: `pip install pycompound==0.1.18`
+Note: To install a specific version, for example, you can install version 0.1.19 by: `pip install pycompound==0.1.19`
 
 ### Option B: Install from GitHub (Development)
 ```

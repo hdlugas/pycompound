@@ -228,13 +228,17 @@ run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/MoNA-export-Hu
                                    precursor_ion_mz_tolerance=0.5,
                                    print_id_results=True)
 
-print('\n\ntest #36:')
-run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.msp',
-                                   reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
-                                   similarity_measure='cosine')
+
 
 
 """
+print('\n\ntest #36:') # this test takes a long time to run because of lots of query spectra
+run_spec_lib_matching_on_NRMS_data(query_data=f'{Path.cwd()}/data/W001A_1.CDF',
+                                   reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
+                                   print_id_results=True)
+
+
+# the remaining tests are all for testing error-handling
 print('\n\ntest #37:')
 run_spec_lib_matching_on_HRMS_data(query_data=f'{Path.cwd()}/data/lcms_query.txt',
                                    reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',

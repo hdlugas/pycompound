@@ -175,8 +175,11 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
             precursor_ion_mzs.extend([data[i]['Precursor_MZ']] * len(mzs_tmp))
 
 
-    if len(precursor_ion_mzs) > 0:
-        df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_ion_mz':precursor_ion_mzs})
+    if input_file_type != 'cdf':
+        if len(precursor_ion_mzs) > 0:
+            df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_ion_mz':precursor_ion_mzs})
+        else:
+            df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
     else:
         df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints})
 

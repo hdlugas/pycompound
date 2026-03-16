@@ -6,6 +6,7 @@ import os
 
 os.makedirs(f'{Path.cwd()}/plots', exist_ok=True)
 
+
 print('\n\ntest #1:')
 generate_plots_on_HRMS_data(
         query_data=f'{Path.cwd()}/data/lcms_query.txt',
@@ -243,20 +244,28 @@ generate_plots_on_HRMS_data(
 
 print('\n\ntest #33:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query.msp',
+        query_data=f'{Path.cwd()}/data/1min.mzML',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
-        high_quality_reference_library=True,
-        noise_threshold=0.1,
-        mz_min=100,
+        similarity_measure='shannon',
         output_path=f'{Path.cwd()}/plots/test33.pdf')
 
 print('\n\ntest #34:')
 generate_plots_on_HRMS_data(
-        query_data=f'{Path.cwd()}/data/lcms_query_tuning.msp',
+        query_data=f'{Path.cwd()}/data/GNPS-NIH-SMALLMOLECULEPHARMACOLOGICALLYACTIVE.json',
         reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
-        high_quality_reference_library=True,
-        noise_threshold=0.1,
-        mz_min=100,
+        similarity_measure='renyi',
         output_path=f'{Path.cwd()}/plots/test34.pdf')
 
+print('\n\ntest #35:')
+generate_plots_on_NRMS_data(
+        query_data=f'{Path.cwd()}/data/W001A_1.CDF',
+        reference_data=f'{Path.cwd()}/data/trimmed_gcms_reference_library.txt',
+        output_path=f'{Path.cwd()}/plots/test35.pdf')
+
+print('\n\ntest #36:')
+generate_plots_on_HRMS_data(
+        query_data=f'{Path.cwd()}/data/GNPS-SELLECKCHEM-FDA-PART1.mgf',
+        reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
+        similarity_measure='tsallis',
+        output_path=f'{Path.cwd()}/plots/test36.pdf')
 

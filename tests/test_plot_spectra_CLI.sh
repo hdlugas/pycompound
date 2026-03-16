@@ -7,7 +7,7 @@ python ../src/pycompound/plot_spectra_CLI.py \
         --wf_mz 2 \
         --window_size_matching 0.3 \
         --chromatography_platform HRMS \
-        --output_path ${PWD}/output_plotting_HRMS.pdf
+        --output_path ${PWD}/output_plotting_HRMS_1.pdf
 
 echo $'\n\n\ntest #1'
 python ../src/pycompound/plot_spectra_CLI.py \
@@ -28,4 +28,39 @@ python ../src/pycompound/plot_spectra_CLI.py \
         --weights '{"Cosine":0.7,"Shannon":0.1,"Renyi":0.1,"Tsallis":0.1}' \
         --chromatography_platform NRMS \
         --output_path ${PWD}/output_plotting_NRMS_2.pdf
+
+echo $'\n\n\ntest #3'
+python ../src/pycompound/plot_spectra_CLI.py \
+        --query_data ${PWD}/data/W001A_1.CDF \
+        --reference_data ${PWD}/data/trimmed_gcms_reference_library.txt \
+        --chromatography_platform NRMS \
+        --output_path ${PWD}/output_plotting_NRMS_3.pdf
+
+echo $'\n\n\ntest #4'
+python ../src/pycompound/plot_spectra_CLI.py \
+        --query_data ${PWD}/data/1min.mzML \
+        --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
+        --chromatography_platform HRMS \
+        --output_path ${PWD}/output_plotting_HRMS_2.pdf
+
+echo $'\n\n\ntest #5'
+python ../src/pycompound/plot_spectra_CLI.py \
+        --query_data ${PWD}/data/GNPS-NIH-SMALLMOLECULEPHARMACOLOGICALLYACTIVE.json \
+        --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
+        --chromatography_platform HRMS \
+        --output_path ${PWD}/output_plotting_HRMS_3.pdf
+
+echo $'\n\n\ntest #6'
+python ../src/pycompound/plot_spectra_CLI.py \
+        --query_data ${PWD}/data/GNPS-SELLECKCHEM-FDA-PART1.mgf \
+        --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
+        --chromatography_platform HRMS \
+        --output_path ${PWD}/output_plotting_HRMS_4.pdf
+
+echo $'\n\n\ntest #7'
+python ../src/pycompound/plot_spectra_CLI.py \
+        --query_data ${PWD}/data/MoNA-export-Human_Plasma_Quant.msp \
+        --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
+        --chromatography_platform HRMS \
+        --output_path ${PWD}/output_plotting_HRMS_5.pdf
 

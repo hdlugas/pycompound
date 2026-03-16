@@ -86,23 +86,8 @@ def main():
         de_workers=de_workers
     )
 
-    print('\n\ntest #8:')
-    tune_params_DE(
-        query_data=f'{Path.cwd()}/data/lcms_query_tuning.msp',
-        reference_data=f'{Path.cwd()}/data/trimmed_GNPS_reference_library.txt',
-        precursor_ion_mz_tolerance=0.1,
-        ionization_mode='Positive',
-        adduct='H',
-        chromatography_platform='HRMS',
-        similarity_measure='shannon',
-        optimize_params=["wf_mz","wf_int"],
-        param_bounds={"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0)},
-        default_params={"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1},
-        maxiters=10,
-        de_workers=de_workers
-    )
-
 
 if __name__ == "__main__":
     freeze_support()
     main()
+

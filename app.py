@@ -2632,6 +2632,9 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
         q_mask = (df_query['id'] == unique_query_ids[query_idx])
         q_idxs_tmp = np.where(q_mask)[0]
         q_spec_tmp = np.asarray(pd.concat([df_query['mz_ratio'].iloc[q_idxs_tmp], df_query['intensity'].iloc[q_idxs_tmp]], axis=1).reset_index(drop=True))
+        print('\n')
+        print(query_idx)
+        print(q_spec_tmp)
 
         if 'precursor_ion_mz' in df_query.columns.tolist() and 'precursor_ion_mz' in df_reference.columns.tolist() and precursor_ion_mz_tolerance != None:
             precursor_ion_mz_tmp = df_query['precursor_ion_mz'].iloc[q_idxs_tmp[0]]

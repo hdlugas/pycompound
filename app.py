@@ -3868,7 +3868,7 @@ def server(input, output, session):
 
     ui.p(
         ui.strong("Note: "),
-        "Due to memory limits on the hosted environment (4 GB), data processing tasks that require more memory may fail or perform poorly. In such cases, it is strongly recommended to run the PyCompound Shiny app on a local computer. Instructions for running the app locally are available at: ",
+        "Due to memory limits on the hosted environment (1 GB), data processing tasks that require more memory may fail or perform poorly. In such cases, it is strongly recommended to run the PyCompound Shiny app on a local computer. Instructions for running the app locally are available at: ",
         ui.a("https://github.com/hdlugas/pycompound", href="https://github.com/hdlugas/pycompound", target="_blank"),
         ".",
         style="color:#b22222; font-weight:bold;"

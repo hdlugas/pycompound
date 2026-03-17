@@ -4033,7 +4033,7 @@ ui.div(
     ui.p(
         ui.HTML(
             "Example datasets for testing the Shiny interface are located in the "
-            "<code>tests/data/</code> directory of the PyCompound GitHub repository. "
+            "<a href="https://github.com/hdlugas/pycompound/tree/main/tests/data" target="_blank"><code>tests/data/</code></a> directory of the PyCompound GitHub repository. "
             "The appropriate files depend on the selected platform and analysis option."
         ),
         style="font-size:15px; margin-top:0px; margin-bottom:8px"

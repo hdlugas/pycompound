@@ -25,6 +25,7 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
   - [4.2 CLI Wrapper](#toy-examples-cli-wrapper)
   - [4.3 Shiny Application](#toy-examples-shiny)
   - [4.4 Additional Example and Test Scripts](#toy-examples-others)
+  - [4.5 Data and Description](#toy-all-data)
 - [5. Key References](#key-references)
 - [6. Bugs/Questions?](#bugs-questions)
 
@@ -1223,6 +1224,28 @@ The `tests/` directory also contains additional Python and shell scripts that de
 | `test_tuning.py` | Python API examples for parameter tuning using both exhaustive grid search and differential evolution on HRMS and NRMS toy datasets. |
 | `test_tuning_CLI.sh` | Shell script demonstrating CLI-based parameter tuning with both grid search and differential evolution for HRMS and NRMS examples. |
 
+<a name="toy-all-data"></a>
+## 4.5 Data and Description
+
+The `tests/data/` directory contains example datasets in multiple formats (e.g., JSON, MGF, mzML, MSP) for testing and demonstration purposes. These files support both HRMS and NRMS workflows, including query, tuning, and library-based identification tasks.
+
+| Data | Platform | Input Type | Query/Library | Options | Description |
+|------|----------|------------|---------------|---------|-------------|
+| `1min_subset_3.mzML` | HRMS | mzML | Query | plot/identification | Example mzML file from HUPO-PSI |
+| `Compound_names_in_HRMS_GNPS_reference_library.txt` | HRMS | TXT | Library |  | Full list of GNPS reference library compounds (Zenodo) |
+| `Compound_names_in_NRMS_WebBook_reference_library.txt` | NRMS | TXT | Library |  | Full list of NIST WebBook compounds (Zenodo) |
+| `gcms_query_tuning.txt` | NRMS | TXT | Query | tuning | GC-MS data with known ground-truth IDs |
+| `gcms_query.txt` | NRMS | TXT | Query | plot/identification | GC-MS query data |
+| `GNPS-NIH-SMALLMOLECULEPHARMACOLOGICALLYACTIVE.json` | HRMS | JSON | Query | plot/identification | GNPS library JSON file |
+| `GNPS-SELLECKCHEM-FDA-PART1.mgf` | HRMS | MGF | Query | plot/identification | GNPS MGF file |
+| `lcms_query_tuning.txt` | HRMS | TXT | Query | tuning | LC-MS/MS data with known ground-truth IDs |
+| `lcms_query.txt` | HRMS | TXT | Query | plot/identification | LC-MS/MS query data |
+| `likely_gcms_ids.txt` | NRMS | TXT | Library |  | Subset of reference IDs for GC-MS compound identification (trimmed library names) |
+| `likely_lcms_ids.txt` | HRMS | TXT | Library |  | Subset of reference IDs for LC-MS/MS compound identification (trimmed library names) |
+| `MoNA-export-Human_Plasma_Quant.msp` | HRMS | MSP | Query | plot/identification | MoNA MSP file |
+| `trimmed_gcms_reference_library.txt` | NRMS | TXT | Library |  | Toy GC-MS reference library (see Zenodo for full version) |
+| `trimmed_GNPS_reference_library.txt` | HRMS | TXT | Library |  | Toy GNPS reference library (see Zenodo for full version) |
+| `W001A_1_subset_10.CDF` | NRMS | CDF | Query | plot/identification | Example GC-MS CDF file (apple wine dataset) |
 
 <a name="key-references"></a>
 ## 5. Key References

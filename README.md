@@ -1243,8 +1243,8 @@ The `tests/data/` directory contains example datasets in multiple formats (e.g.,
 | `likely_gcms_ids.txt` | NRMS | TXT | Library |  | Subset of reference IDs for GC-MS compound identification (trimmed library names) |
 | `likely_lcms_ids.txt` | HRMS | TXT | Library |  | Subset of reference IDs for LC-MS/MS compound identification (trimmed library names) |
 | `MoNA-export-Human_Plasma_Quant.msp` | HRMS | MSP | Query | plot/identification | MoNA MSP file |
-| `trimmed_gcms_reference_library.txt` | NRMS | TXT | Library |  | Toy GC-MS reference library (see Zenodo for full version) |
-| `trimmed_GNPS_reference_library.txt` | HRMS | TXT | Library |  | Toy GNPS reference library (see Zenodo for full version) |
+| `trimmed_gcms_reference_library.txt` | NRMS | TXT | Library | plot/identification/tuning | Toy GC-MS reference library (see Zenodo for full version) |
+| `trimmed_GNPS_reference_library.txt` | HRMS | TXT | Library | plot/identification/tuning | Toy GNPS reference library (see Zenodo for full version) |
 | `W001A_1_subset_10.CDF` | NRMS | CDF | Query | plot/identification | Example GC-MS CDF file (apple wine dataset) |
 
 <a name="key-references"></a>

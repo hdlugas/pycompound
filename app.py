@@ -3865,6 +3865,14 @@ def server(input, output, session):
                     ui.p("PyCompound is a Python-based tool for spectral library matching of both high-resolution mass spectrometry (HRMS) data, such as liquid chromatography-tandem mass spectrometry (LC-MS/MS), and nominal-resolution mass spectrometry (NRMS) data, such as gas chromatography-mass spectrometry (GC-MS)."),
                     ui.p("PyCompound provides a flexible framework for spectrum preprocessing and similarity assessment. Available preprocessing transformations include filtering by mass-to-charge (m/z) and/or intensity, weight-factor transformation, low-entropy transformation, centroiding, noise removal, and spectral matching. Users can flexibly choose the order of these preprocessing steps and tune their associated parameters using either grid search or differential evolution (DE) optimization."),
                     ui.p("PyCompound supports a broad set of similarity measures, including the Cosine similarity (dot product), three entropy-based similarity measures (Shannon, Tsallis, and Rényi), and 15 binary similarity measures (Jaccard, Dice, 3W-Jaccard, Sokal–Sneath, Binary Cosine, Mountford, McConnaughey, Driver-Kroeber, Simpson, Braun-Banquet, Fager-McGowan, Kulczynski, Intersection, Hamming, and Hellinger). In addition, users can construct mixture similarity scores that combine all of a selected subset of the 19 supported similarity measures."),
+
+    ui.p(
+        ui.strong("Note: "),
+        "If your data processing requires more than 4 GB of memory, it is strongly recommended to run the PyCompound Shiny app on a local computer. Instructions for running the app locally are available at: ",
+        ui.a("https://github.com/hdlugas/pycompound", href="https://github.com/hdlugas/pycompound", target="_blank"),
+        style="color:#b22222; font-weight:bold;"
+    ),
+                    
                     style="margin-top:0px; text-align:left; font-size:18px; font-weight:500"
                 ),
 
@@ -4949,6 +4957,6 @@ ui.div(
         return match_log_rv.get()
 
 
-app = App(app_ui, server)
-
+app_dir = Path(__file__).parent
+app = App(app_ui, server, static_assets=app_dir / "www")
 

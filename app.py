@@ -2625,6 +2625,7 @@ def run_spec_lib_matching_on_HRMS_data_shiny(query_data=None, reference_data=Non
     unique_reference_ids = df_reference['id'].unique().tolist()
     all_similarity_scores = []
 
+    print(len(unique_query_ids))
     for query_idx in range(len(unique_query_ids)):
         if verbose:
             print(f'query spectrum #{query_idx} is being identified')

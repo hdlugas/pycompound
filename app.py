@@ -4042,7 +4042,7 @@ ui.p(
         "The appropriate files depend on the selected platform and analysis option.",
     ],
     style="font-size:15px; margin-top:0px; margin-bottom:8px",
-)
+),
 
     ui.HTML(
     """

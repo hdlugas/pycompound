@@ -1232,8 +1232,8 @@ The `tests/data/` directory contains example datasets in multiple formats (e.g.,
 | Data | Platform | Input Type | Query/Library | Options | Description |
 |------|----------|------------|---------------|---------|-------------|
 | `1min_subset_3.mzML` | HRMS | mzML | Query | plot/identification | Example mzML file from HUPO-PSI |
-| `Compound_names_in_HRMS_GNPS_reference_library.txt` | HRMS | TXT | Library |  | Full list of GNPS reference library compounds (Zenodo) |
-| `Compound_names_in_NRMS_WebBook_reference_library.txt` | NRMS | TXT | Library |  | Full list of NIST WebBook compounds (Zenodo) |
+| `Compound_IDs_in_HRMS_GNPS_reference_library.txt` | HRMS | TXT | Library |  | Full list of GNPS reference library compounds (Zenodo) |
+| `Compound_IDs_in_NRMS_WebBook_reference_library.txt` | NRMS | TXT | Library |  | Full list of NIST WebBook compounds (Zenodo) |
 | `gcms_query_tuning.txt` | NRMS | TXT | Query | tuning | GC-MS data with known ground-truth IDs |
 | `gcms_query.txt` | NRMS | TXT | Query | plot/identification | GC-MS query data |
 | `GNPS-NIH-SMALLMOLECULEPHARMACOLOGICALLYACTIVE.json` | HRMS | JSON | Query | plot/identification | GNPS library JSON file |

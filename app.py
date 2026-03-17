@@ -4056,15 +4056,27 @@ ui.div(
             <tr>
                 <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;"><b>NRMS</b><br>(e.g., GC-MS)</td>
                 <td style="border:1px solid #ccc; padding:6px 10px;">Plot &amp; Compare two spectra</td>
-                <td rowspan="2" style="border:1px solid #ccc; padding:6px 10px;"><code>gcms_query.txt</code></td>
-                <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;"><code>trimmed_gcms_reference_library.txt</code></td>
+                <td rowspan="2" style="border:1px solid #ccc; padding:6px 10px;">
+                <a href="https://raw.githubusercontent.com/hdlugas/pycompound/main/tests/data/gcms_query.txt" target="_blank">         
+                <code>gcms_query.txt</code>
+                </a>
+                </td>
+                <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;">
+                <a href="https://raw.githubusercontent.com/hdlugas/pycompound/main/tests/data/trimmed_gcms_reference_library.txt" target="_blank">         
+                <code>trimmed_gcms_reference_library.txt</code>
+                </a>
+                </td>
             </tr>
             <tr>
                 <td style="border:1px solid #ccc; padding:6px 10px;">Identify compounds</td>
             </tr>
             <tr>
                 <td style="border:1px solid #ccc; padding:6px 10px;">Tune parameters (Grid search)</td>
-                <td rowspan="2" style="border:1px solid #ccc; padding:6px 10px;"><code>gcms_query_tuning.txt</code></td>
+                <td rowspan="2" style="border:1px solid #ccc; padding:6px 10px;">
+                <a href="https://raw.githubusercontent.com/hdlugas/pycompound/main/tests/data/gcms_query_tuning.txt" target="_blank">
+                <code>gcms_query_tuning.txt</code>
+                </a>
+                </td>
             </tr>
             <tr>
                 <td style="border:1px solid #ccc; padding:6px 10px;">Tune parameters (DE optimization)</td>
@@ -4074,15 +4086,27 @@ ui.div(
             <tr>
                 <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;"><b>HRMS</b><br>(e.g., LC-MS/MS)</td>
                 <td style="border:1px solid #ccc; padding:6px 10px;">Plot &amp; Compare two spectra</td>
-                <td rowspan="2" style="border:1px solid #ccc; padding:6px 10px;"><code>lcms_query.txt</code></td>
-                <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;"><code>trimmed_GNPS_reference_library.txt</code></td>
+                <td rowspan="2" style="border:1px solid #ccc; padding:6px 10px;">
+                <a href="https://raw.githubusercontent.com/hdlugas/pycompound/main/tests/data/lcms_query.txt" target="_blank">
+                <code>lcms_query.txt</code>
+                </a>
+                </td>
+                <td rowspan="4" style="border:1px solid #ccc; padding:6px 10px;">
+                <a href="https://raw.githubusercontent.com/hdlugas/pycompound/main/tests/data/trimmed_GNPS_reference_library.txt" target="_blank">
+                <code>trimmed_GNPS_reference_library.txt</code>
+                </a>
+                </td>
             </tr>
             <tr>
                 <td style="border:1px solid #ccc; padding:6px 10px;">Identify compounds</td>
             </tr>
             <tr>
                 <td style="border:1px solid #ccc; padding:6px 10px;">Tune parameters (Grid search)</td>
-                <td rowspan="2" style="border:1px solid #ccc; padding:6px 10px;"><code>lcms_query_tuning.txt</code></td>
+                <td rowspan="2" style="border:1px solid #ccc; padding:6px 10px;">
+                <a href="https://raw.githubusercontent.com/hdlugas/pycompound/main/tests/data/lcms_query_tuning.txt" target="_blank">
+                <code>lcms_query_tuning.txt</code>
+                </a>
+                </td>
             </tr>
             <tr>
                 <td style="border:1px solid #ccc; padding:6px 10px;">Tune parameters (DE optimization)</td>

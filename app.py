@@ -4030,14 +4030,14 @@ ui.div(
     ui.p(ui.strong("▷ Toy Datasets for the Shiny App"),
          style="margin-top:20px; margin-bottom:2px"),
 
-    ui.p(
-        ui.HTML(
-            "Example datasets for testing the Shiny interface are located in the "
-            "<a href="https://github.com/hdlugas/pycompound/tree/main/tests/data" target="_blank"><code>tests/data/</code></a> directory of the PyCompound GitHub repository. "
-            "The appropriate files depend on the selected platform and analysis option."
-        ),
-        style="font-size:15px; margin-top:0px; margin-bottom:8px"
+ui.p(
+    ui.HTML(
+        "Example datasets for testing the Shiny interface are located in the "
+        "<a href='https://github.com/hdlugas/pycompound/tree/main/tests/data' target='_blank'><code>tests/data/</code></a> directory of the PyCompound GitHub repository. "
+        "The appropriate files depend on the selected platform and analysis option."
     ),
+    style="font-size:15px; margin-top:0px; margin-bottom:8px"
+),
 
     ui.HTML(
     """

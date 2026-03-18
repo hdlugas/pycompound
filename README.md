@@ -1231,7 +1231,7 @@ The `tests/data/` directory contains example datasets in multiple formats (e.g.,
 
 | Data | Platform | Input Type | Query/Library | Options | Description |
 |------|----------|------------|---------------|---------|-------------|
-| `1min_subset_3.mzML` | HRMS | mzML | Query | plot/identification | Example mzML file from HUPO-PSI |
+| `1min.mzML` | HRMS | mzML | Query | plot/identification | Example mzML file from HUPO-PSI |
 | `Compound_IDs_in_HRMS_GNPS_reference_library.txt` | HRMS | TXT | Library |  | Full list of GNPS reference library compounds (Zenodo) |
 | `Compound_IDs_in_NRMS_WebBook_reference_library.txt` | NRMS | TXT | Library |  | Full list of NIST WebBook compounds (Zenodo) |
 | `gcms_query_tuning.txt` | NRMS | TXT | Query | tuning | GC-MS data with known ground-truth IDs |
@@ -1245,7 +1245,7 @@ The `tests/data/` directory contains example datasets in multiple formats (e.g.,
 | `MoNA-export-Human_Plasma_Quant.msp` | HRMS | MSP | Query | plot/identification | MoNA MSP file |
 | `trimmed_gcms_reference_library.txt` | NRMS | TXT | Library | plot/identification/tuning | Toy GC-MS reference library (see Zenodo for full version) |
 | `trimmed_GNPS_reference_library.txt` | HRMS | TXT | Library | plot/identification/tuning | Toy GNPS reference library (see Zenodo for full version) |
-| `W001A_1_subset_10.CDF` | NRMS | CDF | Query | plot/identification | Example GC-MS CDF file (apple wine dataset) |
+| `W001A_1.CDF` | NRMS | CDF | Query | plot/identification | Example GC-MS CDF file (apple wine dataset) |
 
 <a name="key-references"></a>
 ## 5. Key References

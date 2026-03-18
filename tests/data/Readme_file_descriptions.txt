@@ -1,4 +1,4 @@
-1min_subset_3.mzML: test mzML file (from https://github.com/HUPO-PSI/mzML); for HRMS, query, plot/identification data
+1min.mzML: test mzML file (from https://github.com/HUPO-PSI/mzML); for HRMS, query, plot/identification data
 Compound_IDs_in_HRMS_GNPS_reference_library.txt: list of all compounds in GNPS reference library; for HRMS, library, names for the entire GNPS library data in Zenodo
 Compound_IDs_in_NRMS_WebBook_reference_library.txt: list of all compounds in GC-MS reference library; for NRMS, library, names for the entire NIST WebBook library data in Zenodo
 gcms_query_tuning.txt: test GC-MS data with known ground truth IDs for tuning purposes; for NRMS, query, tuning data
@@ -12,4 +12,4 @@ likely_lcms_ids.txt: text file consisting of a subset of reference library IDs t
 MoNA-export-Human_Plasma_Quant.msp: test msp file from MoNA (https://mona.fiehnlab.ucdavis.edu/downloads); for HRMS, query, plot/identification data
 trimmed_gcms_reference_library.txt: toy reference library for NRMS; see Zenodo database for full version; for NRMS, library data
 trimmed_GNPS_reference_library.txt: toy reference library for HRMS; see Zenodo database for full version; for HRMS, library data
-W001A_1_subset_10.CDF: test cdf file (from https://ucphchemometrics.com/applewine/); for NRMS, query, plot/identification data
+W001A_1.CDF: test cdf file (from https://ucphchemometrics.com/applewine/); for NRMS, query, plot/identification data

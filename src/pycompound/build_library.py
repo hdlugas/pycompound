@@ -8,14 +8,20 @@ from pyteomics import mzml
 import sys
 import json
 
-def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
-    '''
-    Converts mgf, mzML, cdf, json, or msp files to the necessary format for spectral library matching.
+def build_library_from_raw_data(input_path: str | None = None, output_path: str | None = None, is_reference: bool = False) -> None:
+    """Convert raw spectral data files into spectral-library matching format.
 
-    --input_path: Path to input file (must be mgf, mzML, cdf, json, or msp file). Mandatory argument.
-    --output_path: Path to output TXT file. Default: current working directory.
-    --is_reference: Boolean flag indicating whether IDs of spectra should be written to output. Only pass true if building a reference library with known compound IDs. Only applicable to mgf and msp files. Options: \'True\', \'False\'. Optional argument. Default: False.
-    '''
+    Args:
+        input_path: Path to the input file. Supported formats are MGF, mzML, CDF,
+            JSON, and MSP.
+        output_path: Path where the output tab-delimited TXT file is written.
+            If None, output is written to the current working directory.
+        is_reference: Whether the input file is a reference library with known
+            compound or spectrum identifiers.
+
+    Returns:
+        None.
+    """
 
     if input_path is None:
         print('Error: please specify input_path (i.e. the path to the input mgf, mzML, cdf, json, or msp file). Mandatory argument.')

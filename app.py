@@ -30,6 +30,7 @@ import urllib.request
 import matplotlib
 import textwrap
 
+
 os.environ["MPLBACKEND"] = "Agg"
 matplotlib.rcParams['svg.fonttype'] = 'none'
 matplotlib.use("Agg")
@@ -37,42 +38,64 @@ matplotlib.use("Agg")
 _LOG_QUEUE: asyncio.Queue[str] = asyncio.Queue()
 _ADDUCT_PAT = re.compile(r"\s*(?:\[(M[^\]]+)\]|(M[+-][A-Za-z0-9]+)\+?)\s*$", re.IGNORECASE)
 
-def _log(msg: str):
+
+def _log(msg: str) -> None:
+    """Print a log message immediately.
+
+    Args:
+        msg: Message to print.
+
+    Returns:
+        None.
+    """
     print(msg, flush=True)
 
-def start_log_consumer():
+
+def start_log_consumer() -> None:
+    """Start the asynchronous log consumer once.
+
+    Returns:
+        None.
+    """
     if getattr(start_log_consumer, "_started", False):
         return
     start_log_consumer._started = True
 
-    async def _consume():
+    async def _consume() -> None:
+        """Consume queued log messages and append them to the reactive log.
+
+        Returns:
+            None.
+        """
         while True:
             s = await _LOG_QUEUE.get()
             match_log_rv.set(match_log_rv.get() + s)
             await reactive.flush()
 
     asyncio.create_task(_consume())
-
-
-def start_log_consumer():
-    if getattr(start_log_consumer, "_started", False):
-        return
-    start_log_consumer._started = True
-
-    async def _consume():
-        while True:
-            s = await _LOG_QUEUE.get()
-            match_log_rv.set(match_log_rv.get() + s)
-            await reactive.flush()
-
-    asyncio.create_task(_consume())
-
 
 
 def _strip_adduct(name: str) -> str:
+    """Remove a trailing adduct annotation from a compound name.
+
+    Args:
+        name: Compound or spectrum name.
+
+    Returns:
+        Name with the trailing adduct annotation removed.
+    """
     return _ADDUCT_PAT.sub("", name).strip()
 
+
 def get_pubchem_url(query: str) -> str:
+    """Construct a PubChem URL for a compound query.
+
+    Args:
+        query: Compound name or spectrum identifier.
+
+    Returns:
+        PubChem compound URL or PubChem search URL.
+    """
     base_name = _strip_adduct(query)
     endpoint = ("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/" + urllib.parse.quote(base_name) + "/cids/TXT")
     try:
@@ -88,7 +111,17 @@ def get_pubchem_url(query: str) -> str:
 
 
 
-def build_library_from_raw_data(input_path=None, output_path=None, is_reference=False):
+def build_library_from_raw_data(input_path: str | None = None, output_path: str | None = None, is_reference: bool = False) -> None:
+    """Convert raw spectral data into tab-delimited library format.
+
+    Args:
+        input_path: Path to the input MGF, mzML, CDF, JSON, or MSP file.
+        output_path: Path where the converted output file is written.
+        is_reference: Whether the input file contains reference-library identifiers.
+
+    Returns:
+        None.
+    """
     if input_path is None:
         print('Error: please specify input_path (i.e. the path to the input mgf, mzML, cdf, json, or msp file). Mandatory argument.')
         sys.exit()
@@ -120,7 +153,6 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
         print('ERROR: either an \'mgf\', \'mzML\', \'cdf\', \'json\', or \'msp\' file must be passed to --input_path')
         sys.exit()
 
-
     spectra = []
     if input_file_type == 'mgf':
         with mgf.read(input_path, use_index=False) as reader:
@@ -130,7 +162,6 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
         with mzml.read(input_path) as reader:
             for spec in reader:
                 spectra.append(spec)
-
 
     if input_file_type == 'mgf' or input_file_type == 'mzML':
         ids = []
@@ -152,7 +183,6 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
                         ids.append(spectra[i]['params']['name'])
                 mzs.append(spectra[i]['m/z array'][j])
                 ints.append(spectra[i]['intensity array'][j])
-
 
     if input_file_type == 'cdf':
         dataset = nc.Dataset(input_path, 'r')
@@ -177,7 +207,6 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
                 ids.append(f'ID_{i+1}')
                 mzs.append(mzs_tmp[j])
                 ints.append(ints_tmp[j])
-
 
     if input_file_type == "msp":
         ids = []
@@ -220,7 +249,6 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
                     ints.append(intensity)
                     precursor_ion_mzs.append(precursor_ion_mz)
 
-
     if input_file_type == 'json':
         data = json.load(open(input_path))
         ids = []
@@ -243,7 +271,6 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
             ints.extend(ints_tmp)
             precursor_ion_mzs.extend([data[i]['Precursor_MZ']] * len(mzs_tmp))
 
-
     if input_file_type != 'cdf':
         if len(precursor_ion_mzs) > 0:
             df = pd.DataFrame({'id':ids, 'mz_ratio':mzs, 'intensity':ints, 'precursor_ion_mz':precursor_ion_mzs})
@@ -255,9 +282,44 @@ def build_library_from_raw_data(input_path=None, output_path=None, is_reference=
     df.to_csv(output_path, index=False, sep='\t')
 
 
+def generate_plots_on_HRMS_data(query_data: str | None = None, reference_data: str | None = None, precursor_ion_mz: float | None = None, precursor_ion_mz_tolerance: float | None = None, ionization_mode: str | None = None, collision_energy: float | None = None, spectrum_ID1: str | None = None, spectrum_ID2: str | None = None, print_url_spectrum1: bool = False, print_url_spectrum2: bool = True, similarity_measure: str = 'cosine', weights: dict[str, float] = {'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order: str = 'FCNMWL', high_quality_reference_library: bool = False, mz_min: int = 0, mz_max: int = 9999999, int_min: int | float = 0, int_max: int | float = 9999999, window_size_centroiding: float = 0.5, window_size_matching: float = 0.5, noise_threshold: float = 0.0, wf_mz: float = 0.0, wf_intensity: float = 1.0, LET_threshold: float = 0.0, entropy_dimension: float = 1.1, y_axis_transformation: str = 'normalized', output_path: str | None = None, return_plot: bool = False, annotate_fig: bool = True, display_within_app_flag: bool = False) -> plt.Figure | None:
+    """Generate HRMS spectrum comparison plots.
 
+    Args:
+        query_data: Path to the query spectral library file.
+        reference_data: Path to the reference spectral library file.
+        precursor_ion_mz: Precursor ion m/z used for reference filtering.
+        precursor_ion_mz_tolerance: Tolerance around precursor_ion_mz.
+        ionization_mode: Ionization mode used for filtering.
+        collision_energy: Collision energy used for filtering.
+        spectrum_ID1: First spectrum identifier.
+        spectrum_ID2: Second spectrum identifier.
+        print_url_spectrum1: Whether to include a PubChem URL for the first spectrum.
+        print_url_spectrum2: Whether to include a PubChem URL for the second spectrum.
+        similarity_measure: Similarity measure used for comparison.
+        weights: Weights used for mixture similarity.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        high_quality_reference_library: Whether to skip some reference preprocessing.
+        mz_min: Minimum m/z retained during filtering.
+        mz_max: Maximum m/z retained during filtering.
+        int_min: Minimum intensity retained during filtering.
+        int_max: Maximum intensity retained during filtering.
+        window_size_centroiding: Centroiding window size.
+        window_size_matching: Peak-matching window size.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_intensity: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        entropy_dimension: Entropy dimension parameter.
+        y_axis_transformation: Transformation applied to plotted intensities.
+        output_path: Path where the SVG plot is written.
+        return_plot: Whether to return the matplotlib figure.
+        annotate_fig: Whether to annotate the figure with settings.
+        display_within_app_flag: Whether to format the plot for display inside Shiny.
 
-def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz=None, precursor_ion_mz_tolerance=None, ionization_mode=None, collision_energy=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1=False, print_url_spectrum2=True, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True, display_within_app_flag=False):
+    Returns:
+        Matplotlib figure if return_plot is True; otherwise, None.
+    """
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -682,9 +744,38 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, precursor_
         return fig
 
 
+def generate_plots_on_NRMS_data(query_data: str | None = None, reference_data: str | None = None, spectrum_ID1: str | None = None, spectrum_ID2: str | None = None, print_url_spectrum1: bool = False, print_url_spectrum2: bool = True, similarity_measure: str = 'cosine', weights: dict[str, float] = {'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order: str = 'FNLW', high_quality_reference_library: bool = False, mz_min: int = 0, mz_max: int = 9999999, int_min: int | float = 0, int_max: int | float = 9999999, noise_threshold: float = 0.0, wf_mz: float = 0.0, wf_intensity: float = 1.0, LET_threshold: float = 0.0, entropy_dimension: float = 1.1, y_axis_transformation: str = 'normalized', output_path: str | None = None, return_plot: bool = False, annotate_fig: bool = True, display_within_app_flag: bool = False) -> plt.Figure | None:
+    """Generate NRMS spectrum comparison plots.
 
+    Args:
+        query_data: Path to the query spectral library file.
+        reference_data: Path to the reference spectral library file.
+        spectrum_ID1: First spectrum identifier.
+        spectrum_ID2: Second spectrum identifier.
+        print_url_spectrum1: Whether to include a PubChem URL for the first spectrum.
+        print_url_spectrum2: Whether to include a PubChem URL for the second spectrum.
+        similarity_measure: Similarity measure used for comparison.
+        weights: Weights used for mixture similarity.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        high_quality_reference_library: Whether to skip some reference preprocessing.
+        mz_min: Minimum m/z retained during filtering.
+        mz_max: Maximum m/z retained during filtering.
+        int_min: Minimum intensity retained during filtering.
+        int_max: Maximum intensity retained during filtering.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_intensity: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        entropy_dimension: Entropy dimension parameter.
+        y_axis_transformation: Transformation applied to plotted intensities.
+        output_path: Path where the SVG plot is written.
+        return_plot: Whether to return the matplotlib figure.
+        annotate_fig: Whether to annotate the figure with settings.
+        display_within_app_flag: Whether to format the plot for display inside Shiny.
 
-def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, print_url_spectrum1=False, print_url_spectrum2=True, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False, annotate_fig=True, display_within_app_flag=False):
+    Returns:
+        Matplotlib figure if return_plot is True; otherwise, None.
+    """
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -1066,13 +1157,33 @@ def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_I
         return fig
 
 
+def wf_transform(spec_mzs: np.ndarray, spec_ints: np.ndarray, wf_mz: float, wf_int: float) -> np.ndarray:
+    """Apply m/z and intensity weighting-factor transformation.
 
-def wf_transform(spec_mzs, spec_ints, wf_mz, wf_int):
+    Args:
+        spec_mzs: Spectrum m/z values.
+        spec_ints: Spectrum intensity values.
+        wf_mz: m/z weighting exponent.
+        wf_int: Intensity weighting exponent.
+
+    Returns:
+        Transformed intensity values.
+    """
     spec_ints = np.power(spec_mzs, wf_mz) * np.power(spec_ints, wf_int)
     return(spec_ints)
 
 
-def LE_transform(intensity, thresh, normalization_method):
+def LE_transform(intensity: np.ndarray, thresh: float, normalization_method: str) -> np.ndarray:
+    """Apply the low-entropy intensity transformation.
+
+    Args:
+        intensity: Intensity vector.
+        thresh: Low-entropy threshold.
+        normalization_method: Method used to normalize intensities.
+
+    Returns:
+        Transformed intensity vector.
+    """
     intensity_tmp = normalize(intensity, method=normalization_method)
     if np.sum(intensity_tmp) > 0:
         S = scipy.stats.entropy(intensity_tmp.astype('float'))
@@ -1084,7 +1195,16 @@ def LE_transform(intensity, thresh, normalization_method):
     return intensity 
 
 
-def normalize(intensities,method='standard'):
+def normalize(intensities: np.ndarray, method: str = 'standard') -> np.ndarray:
+    """Normalize an intensity vector.
+
+    Args:
+        intensities: Intensity vector.
+        method: Normalization method.
+
+    Returns:
+        Normalized intensity vector.
+    """
     if np.sum(intensities) > 0:
         if method == 'softmax':
             if np.any(intensities > 700):
@@ -1099,7 +1219,20 @@ def normalize(intensities,method='standard'):
     return(intensities)
 
 
-def filter_spec_lcms(spec, mz_min = 0, mz_max = 999999999999, int_min = 0, int_max = 999999999999, is_matched = False):
+def filter_spec_lcms(spec: np.ndarray, mz_min: float = 0, mz_max: float = 999999999999, int_min: float = 0, int_max: float = 999999999999, is_matched: bool = False) -> np.ndarray:
+    """Filter an LC-MS spectrum by m/z and intensity ranges.
+
+    Args:
+        spec: Spectrum array with m/z and intensity columns.
+        mz_min: Minimum m/z value retained.
+        mz_max: Maximum m/z value retained.
+        int_min: Minimum intensity value retained.
+        int_max: Maximum intensity value retained.
+        is_matched: Whether the spectrum has already been peak-matched.
+
+    Returns:
+        Filtered spectrum array.
+    """
     if is_matched == False:
         spec = spec[spec[:,0] >= mz_min]
         spec = spec[spec[:,0] <= mz_max]
@@ -1113,7 +1246,19 @@ def filter_spec_lcms(spec, mz_min = 0, mz_max = 999999999999, int_min = 0, int_m
     return(spec)
 
 
-def filter_spec_gcms(spec, mz_min = 0, mz_max = 999999999999, int_min = 0, int_max = 999999999999):
+def filter_spec_gcms(spec: np.ndarray, mz_min: float = 0, mz_max: float = 999999999999, int_min: float = 0, int_max: float = 999999999999) -> np.ndarray:
+    """Filter a GC-MS spectrum by m/z and intensity ranges.
+
+    Args:
+        spec: Spectrum array with m/z and intensity columns.
+        mz_min: Minimum m/z value retained.
+        mz_max: Maximum m/z value retained.
+        int_min: Minimum intensity value retained.
+        int_max: Maximum intensity value retained.
+
+    Returns:
+        Filtered spectrum array.
+    """
     spec[np.where(spec[:,0] < mz_min)[0],1] = 0
     spec[np.where(spec[:,0] > mz_max)[0],1] = 0
     spec[np.where(spec[:,1] < int_min)[0],1] = 0
@@ -1121,7 +1266,16 @@ def filter_spec_gcms(spec, mz_min = 0, mz_max = 999999999999, int_min = 0, int_m
     return(spec)
 
 
-def remove_noise(spec, nr):
+def remove_noise(spec: np.ndarray, nr: float | None) -> np.ndarray:
+    """Remove low-intensity noise from a spectrum.
+
+    Args:
+        spec: Spectrum array with m/z and intensity columns.
+        nr: Noise threshold as a fraction of maximum intensity.
+
+    Returns:
+        Noise-filtered spectrum array.
+    """
     if spec.shape[0] > 1:
         if nr is not None:
             spec[np.where(spec[:,1] < np.max(spec[:,1]) * nr)[0]] = 0
@@ -1129,7 +1283,16 @@ def remove_noise(spec, nr):
     return(spec)
 
 
-def centroid_spectrum(spec, window_size):
+def centroid_spectrum(spec: np.ndarray, window_size: float) -> np.ndarray:
+    """Centroid a spectrum using an m/z window.
+
+    Args:
+        spec: Spectrum array with m/z and intensity columns.
+        window_size: m/z window size used for centroiding.
+
+    Returns:
+        Centroided spectrum array.
+    """
     spec = spec[np.argsort(spec[:,0])]
 
     mz_array = spec[:, 0]
@@ -1180,8 +1343,17 @@ def centroid_spectrum(spec, window_size):
         return spec
 
 
+def match_peaks_in_spectra(spec_a: np.ndarray, spec_b: np.ndarray, window_size: float) -> np.ndarray:
+    """Match peaks between two spectra within an m/z window.
 
-def match_peaks_in_spectra(spec_a, spec_b, window_size):
+    Args:
+        spec_a: First spectrum array.
+        spec_b: Second spectrum array.
+        window_size: Maximum m/z difference for matching peaks.
+
+    Returns:
+        Merged array containing matched peak intensities.
+    """
     a = 0
     b = 0
 
@@ -1220,7 +1392,16 @@ def match_peaks_in_spectra(spec_a, spec_b, window_size):
 
 
 
-def convert_spec(spec, mzs):
+def convert_spec(spec: np.ndarray, mzs: np.ndarray) -> np.ndarray:
+    """Convert a sparse spectrum to a common m/z grid.
+
+    Args:
+        spec: Spectrum array with m/z and intensity columns.
+        mzs: Common m/z grid.
+
+    Returns:
+        Spectrum array aligned to the common m/z grid.
+    """
     ints_tmp = []
     for i in range(0,len(mzs)):
         if mzs[i] in spec[:,0]:
@@ -1232,23 +1413,16 @@ def convert_spec(spec, mzs):
     return out
 
 
-"""
-def get_reference_df(reference_data, likely_reference_IDs=None):
-    extension = reference_data.rsplit('.',1)
-    extension = extension[(len(extension)-1)]
-    if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'msp' or extension == 'MSP' or extension == 'json' or extension == 'JSON':
-        output_path_tmp = reference_data[:-3] + 'txt'
-        build_library_from_raw_data(input_path=reference_data, output_path=output_path_tmp, is_reference=True)
-        df_reference = pd.read_csv(output_path_tmp, sep='\t')
-    elif extension == 'txt' or extension == 'TXT':
-        df_reference = pd.read_csv(reference_data, sep='\t')
-    if likely_reference_IDs is not None:
-        likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None)
-        df_reference = df_reference.loc[df_reference['id'].isin(likely_reference_IDs.iloc[:,0].tolist())]
-    return df_reference
-"""
+def get_reference_df(reference_data: str | Path, likely_reference_IDs: str | Path | None = None) -> pd.DataFrame:
+    """Load or convert a reference spectral library.
 
-def get_reference_df(reference_data, likely_reference_IDs=None):
+    Args:
+        reference_data: Path to the reference spectral library file.
+        likely_reference_IDs: Optional path to identifiers used to subset references.
+
+    Returns:
+        Reference spectral library data frame.
+    """
     reference_data = str(reference_data)
     ext = Path(reference_data).suffix.lower().lstrip(".")
 
@@ -1274,29 +1448,75 @@ def get_reference_df(reference_data, likely_reference_IDs=None):
 
 
 
-def S_cos(ints_a, ints_b):
+def S_cos(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute cosine similarity between two intensity vectors.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Cosine similarity score.
+    """
     if np.sum(ints_a) == 0 or np.sum(ints_b) == 0:
         return(0)
     else:
         return np.dot(ints_a,ints_b) / (np.sqrt(sum(np.power(ints_a,2))) * np.sqrt(sum(np.power(ints_b,2))))
 
 
-def ent_renyi(ints, q):
+def ent_renyi(ints: np.ndarray, q: float) -> float:
+    """Compute Rényi entropy.
+
+    Args:
+        ints: Intensity vector.
+        q: Entropy dimension.
+
+    Returns:
+        Rényi entropy value.
+    """
     return np.log(sum(np.power(ints,q))) / (1-q)
 
 
-def ent_tsallis(ints, q):
+def ent_tsallis(ints: np.ndarray, q: float) -> float:
+    """Compute Tsallis entropy.
+
+    Args:
+        ints: Intensity vector.
+        q: Entropy dimension.
+
+    Returns:
+        Tsallis entropy value.
+    """
     return (sum(np.power(ints,q))-1) / (1-q)
 
 
-def S_shannon(ints_a, ints_b):
+def S_shannon(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Shannon entropy similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Shannon entropy similarity score.
+    """
     ent_a = scipy.stats.entropy(ints_a)
     ent_b = scipy.stats.entropy(ints_b)
     ent_ab = scipy.stats.entropy(ints_a + ints_b)
     return(1 - (2 * ent_ab - ent_a - ent_b)/np.log(4))
 
 
-def S_renyi(ints_a, ints_b, q):
+def S_renyi(ints_a: np.ndarray, ints_b: np.ndarray, q: float) -> float:
+    """Compute Rényi entropy similarity.
+
+    Args:
+        ints_a: First normalized intensity vector.
+        ints_b: Second normalized intensity vector.
+        q: Entropy dimension.
+
+    Returns:
+        Rényi entropy similarity score.
+    """
     if q == 1:
         print('Warning: the Renyi Entropy Similarity Measure is equivalent to the Shannon Entropy Similarity Measure when the entropy dimension is 1')
         return S_shannon(ints_a, ints_b)
@@ -1308,7 +1528,17 @@ def S_renyi(ints_a, ints_b, q):
         return 1 - (2 * ent_merg - ent_a - ent_b) / N
 
 
-def S_tsallis(ints_a, ints_b, q):
+def S_tsallis(ints_a: np.ndarray, ints_b: np.ndarray, q: float) -> float:
+    """Compute Tsallis entropy similarity.
+
+    Args:
+        ints_a: First normalized intensity vector.
+        ints_b: Second normalized intensity vector.
+        q: Entropy dimension.
+
+    Returns:
+        Tsallis entropy similarity score.
+    """
     if q == 1:
         print('Warning: the Tsallis Entropy Similarity Measure is equivalent to the Shannon Entropy Similarity Measure when the entropy dimension is 1')
         return S_shannon(ints_a, ints_b)
@@ -1320,7 +1550,18 @@ def S_tsallis(ints_a, ints_b, q):
         return 1 - (2 * ent_merg - ent_a - ent_b) / N
 
 
-def S_mixture(ints_a, ints_b, weights={'cosine':0.25, 'shannon':0.25, 'renyi':0.25, 'tsallis':0.25}, q=1.1):
+def S_mixture(ints_a: np.ndarray, ints_b: np.ndarray, weights: dict[str, float] = {'cosine':0.25, 'shannon':0.25, 'renyi':0.25, 'tsallis':0.25}, q: float = 1.1) -> float:
+    """Compute a weighted mixture similarity score.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+        weights: Similarity-measure weights.
+        q: Entropy dimension for Rényi and Tsallis similarities.
+
+    Returns:
+        Weighted mixture similarity score.
+    """
     similarity = 0
     s = sum(weights.values())
     weights = {k: v / s for k, v in weights.items()}
@@ -1366,11 +1607,19 @@ def S_mixture(ints_a, ints_b, weights={'cosine':0.25, 'shannon':0.25, 'renyi':0.
     return similarity
 
 
-def get_contingency_entries(ints_a, ints_b):
+def get_contingency_entries(ints_a: np.ndarray, ints_b: np.ndarray) -> list[int]:
+    """Compute binary contingency counts for two intensity vectors.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Counts [a, b, c] for features unique to ints_a, unique to ints_b, and shared.
+    """
     a = 0
     b = 0
     c = 0
-
     for x, y in zip(ints_a, ints_b):
         if x != 0 and y != 0:
             c += 1
@@ -1381,7 +1630,16 @@ def get_contingency_entries(ints_a, ints_b):
     return [a,b,c]
 
 
-def S_jaccard(ints_a, ints_b):
+def S_jaccard(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Jaccard similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Jaccard similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1394,7 +1652,16 @@ def S_jaccard(ints_a, ints_b):
     return similarity
 
 
-def S_dice(ints_a, ints_b):
+def S_dice(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Dice similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Dice similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1407,7 +1674,16 @@ def S_dice(ints_a, ints_b):
     return similarity
 
 
-def S_3w_jaccard(ints_a, ints_b):
+def S_3w_jaccard(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute three-weighted Jaccard similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Three-weighted Jaccard similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1420,7 +1696,16 @@ def S_3w_jaccard(ints_a, ints_b):
     return similarity
 
 
-def S_sokal_sneath(ints_a, ints_b):
+def S_sokal_sneath(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Sokal-Sneath similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Sokal-Sneath similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1433,7 +1718,16 @@ def S_sokal_sneath(ints_a, ints_b):
     return similarity
 
 
-def S_binary_cosine(ints_a, ints_b):
+def S_binary_cosine(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute binary cosine similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Binary cosine similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1446,7 +1740,16 @@ def S_binary_cosine(ints_a, ints_b):
     return similarity
 
 
-def S_mountford(ints_a, ints_b):
+def S_mountford(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Mountford similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Mountford similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1459,7 +1762,16 @@ def S_mountford(ints_a, ints_b):
     return similarity
 
 
-def S_mcconnaughey(ints_a, ints_b):
+def S_mcconnaughey(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute McConnaughey similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        McConnaughey similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1473,7 +1785,16 @@ def S_mcconnaughey(ints_a, ints_b):
     return similarity
 
 
-def S_driver_kroeber(ints_a, ints_b):
+def S_driver_kroeber(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Driver-Kroeber similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Driver-Kroeber similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1486,7 +1807,16 @@ def S_driver_kroeber(ints_a, ints_b):
     return similarity
 
 
-def S_simpson(ints_a, ints_b):
+def S_simpson(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Simpson similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Simpson similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1499,7 +1829,16 @@ def S_simpson(ints_a, ints_b):
     return similarity
 
 
-def S_braun_banquet(ints_a, ints_b):
+def S_braun_banquet(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Braun-Banquet similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Braun-Banquet similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1512,7 +1851,16 @@ def S_braun_banquet(ints_a, ints_b):
     return similarity
 
 
-def S_fager_mcgowan(ints_a, ints_b):
+def S_fager_mcgowan(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Fager-McGowan similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Fager-McGowan similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1527,7 +1875,16 @@ def S_fager_mcgowan(ints_a, ints_b):
     return similarity
 
 
-def S_kulczynski(ints_a, ints_b):
+def S_kulczynski(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Kulczynski similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Kulczynski similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1541,14 +1898,32 @@ def S_kulczynski(ints_a, ints_b):
     return similarity
 
 
-def S_intersection(ints_a, ints_b):
+def S_intersection(ints_a: np.ndarray, ints_b: np.ndarray) -> int:
+    """Compute the count of shared nonzero entries.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Number of shared nonzero entries.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     c = tmp[2]
     c = c / (c + 1)
     return c
 
 
-def S_hamming(ints_a, ints_b):
+def S_hamming(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Hamming-style similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Hamming-style similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1560,7 +1935,16 @@ def S_hamming(ints_a, ints_b):
     return similarity
 
 
-def S_hellinger(ints_a, ints_b):
+def S_hellinger(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Hellinger-style similarity.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Hellinger-style similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -1569,7 +1953,19 @@ def S_hellinger(ints_a, ints_b):
     return similarity
 
 
-def get_similarity(similarity_measure, q_ints, r_ints, weights, q):
+def get_similarity(similarity_measure: str, q_ints: np.ndarray, r_ints: np.ndarray, weights: dict[str, float] | None, q: float) -> float:
+    """Dispatch to the requested similarity measure.
+
+    Args:
+        similarity_measure: Name of the similarity measure.
+        q_ints: Query intensity vector.
+        r_ints: Reference intensity vector.
+        weights: Weights used for mixture similarity.
+        q: Entropy dimension.
+
+    Returns:
+        Similarity score.
+    """
 
     if similarity_measure == 'cosine':
         similarity = S_cos(q_ints, r_ints)
@@ -1635,14 +2031,33 @@ def get_similarity(similarity_measure, q_ints, r_ints, weights, q):
     return similarity
 
 
-def _vector_to_full_params(X, default_params, optimize_params):
+def _vector_to_full_params(X: np.ndarray, default_params: dict[str, float], optimize_params: list[str]) -> dict[str, float]:
+    """Convert an optimization vector into a full parameter dictionary.
+
+    Args:
+        X: Vector of optimized parameter values.
+        default_params: Full default parameter dictionary.
+        optimize_params: Parameter names corresponding to X.
+
+    Returns:
+        Full parameter dictionary with optimized values inserted.
+    """
     params = default_params.copy()
     for name, val in zip(optimize_params, X):
         params[name] = float(val)
     return params
 
 
-def objective_function_HRMS(X, ctx):
+def objective_function_HRMS(X: np.ndarray, ctx: dict[str, object]) -> float:
+    """Evaluate the HRMS differential evolution objective.
+
+    Args:
+        X: Candidate parameter vector.
+        ctx: Context dictionary containing data and settings.
+
+    Returns:
+        Objective value equal to one minus HRMS accuracy.
+    """
     p = _vector_to_full_params(X, ctx["default_params"], ctx["optimize_params"])
     acc = get_acc_HRMS(
         ctx["df_query"], ctx["df_reference"],
@@ -1658,7 +2073,17 @@ def objective_function_HRMS(X, ctx):
     print(f"\nparams({ctx['optimize_params']}) = {np.array(X)}\naccuracy: {acc*100}%")
     return 1.0 - acc
 
-def objective_function_NRMS(X, ctx):
+
+def objective_function_NRMS(X: np.ndarray, ctx: dict[str, object]) -> float:
+    """Evaluate the NRMS differential evolution objective.
+
+    Args:
+        X: Candidate parameter vector.
+        ctx: Context dictionary containing data and settings.
+
+    Returns:
+        Objective value equal to one minus NRMS accuracy.
+    """
     p = _vector_to_full_params(X, ctx["default_params"], ctx["optimize_params"])
     acc = get_acc_NRMS(
         ctx["df_query"], ctx["df_reference"],
@@ -1673,8 +2098,33 @@ def objective_function_NRMS(X, ctx):
     return 1.0 - acc
 
 
+def tune_params_DE(query_data: str | None = None, reference_data: str | list[str] | None = None, precursor_ion_mz_tolerance: float | None = None, ionization_mode: str | None = None, adduct: str | None = None, chromatography_platform: str = 'HRMS', similarity_measure: str = 'cosine', weights: dict[str, float] | None = None, spectrum_preprocessing_order: str = 'CNMWL', mz_min: int = 0, mz_max: int = 999999999, int_min: int | float = 0, int_max: int | float = 999999999, high_quality_reference_library: bool = False, optimize_params: list[str] = ["window_size_centroiding","window_size_matching","noise_threshold","wf_mz","wf_int","LET_threshold","entropy_dimension"], param_bounds: dict[str, tuple[float, float]] = {"window_size_centroiding":(0.0,0.5),"window_size_matching":(0.0,0.5),"noise_threshold":(0.0,0.25),"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0.0,5.0),"entropy_dimension":(1.0,3.0)}, default_params: dict[str, float] = {"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1}, maxiters: int = 3, de_workers: int = 1) -> None:
+    """Tune preprocessing parameters using differential evolution.
 
-def tune_params_DE(query_data=None, reference_data=None, precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, chromatography_platform='HRMS', similarity_measure='cosine', weights=None, spectrum_preprocessing_order='CNMWL', mz_min=0, mz_max=999999999, int_min=0, int_max=999999999, high_quality_reference_library=False, optimize_params=["window_size_centroiding","window_size_matching","noise_threshold","wf_mz","wf_int","LET_threshold","entropy_dimension"], param_bounds={"window_size_centroiding":(0.0,0.5),"window_size_matching":(0.0,0.5),"noise_threshold":(0.0,0.25),"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0.0,5.0),"entropy_dimension":(1.0,3.0)}, default_params={"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1}, maxiters=3, de_workers=1):
+    Args:
+        query_data: Path to query data.
+        reference_data: Path or paths to reference data.
+        precursor_ion_mz_tolerance: Precursor ion m/z tolerance.
+        ionization_mode: Ionization mode filter.
+        adduct: Adduct filter.
+        chromatography_platform: Chromatography platform.
+        similarity_measure: Similarity measure.
+        weights: Similarity weights.
+        spectrum_preprocessing_order: Ordered preprocessing operations.
+        mz_min: Minimum m/z retained.
+        mz_max: Maximum m/z retained.
+        int_min: Minimum intensity retained.
+        int_max: Maximum intensity retained.
+        high_quality_reference_library: Whether to skip some reference preprocessing.
+        optimize_params: Names of parameters to optimize.
+        param_bounds: Bounds for optimized parameters.
+        default_params: Default full parameter set.
+        maxiters: Maximum differential evolution iterations.
+        de_workers: Number of differential evolution workers.
+
+    Returns:
+        None.
+    """
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -2758,7 +3208,15 @@ class _UIWriter:
         pass
 
 
-def attach_logging_to_writer(writer):
+def attach_logging_to_writer(writer: object) -> object:
+    """Attach logging output to a writer object.
+
+    Args:
+        writer: Writer object receiving log output.
+
+    Returns:
+        Logging handler or configured logging object.
+    """
     handler = logging.StreamHandler(writer)
     handler.setLevel(logging.INFO)
     root = logging.getLogger()
@@ -2767,21 +3225,55 @@ def attach_logging_to_writer(writer):
     return handler, root
 
 
+def _run_with_redirects(fn: object, writer: object, *args: object, **kwargs: object) -> object:
+    """Run a callable while redirecting stdout and stderr.
 
-def _run_with_redirects(fn, writer, *args, **kwargs):
+    Args:
+        fn: Callable to execute.
+        writer: Writer used for redirected output.
+        *args: Positional arguments passed to fn.
+        **kwargs: Keyword arguments passed to fn.
+
+    Returns:
+        Result returned by fn.
+    """
     with redirect_stdout(writer), redirect_stderr(writer):
         return fn(*args, **kwargs)
 
 
-def strip_text(s):
+def strip_text(s: object) -> str | None:
+    """Strip text input.
+
+    Args:
+        s: Input value.
+
+    Returns:
+        Stripped string or None.
+    """
     return [x.strip() for x in s.strip('[]').split(',') if x.strip()]
 
 
-def strip_numeric(s):
+def strip_numeric(s: object) -> float | None:
+    """Strip and convert numeric input.
+
+    Args:
+        s: Input value.
+
+    Returns:
+        Float value or None.
+    """
     return [float(x.strip()) for x in s.strip('[]').split(',') if x.strip()]
 
 
-def strip_weights(s):
+def strip_weights(s: object) -> dict[str, float] | None:
+    """Parse a weights string into a dictionary.
+
+    Args:
+        s: Input weights string.
+
+    Returns:
+        Parsed weights dictionary or None.
+    """
     obj = ast.literal_eval(s) if isinstance(s, (str, bytes)) else s
     keys = ['Cosine', 'Shannon', 'Renyi', 'Tsallis']
 
@@ -2801,7 +3293,16 @@ def strip_weights(s):
     return out
 
 
-def build_library(input_path=None, output_path=None):
+def build_library(input_path: str | None = None, output_path: str | None = None) -> None:
+    """Build a spectral library from raw input data.
+
+    Args:
+        input_path: Path to raw spectral data.
+        output_path: Path where converted library is written.
+
+    Returns:
+        None.
+    """
     last_three_chars = input_path[(len(input_path)-3):len(input_path)]
     last_four_chars = input_path[(len(input_path)-4):len(input_path)]
     if last_three_chars == 'txt' or last_three_chars == 'TXT':
@@ -2910,7 +3411,16 @@ def build_library(input_path=None, output_path=None):
 
 
 
-def extract_first_column_ids(file_path: str, max_ids: int = 20000):
+def extract_first_column_ids(file_path: str, max_ids: int = 20000) -> list[str]:
+    """Extract identifiers from the first column of a file.
+
+    Args:
+        file_path: Path to the file.
+        max_ids: Maximum number of identifiers to extract.
+
+    Returns:
+        List of identifiers.
+    """
     suffix = Path(file_path).suffix.lower()
 
     if suffix == ".txt":
@@ -2953,13 +3463,31 @@ def extract_first_column_ids(file_path: str, max_ids: int = 20000):
     return []
 
 
-def _open_plot_window(session, svg_bytes: bytes, title: str = "plot.svg"):
+def _open_plot_window(session: object, svg_bytes: bytes, title: str = "plot.svg") -> None:
+    """Open an SVG plot in a browser window or app session.
+
+    Args:
+        session: Shiny session object.
+        svg_bytes: SVG image bytes.
+        title: Window title.
+
+    Returns:
+        None.
+    """
     b64 = base64.b64encode(svg_bytes).decode("ascii")
     data_url = f"data:image/svg;base64,{b64}"
     session.send_custom_message("open-plot-window", {"svg": data_url, "title": title})
 
 
-def plot_spectra_ui(platform: str):
+def plot_spectra_ui(platform: str) -> object:
+    """Create the plot-spectra user interface.
+
+    Args:
+        platform: Chromatography platform.
+
+    Returns:
+        Shiny UI object.
+    """
     base_inputs = [
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
@@ -3084,7 +3612,15 @@ ui.div(
 
 
 
-def run_spec_lib_matching_ui(platform: str):
+def run_spec_lib_matching_ui(platform: str) -> object:
+    """Create the spectral-library matching user interface.
+
+    Args:
+        platform: Chromatography platform.
+
+    Returns:
+        Shiny UI object.
+    """
     base_inputs = [
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
@@ -3242,7 +3778,15 @@ ui.div(
 
 
 
-def run_parameter_tuning_grid_ui(platform: str):
+def run_parameter_tuning_grid_ui(platform: str) -> object:
+    """Create the grid-search parameter tuning user interface.
+
+    Args:
+        platform: Chromatography platform.
+
+    Returns:
+        Shiny UI object.
+    """
     base_inputs = [
         ui.input_file("query_data", ui.span("Upload ",ui.strong("query dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
         ui.input_file("reference_data", ui.span("Upload ",ui.strong("reference dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
@@ -3352,7 +3896,15 @@ PARAMS_NRMS = {
 }
 
 
-def run_parameter_tuning_DE_ui(platform: str):
+def run_parameter_tuning_DE_ui(platform: str) -> object:
+    """Create the differential-evolution tuning user interface.
+
+    Args:
+        platform: Chromatography platform.
+
+    Returns:
+        Shiny UI object.
+    """
     if platform == "HRMS":
         PARAMS = PARAMS_HRMS
     else:
@@ -3465,7 +4017,17 @@ app_ui = ui.page_fluid(
 
 
 
-def server(input, output, session):
+def server(input: object, output: object, session: object) -> None:
+    """Define the Shiny server logic.
+
+    Args:
+        input: Shiny input object.
+        output: Shiny output object.
+        session: Shiny session object.
+
+    Returns:
+        None.
+    """
     current_page = reactive.Value("main_menu")
     
     run_status_plot_spectra = reactive.Value("")

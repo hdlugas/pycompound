@@ -9,44 +9,76 @@ import numpy as np
 import sys
 
 
-def S_cos(ints_a, ints_b):
+
+def S_cos(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute cosine similarity between two intensity vectors.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Cosine similarity score.
+    """
     if np.sum(ints_a) == 0 or np.sum(ints_b) == 0:
         return(0)
     else:
         return np.dot(ints_a,ints_b) / (np.sqrt(sum(np.power(ints_a,2))) * np.sqrt(sum(np.power(ints_b,2))))
 
 
-def ent_renyi(ints, q):
+def ent_renyi(ints: np.ndarray, q: float) -> float:
+    """Compute Rényi entropy for an intensity vector.
+
+    Args:
+        ints: Intensity vector.
+        q: Rényi entropy dimension.
+
+    Returns:
+        Rényi entropy value.
+    """
     return np.log(sum(np.power(ints,q))) / (1-q)
 
 
-def ent_tsallis(ints, q):
+def ent_tsallis(ints: np.ndarray, q: float) -> float:
+    """Compute Tsallis entropy for an intensity vector.
+
+    Args:
+        ints: Intensity vector.
+        q: Tsallis entropy dimension.
+
+    Returns:
+        Tsallis entropy value.
+    """
     return (sum(np.power(ints,q))-1) / (1-q)
 
 
-def S_shannon(ints_a, ints_b):
-    '''
-    Shannon Entropy Similarity Measure
+def S_shannon(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Shannon entropy similarity between two intensity vectors.
 
-    This similarity function was presented by: 
-    Li, Y.; Kind, T.; Folz, J.; Vaniya, A.; Mehta, S. S.; Fiehn, O.
-    Spectral entropy outperforms MS/MS dot product similarity for small-molecule compound identification. 
-    * Note that since scipy.stats.entropy normalizes the input vector to sum to 1, vec1 and vec2 need not be normalized when computing ent_ab
-    '''
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
 
+    Returns:
+        Shannon entropy similarity score.
+    """
     ent_a = scipy.stats.entropy(ints_a)
     ent_b = scipy.stats.entropy(ints_b)
     ent_ab = scipy.stats.entropy(ints_a + ints_b)
     return(1 - (2 * ent_ab - ent_a - ent_b)/np.log(4))
 
 
-def S_renyi(ints_a, ints_b, q):
-    '''
-    Rényi Entropy Similarity Measure
-    * This is a novel similarity measure that generalizes the Shannon Entropy Similarity Measure
-    * The Rényi Similarity Measure approaches the Shannon Entropy Similarity Measure as q approaches 1
-    * ints_a and ints_b must be normalized to sum to 1
-    '''
+def S_renyi(ints_a: np.ndarray, ints_b: np.ndarray, q: float) -> float:
+    """Compute Rényi entropy similarity between two intensity vectors.
+
+    Args:
+        ints_a: First normalized intensity vector.
+        ints_b: Second normalized intensity vector.
+        q: Rényi entropy dimension.
+
+    Returns:
+        Rényi entropy similarity score.
+    """
     if q == 1:
         print('Warning: the Renyi Entropy Similarity Measure is equivalent to the Shannon Entropy Similarity Measure when the entropy dimension is 1')
         return S_shannon(ints_a, ints_b)
@@ -58,13 +90,17 @@ def S_renyi(ints_a, ints_b, q):
         return 1 - (2 * ent_merg - ent_a - ent_b) / N
 
 
-def S_tsallis(ints_a, ints_b, q):
-    '''
-    Tsallis Entropy Similarity Measure
-    * This is a novel similarity measure that generalizes the Shannon Entropy Similarity Measure
-    * The Tsallis Similarity Measure approaches the Shannon Entropy Similarity Measure as q approaches 1
-    * ints_a and ints_b must be normalized to sum to 1
-    '''
+def S_tsallis(ints_a: np.ndarray, ints_b: np.ndarray, q: float) -> float:
+    """Compute Tsallis entropy similarity between two intensity vectors.
+
+    Args:
+        ints_a: First normalized intensity vector.
+        ints_b: Second normalized intensity vector.
+        q: Tsallis entropy dimension.
+
+    Returns:
+        Tsallis entropy similarity score.
+    """
     if q == 1:
         print('Warning: the Tsallis Entropy Similarity Measure is equivalent to the Shannon Entropy Similarity Measure when the entropy dimension is 1')
         return S_shannon(ints_a, ints_b)
@@ -75,10 +111,19 @@ def S_tsallis(ints_a, ints_b, q):
         N = np.sum(2*np.power(ints_a/2,q)+2*np.power(ints_b/2,q)-np.power(ints_a,q)-np.power(ints_b,q)) / (1-q)
         return 1 - (2 * ent_merg - ent_a - ent_b) / N
 
-def S_mixture(ints_a, ints_b, weights={'Cosine':0.25, 'Shannon':0.25, 'Renyi':0.25, 'Tsallis':0.25}, q=1.1):
-    '''
-    Mixture similarity measure that is a weighted sum of any combination of the four similarity measures of Cosine, Shannon, Renyi, and Tsallis
-    '''
+
+def S_mixture(ints_a: np.ndarray, ints_b: np.ndarray, weights: dict[str, float] = {'Cosine':0.25, 'Shannon':0.25, 'Renyi':0.25, 'Tsallis':0.25}, q: float = 1.1) -> float:
+    """Compute a weighted mixture of supported similarity measures.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+        weights: Weights for Cosine, Shannon, Renyi, and Tsallis similarities.
+        q: Entropy dimension used for Rényi and Tsallis similarities.
+
+    Returns:
+        Weighted mixture similarity score.
+    """
     if set(weights.keys()).issubset(set(['Cosine','Shannon','Renyi','Tsallis'])) is False:
         print('Error: the keys to the weight parameter dict of the function S_mixture must be one of the four: Cosine, Shannon, Renyi, Tsallis')
         sys.exit()
@@ -96,7 +141,18 @@ def S_mixture(ints_a, ints_b, weights={'Cosine':0.25, 'Shannon':0.25, 'Renyi':0.
     return similarity
 
 
-def get_contingency_entries(ints_a, ints_b):
+def get_contingency_entries(ints_a: np.ndarray, ints_b: np.ndarray) -> list[int]:
+    """Compute binary contingency entries for two intensity vectors.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        List containing counts [a, b, c], where a counts features present only in
+        ints_a, b counts features present only in ints_b, and c counts features
+        present in both.
+    """
     a = 0
     b = 0
     c = 0
@@ -111,7 +167,16 @@ def get_contingency_entries(ints_a, ints_b):
     return [a,b,c]
 
 
-def S_jaccard(ints_a, ints_b):
+def S_jaccard(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Jaccard similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Jaccard similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -124,7 +189,17 @@ def S_jaccard(ints_a, ints_b):
     return similarity
 
 
-def S_dice(ints_a, ints_b):
+def S_dice(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Dice similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Dice similarity score.
+    """
+
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -137,7 +212,16 @@ def S_dice(ints_a, ints_b):
     return similarity
 
 
-def S_3w_jaccard(ints_a, ints_b):
+def S_3w_jaccard(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute three-weighted Jaccard similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Three-weighted Jaccard similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -150,7 +234,16 @@ def S_3w_jaccard(ints_a, ints_b):
     return similarity
 
 
-def S_sokal_sneath(ints_a, ints_b):
+def S_sokal_sneath(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Sokal-Sneath similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Sokal-Sneath similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -163,7 +256,16 @@ def S_sokal_sneath(ints_a, ints_b):
     return similarity
 
 
-def S_binary_cosine(ints_a, ints_b):
+def S_binary_cosine(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute binary cosine similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Binary cosine similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -176,7 +278,16 @@ def S_binary_cosine(ints_a, ints_b):
     return similarity
 
 
-def S_mountford(ints_a, ints_b):
+def S_mountford(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Mountford similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Mountford similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -189,7 +300,16 @@ def S_mountford(ints_a, ints_b):
     return similarity
 
 
-def S_mcconnaughey(ints_a, ints_b):
+def S_mcconnaughey(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute McConnaughey similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        McConnaughey similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -202,7 +322,16 @@ def S_mcconnaughey(ints_a, ints_b):
     return similarity
 
 
-def S_driver_kroeber(ints_a, ints_b):
+def S_driver_kroeber(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Driver-Kroeber similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Driver-Kroeber similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -215,7 +344,16 @@ def S_driver_kroeber(ints_a, ints_b):
     return similarity
 
 
-def S_simpson(ints_a, ints_b):
+def S_simpson(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Simpson similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Simpson similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -228,7 +366,16 @@ def S_simpson(ints_a, ints_b):
     return similarity
 
 
-def S_braun_banquet(ints_a, ints_b):
+def S_braun_banquet(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Braun-Banquet similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Braun-Banquet similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -241,7 +388,16 @@ def S_braun_banquet(ints_a, ints_b):
     return similarity
 
 
-def S_fager_mcgowan(ints_a, ints_b):
+def S_fager_mcgowan(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Fager-McGowan similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Fager-McGowan similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -255,7 +411,16 @@ def S_fager_mcgowan(ints_a, ints_b):
     return similarity
 
 
-def S_kulczynski(ints_a, ints_b):
+def S_kulczynski(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Kulczynski similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Kulczynski similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -268,13 +433,31 @@ def S_kulczynski(ints_a, ints_b):
     return similarity
 
 
-def S_intersection(ints_a, ints_b):
+def S_intersection(ints_a: np.ndarray, ints_b: np.ndarray) -> int:
+    """Compute the number of shared nonzero entries.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Count of entries that are nonzero in both vectors.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     c = tmp[2]
     return c
 
 
-def S_hamming(ints_a, ints_b):
+def S_hamming(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Hamming-style similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Hamming-style similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -286,7 +469,16 @@ def S_hamming(ints_a, ints_b):
     return similarity
 
 
-def S_hellinger(ints_a, ints_b):
+def S_hellinger(ints_a: np.ndarray, ints_b: np.ndarray) -> float:
+    """Compute Hellinger-style similarity from binary presence patterns.
+
+    Args:
+        ints_a: First intensity vector.
+        ints_b: Second intensity vector.
+
+    Returns:
+        Hellinger-style similarity score.
+    """
     tmp = get_contingency_entries(ints_a, ints_b)
     a = tmp[0]
     b = tmp[1]
@@ -295,7 +487,19 @@ def S_hellinger(ints_a, ints_b):
     return similarity
 
 
-def get_similarity(similarity_measure, q_ints, r_ints, weights, q):
+def get_similarity(similarity_measure: str, q_ints: np.ndarray, r_ints: np.ndarray, weights: dict[str, float] | None, q: float) -> float:
+    """Dispatch to the requested similarity measure.
+
+    Args:
+        similarity_measure: Name of the similarity measure to compute.
+        q_ints: Query intensity vector.
+        r_ints: Reference intensity vector.
+        weights: Weights used by the mixture similarity measure.
+        q: Entropy dimension used by Rényi and Tsallis similarities.
+
+    Returns:
+        Requested similarity score.
+    """
 
     if similarity_measure == 'cosine':
         similarity = S_cos(q_ints, r_ints)

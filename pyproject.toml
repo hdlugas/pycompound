@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pycompound"
-version = "0.1.19"
+version = "0.1.20"
 authors = [
   { name="Hunter Dlugas", email="fy7392@wayne.edu" },
 ]
@@ -34,3 +34,12 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/hdlugas/pycompound"
 Issues = "https://github.com/hdlugas/pycompound/issues"
+
+[project.scripts]
+pycompound_plot_spectra = "pycompound.plot_spectra_CLI:main"
+pycompound_spec_lib-match = "pycompound.spec_lib_matching_CLI:main"
+pycompound_tune_DE = "pycompound.tuning_CLI_DE:main"
+pycompound_tune_grid = "pycompound.tuning_CLI_grid:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

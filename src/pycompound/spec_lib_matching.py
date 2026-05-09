@@ -12,14 +12,33 @@ import sys, csv
 from scipy.optimize import differential_evolution
 
 
-def _vector_to_full_params(X, default_params, optimize_params):
+def _vector_to_full_params(X: object, default_params: dict[str, float], optimize_params: list[str]) -> dict[str, float]:
+    """Convert an optimization vector into a full parameter dictionary.
+
+    Args:
+        X: Vector of optimized parameter values.
+        default_params: Dictionary containing the full default parameter set.
+        optimize_params: Parameter names corresponding to the values in X.
+
+    Returns:
+        A copy of default_params with optimized parameter values inserted.
+    """
     params = default_params.copy()
     for name, val in zip(optimize_params, X):
         params[name] = float(val)
     return params
 
 
-def objective_function_HRMS(X, ctx):
+def objective_function_HRMS(X: object, ctx: dict[str, object]) -> float:
+    """Evaluate the HRMS objective function for differential evolution.
+
+    Args:
+        X: Vector of candidate parameter values.
+        ctx: Context dictionary containing data, fixed settings, and optimization metadata.
+
+    Returns:
+        Objective value equal to one minus the HRMS identification accuracy.
+    """
     p = _vector_to_full_params(X, ctx["default_params"], ctx["optimize_params"])
     acc = get_acc_HRMS(
         ctx["df_query"],
@@ -38,7 +57,16 @@ def objective_function_HRMS(X, ctx):
     return 1.0 - acc
 
 
-def objective_function_NRMS(X, ctx):
+def objective_function_NRMS(X: object, ctx: dict[str, object]) -> float:
+    """Evaluate the NRMS objective function for differential evolution.
+
+    Args:
+        X: Vector of candidate parameter values.
+        ctx: Context dictionary containing data, fixed settings, and optimization metadata.
+
+    Returns:
+        Objective value equal to one minus the NRMS identification accuracy.
+    """
     p = _vector_to_full_params(X, ctx["default_params"], ctx["optimize_params"])
     acc = get_acc_NRMS(
         ctx["df_query"], ctx["df_reference"], ctx['unique_query_ids'], ctx['unique_reference_ids'],
@@ -55,7 +83,34 @@ def objective_function_NRMS(X, ctx):
 
 
 
-def tune_params_DE(query_data=None, reference_data=None, chromatography_platform='HRMS', precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, similarity_measure='cosine', weights=None, spectrum_preprocessing_order='CNMWL', mz_min=0, mz_max=999999999, int_min=0, int_max=999999999, high_quality_reference_library=False, optimize_params=["window_size_centroiding","window_size_matching","noise_threshold","wf_mz","wf_int","LET_threshold","entropy_dimension"], param_bounds={"window_size_centroiding":(0.0,0.5),"window_size_matching":(0.0,0.5),"noise_threshold":(0.0,0.25),"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0.0,5.0),"entropy_dimension":(1.0,3.0)}, default_params={"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1}, maxiters=3, de_workers=1, exact_match_required=False):
+def tune_params_DE(query_data: str | None = None, reference_data: str | list[str] | None = None, chromatography_platform: str = 'HRMS', precursor_ion_mz_tolerance: float | None = None, ionization_mode: str | None = None, adduct: str | None = None, similarity_measure: str = 'cosine', weights: dict[str, float] | None = None, spectrum_preprocessing_order: str = 'CNMWL', mz_min: int = 0, mz_max: int = 999999999, int_min: int | float = 0, int_max: int | float = 999999999, high_quality_reference_library: bool = False, optimize_params: list[str] = ["window_size_centroiding","window_size_matching","noise_threshold","wf_mz","wf_int","LET_threshold","entropy_dimension"], param_bounds: dict[str, tuple[float, float]] = {"window_size_centroiding":(0.0,0.5),"window_size_matching":(0.0,0.5),"noise_threshold":(0.0,0.25),"wf_mz":(0.0,5.0),"wf_int":(0.0,5.0),"LET_threshold":(0.0,5.0),"entropy_dimension":(1.0,3.0)}, default_params: dict[str, float] = {"window_size_centroiding": 0.5, "window_size_matching":0.5, "noise_threshold":0.10, "wf_mz":0.0, "wf_int":1.0, "LET_threshold":0.0, "entropy_dimension":1.1}, maxiters: int = 3, de_workers: int = 1, exact_match_required: bool = False) -> None:
+    """Tune spectral preprocessing parameters using differential evolution.
+
+    Args:
+        query_data: Path to the query spectral library file.
+        reference_data: Path or paths to reference spectral library files.
+        chromatography_platform: Chromatography platform, either HRMS or NRMS.
+        precursor_ion_mz_tolerance: Precursor ion m/z tolerance for HRMS filtering.
+        ionization_mode: Ionization mode used to filter the reference library.
+        adduct: Adduct used to filter the reference library.
+        similarity_measure: Similarity measure used for spectral matching.
+        weights: Weights used for mixture similarity measures.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        mz_min: Minimum m/z value retained during filtering.
+        mz_max: Maximum m/z value retained during filtering.
+        int_min: Minimum intensity value retained during filtering.
+        int_max: Maximum intensity value retained during filtering.
+        high_quality_reference_library: Whether to skip some reference-library preprocessing steps.
+        optimize_params: Names of parameters to optimize.
+        param_bounds: Bounds for each optimizable parameter.
+        default_params: Default values for the full parameter set.
+        maxiters: Maximum number of differential evolution iterations.
+        de_workers: Number of workers used by differential evolution.
+        exact_match_required: Whether predicted IDs must exactly match true IDs.
+
+    Returns:
+        None.
+    """
 
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the TXT file of the query data.')
@@ -139,7 +194,35 @@ default_HRMS_grid = {'similarity_measure':['cosine'], 'weight':[{'Cosine':0.25,'
 default_NRMS_grid = {'similarity_measure':['cosine'], 'weight':[{'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}], 'spectrum_preprocessing_order':['FCNMWL'], 'mz_min':[0], 'mz_max':[9999999], 'int_min':[0], 'int_max':[99999999], 'noise_threshold':[0.0], 'wf_mz':[0.0], 'wf_int':[1.0], 'LET_threshold':[0.0], 'entropy_dimension':[1.1], 'high_quality_reference_library':[False]}
 
 
-def _eval_one_HRMS(df_query, df_reference, precursor_ion_mz_tolerance_tmp, ionization_mode_tmp, adduct_tmp, similarity_measure_tmp, weight, spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp, int_min_tmp, int_max_tmp, noise_threshold_tmp, window_size_centroiding_tmp, window_size_matching_tmp, wf_mz_tmp, wf_int_tmp, LET_threshold_tmp, entropy_dimension_tmp, high_quality_reference_library_tmp, exact_match_required):
+def _eval_one_HRMS(df_query: pd.DataFrame, df_reference: pd.DataFrame, precursor_ion_mz_tolerance_tmp: float | None, ionization_mode_tmp: str | None, adduct_tmp: str | None, similarity_measure_tmp: str, weight: dict[str, float], spectrum_preprocessing_order_tmp: str, mz_min_tmp: int, mz_max_tmp: int, int_min_tmp: int | float, int_max_tmp: int | float, noise_threshold_tmp: float, window_size_centroiding_tmp: float, window_size_matching_tmp: float, wf_mz_tmp: float, wf_int_tmp: float, LET_threshold_tmp: float, entropy_dimension_tmp: float, high_quality_reference_library_tmp: bool, exact_match_required: bool) -> tuple:
+    """Evaluate one HRMS grid-search parameter combination.
+
+    Args:
+        df_query: Query spectra data frame.
+        df_reference: Reference spectra data frame.
+        precursor_ion_mz_tolerance_tmp: Precursor ion m/z tolerance.
+        ionization_mode_tmp: Ionization mode filter.
+        adduct_tmp: Adduct filter.
+        similarity_measure_tmp: Similarity measure.
+        weight: Similarity weights.
+        spectrum_preprocessing_order_tmp: Preprocessing order.
+        mz_min_tmp: Minimum m/z value retained during filtering.
+        mz_max_tmp: Maximum m/z value retained during filtering.
+        int_min_tmp: Minimum intensity value retained during filtering.
+        int_max_tmp: Maximum intensity value retained during filtering.
+        noise_threshold_tmp: Noise threshold.
+        window_size_centroiding_tmp: Centroiding window size.
+        window_size_matching_tmp: Peak-matching window size.
+        wf_mz_tmp: m/z weighting-factor parameter.
+        wf_int_tmp: Intensity weighting-factor parameter.
+        LET_threshold_tmp: Low-entropy transform threshold.
+        entropy_dimension_tmp: Entropy dimension parameter.
+        high_quality_reference_library_tmp: Whether to skip some reference-library preprocessing steps.
+        exact_match_required: Whether predicted IDs must exactly match true IDs.
+
+    Returns:
+        Tuple containing accuracy and the evaluated parameter values.
+    """
 
     acc = get_acc_HRMS(
         df_query=df_query, df_reference=df_reference,
@@ -169,8 +252,33 @@ def _eval_one_HRMS(df_query, df_reference, precursor_ion_mz_tolerance_tmp, ioniz
     )
 
 
-def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, similarity_measure_tmp, weight, spectrum_preprocessing_order_tmp, mz_min_tmp, mz_max_tmp, int_min_tmp, int_max_tmp, noise_threshold_tmp, wf_mz_tmp, wf_int_tmp, LET_threshold_tmp, entropy_dimension_tmp, high_quality_reference_library_tmp, exact_match_required):
 
+def _eval_one_NRMS(df_query: pd.DataFrame, df_reference: pd.DataFrame, unique_query_ids: object, unique_reference_ids: object, similarity_measure_tmp: str, weight: dict[str, float], spectrum_preprocessing_order_tmp: str, mz_min_tmp: int, mz_max_tmp: int, int_min_tmp: int | float, int_max_tmp: int | float, noise_threshold_tmp: float, wf_mz_tmp: float, wf_int_tmp: float, LET_threshold_tmp: float, entropy_dimension_tmp: float, high_quality_reference_library_tmp: bool, exact_match_required: bool) -> tuple:
+    """Evaluate one NRMS grid-search parameter combination.
+
+    Args:
+        df_query: Query spectra data frame.
+        df_reference: Reference spectra data frame.
+        unique_query_ids: Unique query spectrum identifiers.
+        unique_reference_ids: Unique reference spectrum identifiers.
+        similarity_measure_tmp: Similarity measure.
+        weight: Similarity weights.
+        spectrum_preprocessing_order_tmp: Preprocessing order.
+        mz_min_tmp: Minimum m/z value retained during filtering.
+        mz_max_tmp: Maximum m/z value retained during filtering.
+        int_min_tmp: Minimum intensity value retained during filtering.
+        int_max_tmp: Maximum intensity value retained during filtering.
+        noise_threshold_tmp: Noise threshold.
+        wf_mz_tmp: m/z weighting-factor parameter.
+        wf_int_tmp: Intensity weighting-factor parameter.
+        LET_threshold_tmp: Low-entropy transform threshold.
+        entropy_dimension_tmp: Entropy dimension parameter.
+        high_quality_reference_library_tmp: Whether to skip some reference-library preprocessing steps.
+        exact_match_required: Whether predicted IDs must exactly match true IDs.
+
+    Returns:
+        Tuple containing accuracy and the evaluated parameter values.
+    """
     acc = get_acc_NRMS(
         df_query=df_query, df_reference=df_reference,
         unique_query_ids=unique_query_ids, unique_reference_ids=unique_reference_ids,
@@ -195,7 +303,23 @@ def _eval_one_NRMS(df_query, df_reference, unique_query_ids, unique_reference_id
 
 
 
-def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, grid=None, output_path=None, return_output=False, exact_match_required=False):
+def tune_params_on_HRMS_data_grid(query_data: str | None = None, reference_data: str | list[str] | None = None, precursor_ion_mz_tolerance: float | None = None, ionization_mode: str | None = None, adduct: str | None = None, grid: dict[str, list[object]] | None = None, output_path: str | None = None, return_output: bool = False, exact_match_required: bool = False) -> pd.DataFrame | None:
+    """Tune HRMS spectral matching parameters by grid search.
+
+    Args:
+        query_data: Path to the query spectral library file.
+        reference_data: Path or paths to reference spectral library files.
+        precursor_ion_mz_tolerance: Precursor ion m/z tolerance.
+        ionization_mode: Ionization mode used to filter the reference library.
+        adduct: Adduct used to filter the reference library.
+        grid: Parameter grid overriding default HRMS grid values.
+        output_path: Path where the tuning results are written.
+        return_output: Whether to return the output data frame instead of only writing it.
+        exact_match_required: Whether predicted IDs must exactly match true IDs.
+
+    Returns:
+        Output data frame if return_output is True; otherwise, None.
+    """
     grid = {**default_HRMS_grid, **(grid or {})}
     for key, value in grid.items():
         globals()[key] = value
@@ -270,7 +394,20 @@ def tune_params_on_HRMS_data_grid(query_data=None, reference_data=None, precurso
 
 
 
-def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=None, output_path=None, return_output=False, exact_match_required=False):
+def tune_params_on_NRMS_data_grid(query_data: str | None = None, reference_data: str | list[str] | None = None, grid: dict[str, list[object]] | None = None, output_path: str | None = None, return_output: bool = False, exact_match_required: bool = False) -> pd.DataFrame | None:
+    """Tune NRMS spectral matching parameters by grid search.
+
+    Args:
+        query_data: Path to the query spectral library file.
+        reference_data: Path or paths to reference spectral library files.
+        grid: Parameter grid overriding default NRMS grid values.
+        output_path: Path where the tuning results are written.
+        return_output: Whether to return the output data frame instead of only writing it.
+        exact_match_required: Whether predicted IDs must exactly match true IDs.
+
+    Returns:
+        Output data frame if return_output is True; otherwise, None.
+    """
     grid = {**default_NRMS_grid, **(grid or {})}
     for key, value in grid.items():
         globals()[key] = value
@@ -335,7 +472,36 @@ def tune_params_on_NRMS_data_grid(query_data=None, reference_data=None, grid=Non
 
 
 
-def get_acc_HRMS(df_query, df_reference, precursor_ion_mz_tolerance, ionization_mode, adduct, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, window_size_centroiding, window_size_matching, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library, verbose=True, exact_match_required=False):
+def get_acc_HRMS(df_query: pd.DataFrame, df_reference: pd.DataFrame, precursor_ion_mz_tolerance: float | None, ionization_mode: str | None, adduct: str | None, similarity_measure: str, weights: dict[str, float] | None, spectrum_preprocessing_order: str, mz_min: int, mz_max: int, int_min: int | float, int_max: int | float, window_size_centroiding: float, window_size_matching: float, noise_threshold: float, wf_mz: float, wf_int: float, LET_threshold: float, entropy_dimension: float, high_quality_reference_library: bool, verbose: bool = True, exact_match_required: bool = False) -> float:
+    """Compute HRMS identification accuracy for a parameter configuration.
+
+    Args:
+        df_query: Query spectra data frame.
+        df_reference: Reference spectra data frame.
+        precursor_ion_mz_tolerance: Precursor ion m/z tolerance.
+        ionization_mode: Ionization mode filter.
+        adduct: Adduct filter.
+        similarity_measure: Similarity measure.
+        weights: Similarity weights.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        mz_min: Minimum m/z value retained during filtering.
+        mz_max: Maximum m/z value retained during filtering.
+        int_min: Minimum intensity value retained during filtering.
+        int_max: Maximum intensity value retained during filtering.
+        window_size_centroiding: Centroiding window size.
+        window_size_matching: Peak-matching window size.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_int: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        entropy_dimension: Entropy dimension parameter.
+        high_quality_reference_library: Whether to skip some reference-library preprocessing steps.
+        verbose: Whether to print progress messages.
+        exact_match_required: Whether predicted IDs must exactly match true IDs.
+
+    Returns:
+        Identification accuracy.
+    """
 
     n_top_matches_to_save = 1
     unique_reference_ids = df_reference['id'].dropna().astype(str).unique().tolist()
@@ -451,8 +617,34 @@ def get_acc_HRMS(df_query, df_reference, precursor_ion_mz_tolerance, ionization_
     return acc
 
 
-def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids, similarity_measure, weights, spectrum_preprocessing_order, mz_min, mz_max, int_min, int_max, noise_threshold, wf_mz, wf_int, LET_threshold, entropy_dimension, high_quality_reference_library, verbose=True, exact_match_required=False):
 
+def get_acc_NRMS(df_query: pd.DataFrame, df_reference: pd.DataFrame, unique_query_ids: object, unique_reference_ids: object, similarity_measure: str, weights: dict[str, float] | None, spectrum_preprocessing_order: str, mz_min: int, mz_max: int, int_min: int | float, int_max: int | float, noise_threshold: float, wf_mz: float, wf_int: float, LET_threshold: float, entropy_dimension: float, high_quality_reference_library: bool, verbose: bool = True, exact_match_required: bool = False) -> float:
+    """Compute NRMS identification accuracy for a parameter configuration.
+
+    Args:
+        df_query: Query spectra data frame.
+        df_reference: Reference spectra data frame.
+        unique_query_ids: Unique query spectrum identifiers.
+        unique_reference_ids: Unique reference spectrum identifiers.
+        similarity_measure: Similarity measure.
+        weights: Similarity weights.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        mz_min: Minimum m/z value retained during filtering.
+        mz_max: Maximum m/z value retained during filtering.
+        int_min: Minimum intensity value retained during filtering.
+        int_max: Maximum intensity value retained during filtering.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_int: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        entropy_dimension: Entropy dimension parameter.
+        high_quality_reference_library: Whether to skip some reference-library preprocessing steps.
+        verbose: Whether to print progress messages.
+        exact_match_required: Whether predicted IDs must exactly match true IDs.
+
+    Returns:
+        Identification accuracy.
+    """
     n_top_matches_to_save = 1
 
     min_mz = int(np.min([np.min(df_query['mz_ratio']), np.min(df_reference['mz_ratio'])]))
@@ -532,8 +724,6 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
     scores = np.array(scores)
     out = np.c_[unique_query_ids,preds,scores]
     df_tmp = pd.DataFrame(out, columns=['TRUE.ID','PREDICTED.ID','SCORE'])
-    #if verbose:
-    #    print(df_tmp)
     if exact_match_required == True:
         acc = (df_tmp['TRUE.ID'] == df_tmp['PREDICTED.ID']).mean()
     else:
@@ -545,7 +735,41 @@ def get_acc_NRMS(df_query, df_reference, unique_query_ids, unique_reference_ids,
 
 
 
-def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, precursor_ion_mz_tolerance=None, ionization_mode=None, adduct=None, likely_reference_ids=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False, verbose=True):
+def run_spec_lib_matching_on_HRMS_data(query_data: str | None = None, reference_data: str | list[str] | None = None, precursor_ion_mz_tolerance: float | None = None, ionization_mode: str | None = None, adduct: str | None = None, likely_reference_ids: list[str] | None = None, similarity_measure: str = 'cosine', weights: dict[str, float] = {'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order: str = 'FCNMWL', high_quality_reference_library: bool = False, mz_min: int = 0, mz_max: int = 9999999, int_min: int | float = 0, int_max: int | float = 9999999, window_size_centroiding: float = 0.5, window_size_matching: float = 0.5, noise_threshold: float = 0.0, wf_mz: float = 0.0, wf_intensity: float = 1.0, LET_threshold: float = 0.0, entropy_dimension: float = 1.1, n_top_matches_to_save: int = 1, print_id_results: bool = False, output_identification: str | None = None, output_similarity_scores: str | None = None, return_ID_output: bool = False, verbose: bool = True) -> pd.DataFrame | None:
+    """Run HRMS spectral library matching.
+
+    Args:
+        query_data: Path to the query spectral library file.
+        reference_data: Path or paths to reference spectral library files.
+        precursor_ion_mz_tolerance: Precursor ion m/z tolerance.
+        ionization_mode: Ionization mode used to filter the reference library.
+        adduct: Adduct used to filter the reference library.
+        likely_reference_ids: Optional reference identifiers used to subset the reference library.
+        similarity_measure: Similarity measure used for spectral matching.
+        weights: Weights used for mixture similarity measures.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        high_quality_reference_library: Whether to skip some reference-library preprocessing steps.
+        mz_min: Minimum m/z value retained during filtering.
+        mz_max: Maximum m/z value retained during filtering.
+        int_min: Minimum intensity value retained during filtering.
+        int_max: Maximum intensity value retained during filtering.
+        window_size_centroiding: Centroiding window size.
+        window_size_matching: Peak-matching window size.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_intensity: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        entropy_dimension: Entropy dimension parameter.
+        n_top_matches_to_save: Number of top matches to save.
+        print_id_results: Whether to print identification results.
+        output_identification: Path for the identification output file.
+        output_similarity_scores: Path for the full similarity-score output file.
+        return_ID_output: Whether to return the identification output data frame.
+        verbose: Whether to print progress messages.
+
+    Returns:
+        Identification output data frame if return_ID_output is True; otherwise, None.
+    """
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
@@ -796,7 +1020,36 @@ def run_spec_lib_matching_on_HRMS_data(query_data=None, reference_data=None, pre
 
 
 
-def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, likely_reference_ids=None, spectrum_preprocessing_order='FNLW', similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, n_top_matches_to_save=1, print_id_results=False, output_identification=None, output_similarity_scores=None, return_ID_output=False, verbose=True):
+def run_spec_lib_matching_on_NRMS_data(query_data: str | None = None, reference_data: str | list[str] | None = None, likely_reference_ids: list[str] | None = None, spectrum_preprocessing_order: str = 'FNLW', similarity_measure: str = 'cosine', weights: dict[str, float] = {'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, high_quality_reference_library: bool = False, mz_min: int = 0, mz_max: int = 9999999, int_min: int | float = 0, int_max: int | float = 9999999, noise_threshold: float = 0.0, wf_mz: float = 0.0, wf_intensity: float = 1.0, LET_threshold: float = 0.0, entropy_dimension: float = 1.1, n_top_matches_to_save: int = 1, print_id_results: bool = False, output_identification: str | None = None, output_similarity_scores: str | None = None, return_ID_output: bool = False, verbose: bool = True) -> pd.DataFrame | None:
+    """Run NRMS spectral library matching.
+
+    Args:
+        query_data: Path to the query spectral library file.
+        reference_data: Path or paths to reference spectral library files.
+        likely_reference_ids: Optional reference identifiers used to subset the reference library.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        similarity_measure: Similarity measure used for spectral matching.
+        weights: Weights used for mixture similarity measures.
+        high_quality_reference_library: Whether to skip some reference-library preprocessing steps.
+        mz_min: Minimum m/z value retained during filtering.
+        mz_max: Maximum m/z value retained during filtering.
+        int_min: Minimum intensity value retained during filtering.
+        int_max: Maximum intensity value retained during filtering.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_intensity: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        entropy_dimension: Entropy dimension parameter.
+        n_top_matches_to_save: Number of top matches to save.
+        print_id_results: Whether to print identification results.
+        output_identification: Path for the identification output file.
+        output_similarity_scores: Path for the full similarity-score output file.
+        return_ID_output: Whether to return the identification output data frame.
+        verbose: Whether to print progress messages.
+
+    Returns:
+        Identification output data frame if return_ID_output is True; otherwise, None.
+    """
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
@@ -897,7 +1150,6 @@ def run_spec_lib_matching_on_NRMS_data(query_data=None, reference_data=None, lik
     if output_similarity_scores is None:
         output_similarity_scores = f'{Path.cwd()}/output_all_similarity_scores.txt'
         print(f'Warning: writing similarity scores to {output_similarity_scores}')
-
 
 
     min_mz = int(np.min([np.min(df_query['mz_ratio']), np.min(df_reference['mz_ratio'])]))

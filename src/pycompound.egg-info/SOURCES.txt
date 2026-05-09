@@ -14,6 +14,7 @@ src/pycompound/tuning_CLI_grid.py
 src/pycompound.egg-info/PKG-INFO
 src/pycompound.egg-info/SOURCES.txt
 src/pycompound.egg-info/dependency_links.txt
+src/pycompound.egg-info/entry_points.txt
 src/pycompound.egg-info/requires.txt
 src/pycompound.egg-info/top_level.txt
 tests/test_build_library.py

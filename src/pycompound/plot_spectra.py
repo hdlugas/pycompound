@@ -7,7 +7,37 @@ import sys
 import matplotlib.pyplot as plt
 
 
-def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FCNMWL', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, window_size_centroiding=0.5, window_size_matching=0.5, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
+
+def generate_plots_on_HRMS_data(query_data: str | None = None, reference_data: str | None = None, spectrum_ID1: str | None = None, spectrum_ID2: str | None = None, similarity_measure: str = 'cosine', weights: dict[str, float] = {'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order: str = 'FCNMWL', high_quality_reference_library: bool = False, mz_min: int = 0, mz_max: int = 9999999, int_min: int | float = 0, int_max: int | float = 9999999, window_size_centroiding: float = 0.5, window_size_matching: float = 0.5, noise_threshold: float = 0.0, wf_mz: float = 0.0, wf_intensity: float = 1.0, LET_threshold: float = 0.0, entropy_dimension: float = 1.1, y_axis_transformation: str = 'normalized', output_path: str | None = None, return_plot: bool = False) -> plt.Figure | None:
+    """Generate comparison plots for HRMS spectra before and after preprocessing.
+
+    Args:
+        query_data: Path to the query spectral library file.
+        reference_data: Path to the reference spectral library file.
+        spectrum_ID1: Query or reference spectrum ID for the first spectrum.
+        spectrum_ID2: Query or reference spectrum ID for the second spectrum.
+        similarity_measure: Similarity measure used for spectral comparison.
+        weights: Weights used for mixture similarity measures.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        high_quality_reference_library: Whether to skip some reference-library preprocessing steps.
+        mz_min: Minimum m/z value retained during filtering.
+        mz_max: Maximum m/z value retained during filtering.
+        int_min: Minimum intensity value retained during filtering.
+        int_max: Maximum intensity value retained during filtering.
+        window_size_centroiding: Centroiding window size.
+        window_size_matching: Peak-matching window size.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_intensity: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        entropy_dimension: Entropy dimension parameter.
+        y_axis_transformation: Transformation applied to plotted intensities.
+        output_path: Path where the PDF plot is written.
+        return_plot: Whether to return the matplotlib figure object.
+
+    Returns:
+        Matplotlib figure object if return_plot is True; otherwise, None.
+    """
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()
@@ -291,7 +321,34 @@ def generate_plots_on_HRMS_data(query_data=None, reference_data=None, spectrum_I
 
 
 
-def generate_plots_on_NRMS_data(query_data=None, reference_data=None, spectrum_ID1=None, spectrum_ID2=None, similarity_measure='cosine', weights={'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order='FNLW', high_quality_reference_library=False, mz_min=0, mz_max=9999999, int_min=0, int_max=9999999, noise_threshold=0.0, wf_mz=0.0, wf_intensity=1.0, LET_threshold=0.0, entropy_dimension=1.1, y_axis_transformation='normalized', output_path=None, return_plot=False):
+def generate_plots_on_NRMS_data(query_data: str | None = None, reference_data: str | None = None, spectrum_ID1: str | None = None, spectrum_ID2: str | None = None, similarity_measure: str = 'cosine', weights: dict[str, float] = {'Cosine':0.25,'Shannon':0.25,'Renyi':0.25,'Tsallis':0.25}, spectrum_preprocessing_order: str = 'FNLW', high_quality_reference_library: bool = False, mz_min: int = 0, mz_max: int = 9999999, int_min: int | float = 0, int_max: int | float = 9999999, noise_threshold: float = 0.0, wf_mz: float = 0.0, wf_intensity: float = 1.0, LET_threshold: float = 0.0, entropy_dimension: float = 1.1, y_axis_transformation: str = 'normalized', output_path: str | None = None, return_plot: bool = False) -> plt.Figure | None:
+    """Generate comparison plots for NRMS spectra before and after preprocessing.
+
+    Args:
+        query_data: Path to the query spectral library file.
+        reference_data: Path to the reference spectral library file.
+        spectrum_ID1: Query or reference spectrum ID for the first spectrum.
+        spectrum_ID2: Query or reference spectrum ID for the second spectrum.
+        similarity_measure: Similarity measure used for spectral comparison.
+        weights: Weights used for mixture similarity measures.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        high_quality_reference_library: Whether to skip some reference-library preprocessing steps.
+        mz_min: Minimum m/z value retained during filtering.
+        mz_max: Maximum m/z value retained during filtering.
+        int_min: Minimum intensity value retained during filtering.
+        int_max: Maximum intensity value retained during filtering.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_intensity: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        entropy_dimension: Entropy dimension parameter.
+        y_axis_transformation: Transformation applied to plotted intensities.
+        output_path: Path where the PDF plot is written.
+        return_plot: Whether to return the matplotlib figure object.
+
+    Returns:
+        Matplotlib figure object if return_plot is True; otherwise, None.
+    """
     if query_data is None:
         print('\nError: No argument passed to the mandatory query_data. Please pass the path to the CSV file of the query data.')
         sys.exit()

@@ -22,9 +22,10 @@ def main() -> None:
     parser.add_argument('--wf_mz', type=float, default=0, metavar='\b', help='Mass/charge weight factor parameter. Default: 0.')
     parser.add_argument('--wf_intensity', type=float, default=1, metavar='\b', help='Intensity weight factor parameter. Default: 1.')
     parser.add_argument('--LET_threshold', type=float, default=0, metavar='\b', help='Low-entropy transformation threshold parameter. Spectra with Shannon entropy less than LET_threshold are transformed according to intensitiesNew=intensitiesOriginal^{(1+S)/(1+LET_threshold)}. Default: 0.')
-    parser.add_argument('--output_path', type=str, metavar='\b', help='Output (txt, mgf, msp) file containing the processed spectra. If no argument is passed, then the plots will be saved to the text file ./processed_spectra.txt in the current working directory.')
+    parser.add_argument('--output_path', type=str, default=None, metavar='\b', help='Output (txt, mgf, msp) file containing the processed spectra. If no argument is passed, then the plots will be saved to the text file ./processed_spectra.txt in the current working directory.')
 
     args = parser.parse_args()
+    output_path = args.output_path
     if output_path is None:
         output_path = f'{Path.cwd()}/processed_spectra.txt'
         print(f'Warning: writing processed spectral data to {output_path}')
@@ -34,9 +35,7 @@ def main() -> None:
         print('Error: output_path must specify a txt, mgf, or msp file')
         sys.exit()
 
-
-    transform_spectra(spectra_data=args.spectra_data, spectrum_preprocessing_order=spectrum_preprocessing_order, high_quality_reference_library=args.high_quality_reference_library, mz_min=args.mz_min, mz_max=args.mz_max, int_min=args.int_min, int_max=args.int_max, noise_threshold=args.noise_threshold, wf_mz=args.wf_mz, wf_intensity=args.wf_intensity, LET_threshold=args.LET_threshold, entropy_dimension=args.entropy_dimension, y_axis_transformation=args.y_axis_transformation, output_path=args.output_path)
-
+    transform_spectra(spectra_data=args.spectra_data, spectrum_preprocessing_order=args.spectrum_preprocessing_order, mz_min=args.mz_min, mz_max=args.mz_max, int_min=args.int_min, int_max=args.int_max, noise_threshold=args.noise_threshold, wf_mz=args.wf_mz, wf_intensity=args.wf_intensity, LET_threshold=args.LET_threshold, output_path=output_path)
 
 
 if __name__ == "__main__":

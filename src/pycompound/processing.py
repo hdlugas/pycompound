@@ -399,55 +399,54 @@ def transform_spectra(spectra_data: str | None = None, spectrum_preprocessing_or
         output_path = f'{Path.cwd()}/processed_spectra.txt'
         print(f'Warning: writing processed spectral data to {output_path}')
     output_extension = output_path.rsplit('.',1)
-    output_extension = output_extension[(len(output_extension)-1)]
-    if output_extension not in ['mgf', 'MGF', 'msp', 'MSP', 'txt', 'TXT']:
+    output_extension = output_extension[(len(output_extension)-1)].lower()
+    if output_extension not in ['mgf', 'msp', 'txt']:
         print('Error: output_path must specify a txt, mgf, or msp file')
         sys.exit()
 
-    for spec_idx in range(len(unique_ids)):
-        spec_mask = (df['id'] == unique_ids[spec_idx])
-        spec_idxs_tmp = np.where(spec_mask)[0]
-        spec_tmp = np.asarray(pd.concat([df['mz_ratio'].iloc[spec_idxs_tmp], df['intensity'].iloc[spec_idxs_tmp]], axis=1).reset_index(drop=True))
+    if output_extension in ['txt','mgf','msp']:
+        with open(output_path, 'w') as out_file:
+            if output_extension == 'txt':
+                out_file.write(f'id\tmz_ratio\tintensity')
 
-        for transformation in spectrum_preprocessing_order:
-            if np.isinf(spec_tmp[:, 1]).sum() > 0:
-                spec_tmp[:, 1] = np.zeros(spec_tmp.shape[0])
-            if transformation == 'W' and spec_tmp.shape[0] > 1:
-                spec_tmp[:, 1] = wf_transform(spec_tmp[:, 0], spec_tmp[:, 1], wf_mz, wf_intensity)
-            if transformation == 'L' and spec_tmp.shape[0] > 1:
-                spec_tmp[:, 1] = LE_transform(spec_tmp[:, 1], LET_threshold, normalization_method=normalization_method)
-            if transformation == 'N' and spec_tmp.shape[0] > 1:
-                spec_tmp = remove_noise(spec_tmp, nr=noise_threshold)
-            if transformation == 'F' and spec_tmp.shape[0] > 1:
-                spec_tmp = filter_spec_lcms(spec_tmp, mz_min=mz_min, mz_max=mz_max, int_min=int_min, int_max=int_max, is_matched=False)
+            for spec_idx in range(len(unique_ids)):
+                spec_mask = (df['id'] == unique_ids[spec_idx])
+                spec_idxs_tmp = np.where(spec_mask)[0]
+                spec_tmp = np.asarray(pd.concat([df['mz_ratio'].iloc[spec_idxs_tmp], df['intensity'].iloc[spec_idxs_tmp]], axis=1).reset_index(drop=True))
 
-        if output_extension == 'txt' or output_extension == 'TXT':
-            with open(output_path, 'w') as txt_file:
-                txt_file.write(f'id\tmz_ratio\tintensity')
-                for peak_idx in range(spec_tmp.shape[0]):
-                    mz = spec_tmp[peak_idx, 0]
-                    intensity = spec_tmp[peak_idx, 1]
-                    txt_file.write(f'\n{unique_ids[spec_idx]}\t{mz}\t{intensity}')
+                for transformation in spectrum_preprocessing_order:
+                    if np.isinf(spec_tmp[:, 1]).sum() > 0:
+                        spec_tmp[:, 1] = np.zeros(spec_tmp.shape[0])
+                    if transformation == 'W' and spec_tmp.shape[0] > 1:
+                        spec_tmp[:, 1] = wf_transform(spec_tmp[:, 0], spec_tmp[:, 1], wf_mz, wf_intensity)
+                    if transformation == 'L' and spec_tmp.shape[0] > 1:
+                        spec_tmp[:, 1] = LE_transform(spec_tmp[:, 1], LET_threshold, normalization_method=normalization_method)
+                    if transformation == 'N' and spec_tmp.shape[0] > 1:
+                        spec_tmp = remove_noise(spec_tmp, nr=noise_threshold)
+                    if transformation == 'F' and spec_tmp.shape[0] > 1:
+                        spec_tmp = filter_spec_lcms(spec_tmp, mz_min=mz_min, mz_max=mz_max, int_min=int_min, int_max=int_max, is_matched=False)
 
-        if output_extension == 'mgf' or output_extension == 'MGF':
-            with open(output_path, 'w') as mgf_file:
-                mgf_file.write('BEGIN IONS')
-                mgf_file.write(f'\nTITLE={unique_ids[spec_idx]}')
-                mgf_file.write(f'\nSCANS={spec_idx + 1}')
-                for peak_idx in range(spec_tmp.shape[0]):
-                    mz = spec_tmp[peak_idx, 0]
-                    intensity = spec_tmp[peak_idx, 1]
-                    mgf_file.write(f'\n{mz} {intensity}')
-                mgf_file.write('\nEND IONS\n\n')
-
-        if output_extension == 'msp' or output_extension == 'MSP':
-            with open(output_path, 'w') as msp_file:
-                msp_file.write(f'Name: {unique_ids[spec_idx]}')
-                msp_file.write(f'\nNum Peaks: {spec_tmp.shape[0]}')
-                for peak_idx in range(spec_tmp.shape[0]):
-                    mz = spec_tmp[peak_idx, 0]
-                    intensity = spec_tmp[peak_idx, 1]
-                    msp_file.write(f'\n{mz} {intensity}')
-                msp_file.write('\n')
+                if output_extension == 'txt':
+                    for peak_idx in range(spec_tmp.shape[0]):
+                        mz = spec_tmp[peak_idx, 0]
+                        intensity = spec_tmp[peak_idx, 1]
+                        out_file.write(f'\n{unique_ids[spec_idx]}\t{mz}\t{intensity}')
+                elif output_extension == 'mgf':
+                    out_file.write('BEGIN IONS')
+                    out_file.write(f'\nTITLE={unique_ids[spec_idx]}')
+                    out_file.write(f'\nSCANS={spec_idx + 1}')
+                    for peak_idx in range(spec_tmp.shape[0]):
+                        mz = spec_tmp[peak_idx, 0]
+                        intensity = spec_tmp[peak_idx, 1]
+                        out_file.write(f'\n{mz} {intensity}')
+                    out_file.write('\nEND IONS\n\n')
+                elif output_extension == 'msp':
+                    out_file.write(f'Name: {unique_ids[spec_idx]}')
+                    out_file.write(f'\nNum Peaks: {spec_tmp.shape[0]}')
+                    for peak_idx in range(spec_tmp.shape[0]):
+                        mz = spec_tmp[peak_idx, 0]
+                        intensity = spec_tmp[peak_idx, 1]
+                        out_file.write(f'\n{mz} {intensity}')
+                    out_file.write('\n\n')
 
 

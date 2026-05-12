@@ -49,7 +49,7 @@ transform_spectra(spectra_data = f'{Path.cwd()}/data/MoNA-export-Human_Plasma_Qu
                        noise_threshold=0.1)
 
 """
-print('\n\ntest #1')
+print('\n\ntest #6')
 transform_spectra_HRMS(spectra_data = f'{Path.cwd()}/data/lcms_query.txt',
                        output_path = f'{Path.cwd()}/data/example_processed_lcms_data.sam')
 """

@@ -3,6 +3,7 @@ from pycompound.build_library import build_library_from_raw_data
 import scipy.stats
 import numpy as np
 import pandas as pd
+import sys
 
 def wf_transform(spec_mzs, spec_ints, wf_mz, wf_int):
     '''
@@ -304,4 +305,149 @@ def get_reference_df(reference_data, likely_reference_IDs=None):
         likely_reference_IDs = pd.read_csv(likely_reference_IDs, header=None, sep='\t')
         df_reference = df_reference.loc[df_reference.iloc[:,0].isin(likely_reference_IDs.iloc[:,0].tolist())]
     return df_reference
+
+
+
+
+def transform_spectra(spectra_data: str | None = None, spectrum_preprocessing_order: str = 'FNWL', mz_min: int = 0, mz_max: int = 9999999, int_min: int | float = 0, int_max: int | float = 9999999, window_size_centroiding: float = 0.5, window_size_matching: float = 0.5, noise_threshold: float = 0.0, wf_mz: float = 0.0, wf_intensity: float = 1.0, LET_threshold: float = 0.0, output_path: str | None = None) -> pd.DataFrame | None:
+    """Process file of spectra according to user-specified transformations.
+
+    Args:
+        spectra_data: Path to the spectral library file.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        mz_min: Minimum m/z value retained during filtering.
+        mz_max: Maximum m/z value retained during filtering.
+        int_min: Minimum intensity value retained during filtering.
+        int_max: Maximum intensity value retained during filtering.
+        window_size_centroiding: Centroiding window size.
+        window_size_matching: Peak-matching window size.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_intensity: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        output_path: Path for the output file (txt, mgf, or msp).
+
+    Returns:
+        Identification output data frame if return_ID_output is True; otherwise, None.
+    """
+    if spectra_data is None:
+        print('\nError: No argument passed to the mandatory spectra_data. Please pass the path to the spectra data.')
+        sys.exit()
+    else:
+        extension = spectra_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'json' or extension == 'JSON' or extension == 'msp' or extension == 'MSP':
+            output_path_tmp = spectra_data[:-3] + 'txt'
+            build_library_from_raw_data(input_path=spectra_data, output_path=output_path_tmp, is_reference=False)
+            df = pd.read_csv(output_path_tmp, sep='\t')
+        if extension == 'txt' or extension == 'TXT':
+            df = pd.read_csv(spectra_data, sep='\t')
+        unique_ids = df['id'].unique()
+
+    if spectrum_preprocessing_order is not None:
+        spectrum_preprocessing_order = list(spectrum_preprocessing_order)
+    else:
+        spectrum_preprocessing_order = ['F', 'N', 'W', 'L']
+    if set(spectrum_preprocessing_order) - {'F','N','W','L'}:
+        print(f'Error: spectrum_preprocessing_order must contain only \'F\', \'N\', \'L\', \'W\'.')
+        sys.exit()
+
+    if isinstance(int_min,int) is True:
+        int_min = float(int_min)
+    if isinstance(int_max,int) is True:
+        int_max = float(int_max)
+    if isinstance(mz_min,int) is False or isinstance(mz_max,int) is False or isinstance(int_min,float) is False or isinstance(int_max,float) is False:
+        print('Error: mz_min must be a non-negative integer, mz_max must be a positive integer, int_min must be a non-negative float, and int_max must be a positive float')
+        sys.exit()
+    if mz_min < 0:
+        print('\nError: mz_min should be a non-negative integer')
+        sys.exit()
+    if mz_max <= 0:
+        print('\nError: mz_max should be a positive integer')
+        sys.exit()
+    if int_min < 0:
+        print('\nError: int_min should be a non-negative float')
+        sys.exit()
+    if int_max <= 0:
+        print('\nError: int_max should be a positive float')
+        sys.exit()
+
+    if isinstance(window_size_centroiding,float) is False or window_size_centroiding <= 0.0:
+        print('Error: window_size_centroiding must be a positive float.')
+        sys.exit()
+    if isinstance(window_size_matching,float) is False or window_size_matching<= 0.0:
+        print('Error: window_size_matching must be a positive float.')
+        sys.exit()
+
+    if isinstance(noise_threshold,int) is True:
+        noise_threshold = float(noise_threshold)
+    if isinstance(noise_threshold,float) is False or noise_threshold < 0:
+        print('Error: noise_threshold must be a positive float.')
+        sys.exit()
+
+    if isinstance(wf_intensity,int) is True:
+        wf_intensity = float(wf_intensity)
+    if isinstance(wf_mz,int) is True:
+        wf_mz = float(wf_mz)
+    if isinstance(wf_intensity,float) is False or isinstance(wf_mz,float) is False:
+        print('Error: wf_mz and wf_intensity must be integers or floats')
+        sys.exit()
+
+    normalization_method = 'standard'
+
+    if output_path is None:
+        output_path = f'{Path.cwd()}/processed_spectra.txt'
+        print(f'Warning: writing processed spectral data to {output_path}')
+    output_extension = output_path.rsplit('.',1)
+    output_extension = output_extension[(len(output_extension)-1)]
+    if output_extension not in ['mgf', 'MGF', 'msp', 'MSP', 'txt', 'TXT']:
+        print('Error: output_path must specify a txt, mgf, or msp file')
+        sys.exit()
+
+    for spec_idx in range(len(unique_ids)):
+        spec_mask = (df['id'] == unique_ids[spec_idx])
+        spec_idxs_tmp = np.where(spec_mask)[0]
+        spec_tmp = np.asarray(pd.concat([df['mz_ratio'].iloc[spec_idxs_tmp], df['intensity'].iloc[spec_idxs_tmp]], axis=1).reset_index(drop=True))
+
+        for transformation in spectrum_preprocessing_order:
+            if np.isinf(spec_tmp[:, 1]).sum() > 0:
+                spec_tmp[:, 1] = np.zeros(spec_tmp.shape[0])
+            if transformation == 'W' and spec_tmp.shape[0] > 1:
+                spec_tmp[:, 1] = wf_transform(spec_tmp[:, 0], spec_tmp[:, 1], wf_mz, wf_intensity)
+            if transformation == 'L' and spec_tmp.shape[0] > 1:
+                spec_tmp[:, 1] = LE_transform(spec_tmp[:, 1], LET_threshold, normalization_method=normalization_method)
+            if transformation == 'N' and spec_tmp.shape[0] > 1:
+                spec_tmp = remove_noise(spec_tmp, nr=noise_threshold)
+            if transformation == 'F' and spec_tmp.shape[0] > 1:
+                spec_tmp = filter_spec_lcms(spec_tmp, mz_min=mz_min, mz_max=mz_max, int_min=int_min, int_max=int_max, is_matched=False)
+
+        if output_extension == 'txt' or output_extension == 'TXT':
+            with open(output_path, 'w') as txt_file:
+                txt_file.write(f'id\tmz_ratio\tintensity')
+                for peak_idx in range(spec_tmp.shape[0]):
+                    mz = spec_tmp[peak_idx, 0]
+                    intensity = spec_tmp[peak_idx, 1]
+                    txt_file.write(f'\n{unique_ids[spec_idx]}\t{mz}\t{intensity}')
+
+        if output_extension == 'mgf' or output_extension == 'MGF':
+            with open(output_path, 'w') as mgf_file:
+                mgf_file.write('BEGIN IONS')
+                mgf_file.write(f'\nTITLE={unique_ids[spec_idx]}')
+                mgf_file.write(f'\nSCANS={spec_idx + 1}')
+                for peak_idx in range(spec_tmp.shape[0]):
+                    mz = spec_tmp[peak_idx, 0]
+                    intensity = spec_tmp[peak_idx, 1]
+                    mgf_file.write(f'\n{mz} {intensity}')
+                mgf_file.write('\nEND IONS\n\n')
+
+        if output_extension == 'msp' or output_extension == 'MSP':
+            with open(output_path, 'w') as msp_file:
+                msp_file.write(f'Name: {unique_ids[spec_idx]}')
+                msp_file.write(f'\nNum Peaks: {spec_tmp.shape[0]}')
+                for peak_idx in range(spec_tmp.shape[0]):
+                    mz = spec_tmp[peak_idx, 0]
+                    intensity = spec_tmp[peak_idx, 1]
+                    msp_file.write(f'\n{mz} {intensity}')
+                msp_file.write('\n')
+
 

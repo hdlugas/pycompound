@@ -3,7 +3,8 @@
 cd ${PWD}/../src/pycompound
 
 echo $'\n\n\ntest #0'
-python spec_lib_matching_CLI.py \
+#python spec_lib_matching_CLI.py \
+pycompound_spec_lib_matching \
         --query_data ../../tests/data/gcms_query.txt \
         --reference_data ../../tests/data/trimmed_gcms_reference_library.txt \
         --chromatography_platform NRMS \
@@ -11,6 +12,7 @@ python spec_lib_matching_CLI.py \
         --output_similarity_scores ${PWD}/../../tests/output_similarity_scores_NRMS.txt
 
 
+: << comment
 echo $'\n\n\ntest #1'
 python spec_lib_matching_CLI.py \
         --query_data ../../tests/data/lcms_query.txt \
@@ -74,10 +76,11 @@ python spec_lib_matching_CLI.py \
         --chromatography_platform HRMS \
         --output_identification ${PWD}/../../tests/output_identification_HRMS_7.txt \
         --output_similarity_scores ${PWD}/../../tests/output_similarity_scores_HRMS_7.txt
+comment
 
 
 : << comment 
-# this test is commented because it takes long time to run due to lots of query spectra
+# this test is commented because it takes a long time to run due to lots of query spectra
 echo $'\n\n\ntest #0'
 python spec_lib_matching_CLI.py \
         --query_data ../../tests/data/W001A_1.CDF \

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo $'\n\n\ntest #0'
-python ../src/pycompound/plot_spectra_CLI.py \
+pycompound_plot_spectra \
         --query_data ${PWD}/data/lcms_query.txt \
         --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --wf_mz 2 \
@@ -10,7 +10,7 @@ python ../src/pycompound/plot_spectra_CLI.py \
         --output_path ${PWD}/output_plotting_HRMS_1.pdf
 
 echo $'\n\n\ntest #1'
-python ../src/pycompound/plot_spectra_CLI.py \
+pycompound_plot_spectra \
         --query_data ${PWD}/data/gcms_query.txt \
         --reference_data ${PWD}/data/trimmed_gcms_reference_library.txt \
         --spectrum_ID1 463514 \
@@ -21,7 +21,7 @@ python ../src/pycompound/plot_spectra_CLI.py \
         --output_path ${PWD}/output_plotting_NRMS_1.pdf
 
 echo $'\n\n\ntest #2'
-python ../src/pycompound/plot_spectra_CLI.py \
+pycompound_plot_spectra \
         --query_data ${PWD}/data/gcms_query.txt \
         --reference_data ${PWD}/data/trimmed_gcms_reference_library.txt \
         --similarity_measure mixture \
@@ -30,35 +30,35 @@ python ../src/pycompound/plot_spectra_CLI.py \
         --output_path ${PWD}/output_plotting_NRMS_2.pdf
 
 echo $'\n\n\ntest #3'
-python ../src/pycompound/plot_spectra_CLI.py \
+pycompound_plot_spectra \
         --query_data ${PWD}/data/W001A_1.CDF \
         --reference_data ${PWD}/data/trimmed_gcms_reference_library.txt \
         --chromatography_platform NRMS \
         --output_path ${PWD}/output_plotting_NRMS_3.pdf
 
 echo $'\n\n\ntest #4'
-python ../src/pycompound/plot_spectra_CLI.py \
+pycompound_plot_spectra \
         --query_data ${PWD}/data/1min.mzML \
         --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --chromatography_platform HRMS \
         --output_path ${PWD}/output_plotting_HRMS_2.pdf
 
 echo $'\n\n\ntest #5'
-python ../src/pycompound/plot_spectra_CLI.py \
+pycompound_plot_spectra \
         --query_data ${PWD}/data/GNPS-NIH-SMALLMOLECULEPHARMACOLOGICALLYACTIVE.json \
         --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --chromatography_platform HRMS \
         --output_path ${PWD}/output_plotting_HRMS_3.pdf
 
 echo $'\n\n\ntest #6'
-python ../src/pycompound/plot_spectra_CLI.py \
+pycompound_plot_spectra \
         --query_data ${PWD}/data/GNPS-SELLECKCHEM-FDA-PART1.mgf \
         --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --chromatography_platform HRMS \
         --output_path ${PWD}/output_plotting_HRMS_4.pdf
 
 echo $'\n\n\ntest #7'
-python ../src/pycompound/plot_spectra_CLI.py \
+pycompound_plot_spectra \
         --query_data ${PWD}/data/MoNA-export-Human_Plasma_Quant.msp \
         --reference_data ${PWD}/data/trimmed_GNPS_reference_library.txt \
         --chromatography_platform HRMS \

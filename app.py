@@ -3479,6 +3479,148 @@ def _open_plot_window(session: object, svg_bytes: bytes, title: str = "plot.svg"
     session.send_custom_message("open-plot-window", {"svg": data_url, "title": title})
 
 
+def transform_spectra(spectra_data: str | None = None, spectrum_preprocessing_order: str = 'FNWL', mz_min: int = 0, mz_max: int = 9999999, int_min: int | float = 0, int_max: int | float = 9999999, window_size_centroiding: float = 0.5, window_size_matching: float = 0.5, noise_threshold: float = 0.0, wf_mz: float = 0.0, wf_intensity: float = 1.0, LET_threshold: float = 0.0, output_path: str | None = None) -> pd.DataFrame | None:
+    """Process file of spectra according to user-specified transformations.
+
+    Args:
+        spectra_data: Path to the spectral library file.
+        spectrum_preprocessing_order: Ordered preprocessing operations to apply.
+        mz_min: Minimum m/z value retained during filtering.
+        mz_max: Maximum m/z value retained during filtering.
+        int_min: Minimum intensity value retained during filtering.
+        int_max: Maximum intensity value retained during filtering.
+        window_size_centroiding: Centroiding window size.
+        window_size_matching: Peak-matching window size.
+        noise_threshold: Noise threshold.
+        wf_mz: m/z weighting-factor parameter.
+        wf_intensity: Intensity weighting-factor parameter.
+        LET_threshold: Low-entropy transform threshold.
+        output_path: Path for the output file (txt, mgf, or msp).
+
+    Returns:
+        Identification output data frame if return_ID_output is True; otherwise, None.
+    """
+    if spectra_data is None:
+        print('\nError: No argument passed to the mandatory spectra_data. Please pass the path to the spectra data.')
+        sys.exit()
+    else:
+        extension = spectra_data.rsplit('.',1)
+        extension = extension[(len(extension)-1)]
+        if extension == 'mgf' or extension == 'MGF' or extension == 'mzML' or extension == 'mzml' or extension == 'MZML' or extension == 'cdf' or extension == 'CDF' or extension == 'json' or extension == 'JSON' or extension == 'msp' or extension == 'MSP':
+            output_path_tmp = spectra_data[:-3] + 'txt'
+            build_library_from_raw_data(input_path=spectra_data, output_path=output_path_tmp, is_reference=False)
+            df = pd.read_csv(output_path_tmp, sep='\t')
+        if extension == 'txt' or extension == 'TXT':
+            df = pd.read_csv(spectra_data, sep='\t')
+        unique_ids = df['id'].unique()
+
+    if spectrum_preprocessing_order is not None:
+        spectrum_preprocessing_order = list(spectrum_preprocessing_order)
+    else:
+        spectrum_preprocessing_order = ['F', 'N', 'W', 'L']
+    if set(spectrum_preprocessing_order) - {'F','N','W','L'}:
+        print(f'Error: spectrum_preprocessing_order must contain only \'F\', \'N\', \'L\', \'W\'.')
+        sys.exit()
+
+    if isinstance(int_min,int) is True:
+        int_min = float(int_min)
+    if isinstance(int_max,int) is True:
+        int_max = float(int_max)
+    if isinstance(mz_min,int) is False or isinstance(mz_max,int) is False or isinstance(int_min,float) is False or isinstance(int_max,float) is False:
+        print('Error: mz_min must be a non-negative integer, mz_max must be a positive integer, int_min must be a non-negative float, and int_max must be a positive float')
+        sys.exit()
+    if mz_min < 0:
+        print('\nError: mz_min should be a non-negative integer')
+        sys.exit()
+    if mz_max <= 0:
+        print('\nError: mz_max should be a positive integer')
+        sys.exit()
+    if int_min < 0:
+        print('\nError: int_min should be a non-negative float')
+        sys.exit()
+    if int_max <= 0:
+        print('\nError: int_max should be a positive float')
+        sys.exit()
+
+    if isinstance(window_size_centroiding,float) is False or window_size_centroiding <= 0.0:
+        print('Error: window_size_centroiding must be a positive float.')
+        sys.exit()
+    if isinstance(window_size_matching,float) is False or window_size_matching<= 0.0:
+        print('Error: window_size_matching must be a positive float.')
+        sys.exit()
+
+    if isinstance(noise_threshold,int) is True:
+        noise_threshold = float(noise_threshold)
+    if isinstance(noise_threshold,float) is False or noise_threshold < 0:
+        print('Error: noise_threshold must be a positive float.')
+        sys.exit()
+
+    if isinstance(wf_intensity,int) is True:
+        wf_intensity = float(wf_intensity)
+    if isinstance(wf_mz,int) is True:
+        wf_mz = float(wf_mz)
+    if isinstance(wf_intensity,float) is False or isinstance(wf_mz,float) is False:
+        print('Error: wf_mz and wf_intensity must be integers or floats')
+        sys.exit()
+
+    normalization_method = 'standard'
+
+    if output_path is None:
+        output_path = f'{Path.cwd()}/processed_spectra.txt'
+        print(f'Warning: writing processed spectral data to {output_path}')
+    output_extension = output_path.rsplit('.',1)
+    output_extension = output_extension[(len(output_extension)-1)].lower()
+    if output_extension not in ['mgf', 'msp', 'txt']:
+        print('Error: output_path must specify a txt, mgf, or msp file')
+        sys.exit()
+
+    if output_extension in ['txt','mgf','msp']:
+        with open(output_path, 'w') as out_file:
+            if output_extension == 'txt':
+                out_file.write(f'id\tmz_ratio\tintensity')
+
+            for spec_idx in range(len(unique_ids)):
+                spec_mask = (df['id'] == unique_ids[spec_idx])
+                spec_idxs_tmp = np.where(spec_mask)[0]
+                spec_tmp = np.asarray(pd.concat([df['mz_ratio'].iloc[spec_idxs_tmp], df['intensity'].iloc[spec_idxs_tmp]], axis=1).reset_index(drop=True))
+
+                for transformation in spectrum_preprocessing_order:
+                    if np.isinf(spec_tmp[:, 1]).sum() > 0:
+                        spec_tmp[:, 1] = np.zeros(spec_tmp.shape[0])
+                    if transformation == 'W' and spec_tmp.shape[0] > 1:
+                        spec_tmp[:, 1] = wf_transform(spec_tmp[:, 0], spec_tmp[:, 1], wf_mz, wf_intensity)
+                    if transformation == 'L' and spec_tmp.shape[0] > 1:
+                        spec_tmp[:, 1] = LE_transform(spec_tmp[:, 1], LET_threshold, normalization_method=normalization_method)
+                    if transformation == 'N' and spec_tmp.shape[0] > 1:
+                        spec_tmp = remove_noise(spec_tmp, nr=noise_threshold)
+                    if transformation == 'F' and spec_tmp.shape[0] > 1:
+                        spec_tmp = filter_spec_lcms(spec_tmp, mz_min=mz_min, mz_max=mz_max, int_min=int_min, int_max=int_max, is_matched=False)
+
+                if output_extension == 'txt':
+                    for peak_idx in range(spec_tmp.shape[0]):
+                        mz = spec_tmp[peak_idx, 0]
+                        intensity = spec_tmp[peak_idx, 1]
+                        out_file.write(f'\n{unique_ids[spec_idx]}\t{mz}\t{intensity}')
+                elif output_extension == 'mgf':
+                    out_file.write('BEGIN IONS')
+                    out_file.write(f'\nTITLE={unique_ids[spec_idx]}')
+                    out_file.write(f'\nSCANS={spec_idx + 1}')
+                    for peak_idx in range(spec_tmp.shape[0]):
+                        mz = spec_tmp[peak_idx, 0]
+                        intensity = spec_tmp[peak_idx, 1]
+                        out_file.write(f'\n{mz} {intensity}')
+                    out_file.write('\nEND IONS\n\n')
+                elif output_extension == 'msp':
+                    out_file.write(f'Name: {unique_ids[spec_idx]}')
+                    out_file.write(f'\nNum Peaks: {spec_tmp.shape[0]}')
+                    for peak_idx in range(spec_tmp.shape[0]):
+                        mz = spec_tmp[peak_idx, 0]
+                        intensity = spec_tmp[peak_idx, 1]
+                        out_file.write(f'\n{mz} {intensity}')
+                    out_file.write('\n\n')
+
+
+
 def plot_spectra_ui(platform: str) -> object:
     """Create the plot-spectra user interface.
 
@@ -3607,6 +3749,81 @@ ui.div(
         ui.div(ui.output_text("plot_query_status"), style="margin-top:8px; font-size:14px"),
         ui.div(ui.output_text("plot_reference_status"), style="margin-top:8px; font-size:14px"),
         ui.output_plot("spectra_plot", width="800px", height="600px"),
+    ),
+    )
+
+
+
+def transform_spectra_ui() -> object:
+    """Create the transform-spectra user interface.
+
+    Args:
+
+    Returns:
+        Shiny UI object.
+    """
+    base_inputs = [
+        ui.input_file("spectra_data", ui.span("Upload ",ui.strong("spectra dataset")," (mgf, mzML, cdf, msp, json, or txt):")),
+        ui.input_text("spectrum_preprocessing_order", ui.span("Sequence of characters for ",ui.strong("preprocessing order")," (F (filtering), N (noise removal), L (low-entropy transformation), W (weight factor transformation))."), "FNWL",),
+        ui.input_select("transform_output_format", ui.span("Select ",ui.strong("output format"),":"), ["txt","mgf","msp"]),
+        ui.input_numeric("mz_min", ui.span(ui.strong("Minimum m/z")," for filtering:"), 0),
+        ui.input_numeric("mz_max", ui.span(ui.strong("Maximum m/z")," for filtering:"), 99_999_999),
+        ui.input_numeric("int_min", ui.span(ui.strong("Minimum intensity")," for filtering:"), 0),
+        ui.input_numeric("int_max", ui.span(ui.strong("Maximum intensity")," for filtering:"), 999_999_999),
+        ui.input_numeric("noise_threshold", ui.span(ui.strong("Noise removal threshold"),":"), 0.0),
+        ui.input_numeric("wf_mz", ui.strong("Mass/charge weight factor:"), 0.0),
+        ui.input_numeric("wf_int", ui.strong("Intensity weight factor:"), 1.0),
+        ui.input_numeric("LET_threshold", ui.strong("Low-entropy threshold:"), 0.0),
+    ]
+
+
+    run_button_transform_spectra = ui.download_button("run_btn_transform_spectra", "Download output file", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
+    back_button = ui.input_action_button("back", "Back to main menu", style="font-size:16px; padding:15px 30px; width:200px; height:80px")
+
+    inputs_columns = ui.layout_columns(
+        ui.div(base_inputs[0:5], style="display:flex; flex-direction:column; gap:10px;"),
+        ui.div(base_inputs[5:11], style="display:flex; flex-direction:column; gap:10px;"),
+        col_widths=(3,3),
+    )
+
+    return ui.div(
+    ui.TagList(
+        ui.h2("Transform Spectra"),
+        
+ui.div(
+    {"class": "form-control",
+     "style": "max-width:800px; max-height:140px; padding:10px; "
+              "background:#f8f9fa; overflow:auto; margin-bottom:8px;"},
+
+    ui.p(ui.strong("Detailed descriptions (GitHub):"), style="margin-bottom:4px"),
+
+    ui.tags.ul(
+
+        ui.tags.li(
+            ui.tags.a(
+                "Spectrum preprocessing and transformation methods",
+                href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#spec-preprocessing-transformations",
+                target="_blank",
+                rel="noopener noreferrer"
+            )
+        ),
+
+        ui.tags.li(
+            ui.tags.a(
+                "Tunable preprocessing parameters",
+                href="https://github.com/hdlugas/pycompound?tab=readme-ov-file#param_descriptions",
+                target="_blank",
+                rel="noopener noreferrer"
+            )
+        ),
+
+        style="margin-top:0px; margin-bottom:0px;"
+    )
+),
+        
+        inputs_columns,
+        run_button_transform_spectra,
+        back_button,
     ),
     )
 
@@ -4037,6 +4254,7 @@ def server(input: object, output: object, session: object) -> None:
     run_status_parameter_tuning_DE = reactive.Value("")
     is_tuning_grid_running = reactive.Value(False)
     is_tuning_DE_running = reactive.Value(False)
+    is_transform_spectra_running = reactive.Value(False)
     match_log_rv = reactive.Value("")
     is_matching_rv = reactive.Value(False)
     is_any_job_running = reactive.Value(False)
@@ -4059,6 +4277,9 @@ def server(input: object, output: object, session: object) -> None:
     converted_reference_path_rv = reactive.Value(None)
 
     df_rv = reactive.Value(None)
+
+    transformed_output_path = reactive.Value(None)
+
 
     def _discover_rank_cols(df: pd.DataFrame):
         pred_pat = re.compile(r"^RANK\.(\d+)\.PRED$")
@@ -4254,6 +4475,10 @@ def server(input: object, output: object, session: object) -> None:
         is_tuning_DE_running.set(False)
         is_any_job_running.set(False)
 
+    def _reset_transform_spectra_state():
+        match_log_rv.set("")
+        is_transform_spectra_running.set(False)
+
 
     @reactive.effect
     @reactive.event(input.back)
@@ -4269,6 +4494,9 @@ def server(input: object, output: object, session: object) -> None:
             _reset_parameter_tuning_state()
         elif page == "run_parameter_tuning_DE":
             _reset_parameter_tuning_state()
+        elif page == "run_transform_spectra":
+            _reset_transform_spectra_state()
+
 
     @reactive.effect
     def _clear_on_enter_pages():
@@ -4280,6 +4508,8 @@ def server(input: object, output: object, session: object) -> None:
         elif page == "run_parameter_tuning_grid":
             _reset_parameter_tuning_state()
         elif page == "run_parameter_tuning_DE":
+            _reset_parameter_tuning_state()
+        elif page == "run_transform_spectra":
             _reset_parameter_tuning_state()
 
 
@@ -4405,6 +4635,11 @@ def server(input: object, output: object, session: object) -> None:
     def _go_tuning_de():
         current_page.set("run_parameter_tuning_DE")
 
+    @reactive.effect
+    @reactive.event(input.run_transform_spectra)
+    def _go_tuning_de():
+        current_page.set("run_transform_spectra")
+
 
     @reactive.effect
     @reactive.event(input.back)
@@ -4458,6 +4693,7 @@ ui.hr(style="margin-top:20px; margin-bottom:25px; border-top:2px solid #87CEEB")
                 ui.input_action_button("run_spec_lib_matching", ui.HTML("Identify<br>compounds"), style="font-size:24px; padding:15px 40px; width:310px; height:100px; line-height:1.2; margin-top:10px; margin-right:50px;"),
                 ui.input_action_button("run_parameter_tuning_grid", ui.HTML("Tune parameters<br>(Grid search)"), style="font-size:24px; padding:15px 40px; width:310px; height:100px; line-height:1.2; margin-top:10px; margin-right:50px;"),
                 ui.input_action_button("run_parameter_tuning_DE", ui.HTML("Tune parameters<br>(DE optimization)"), style="font-size:24px; padding:15px 40px; width:310px; height:100px; line-height:1.2; margin-top:10px; margin-right:50px;"),
+                ui.input_action_button("run_transform_spectra", ui.HTML("Transform<br>spectra"), style="font-size:24px; padding:15px 40px; width:310px; height:100px; line-height:1.2; margin-top:10px; margin-right:50px;"),
         style="margin-top:25px; text-align:left;"
     ),
         
@@ -4703,6 +4939,8 @@ ui.p(
             return run_parameter_tuning_grid_ui(input.chromatography_platform())
         elif current_page() == "run_parameter_tuning_DE":
             return run_parameter_tuning_DE_ui(input.chromatography_platform())
+        elif current_page() == "run_transform_spectra":
+            return transform_spectra_ui()
 
 
 
@@ -4758,6 +4996,7 @@ ui.p(
     @reactive.effect
     @reactive.event(input.reference_data)
     async def _populate_ids_from_reference_upload():
+        print('OOOOOOOOOOOOOOOOOOOOOOO')
         files = input.reference_data()
         if not files:
             return
@@ -4808,6 +5047,7 @@ ui.p(
 
     @reactive.effect
     def _set_plot_ready_when_inputs_complete():
+        print('PPPPPPPPPPPPPPPPPP')
         if current_page() != "plot_spectra":
             return
         q_ok = bool(input.query_data() and len(input.query_data()) > 0)
@@ -4819,6 +5059,7 @@ ui.p(
 
     @reactive.effect
     def _set_specmatch_ready_when_inputs_complete():
+        print('QQQQQQQQQQQQQQQQQQQQQQQQ')
         if current_page() != "run_spec_lib_matching":
             return
         q_ok = bool(input.query_data() and len(input.query_data()) > 0)
@@ -5337,216 +5578,41 @@ ui.p(
         yield df_out.to_csv(index=False, sep='\t').encode("utf-8")
 
 
-    @reactive.effect
-    @reactive.event(input.run_btn_parameter_tuning_DE)
-    async def run_btn_parameter_tuning_DE():
-        match_log_rv.set("Tuning specified continuous parameters using differential evolution...\n")
+
+    @render.download(filename=lambda: f"transformed_spectra.{input.transform_output_format()}")
+    async def run_btn_transform_spectra():
         is_any_job_running.set(True)
-        is_tuning_DE_running.set(True)
+        is_transform_spectra_running.set(True)
+        match_log_rv.set("Transforming spectra...\n")
         await reactive.flush()
-
-        def _safe_float(v, default):
-            try:
-                if v is None:
-                    return default
-                return float(v)
-            except Exception:
-                return default
-
-        def _iget(id, default=None):
-            if id in input:
-                try:
-                    return input[id]()
-                except SilentException:
-                    return default
-            return default
+        outfile = f'{Path.cwd()}/transformed_spectra.{input.transform_output_format()}'
+        common_kwargs = dict(
+            spectra_data = input.spectra_data()[0]["datapath"],
+            spectrum_preprocessing_order = input.spectrum_preprocessing_order(),
+            mz_min = int(input.mz_min()),
+            mz_max = int(input.mz_max()),
+            int_min = float(input.int_min()),
+            int_max = float(input.int_max()),
+            noise_threshold = float(input.noise_threshold()),
+            wf_mz = float(input.wf_mz()),
+            wf_intensity = float(input.wf_int()),
+            LET_threshold = float(input.LET_threshold()),
+            output_path = outfile
+        )
 
         loop = asyncio.get_running_loop()
-        q: asyncio.Queue[str | None] = asyncio.Queue()
-
-        class UIWriter(io.TextIOBase):
-            def write(self, s: str):
-                if s:
-                    loop.call_soon_threadsafe(q.put_nowait, s)
-                return len(s)
-            def flush(self): pass
-
-        async def _drain():
-            while True:
-                msg = await q.get()
-                if msg is None:
-                    break
-                match_log_rv.set(match_log_rv.get() + msg)
-                await reactive.flush()
-
-        drain_task = asyncio.create_task(_drain())
-        writer = UIWriter()
+        rw = ReactiveWriter(loop)
 
         try:
-            qfile = _iget("query_data")[0]["datapath"]
-            rfile = _iget("reference_data")[0]["datapath"]
-
-            platform = _iget("chromatography_platform", "HRMS")
-            sim = _iget("similarity_measure", "cosine")
-            spro = _iget("spectrum_preprocessing_order", "FCNMWL")
-
-            hq_raw = _iget("high_quality_reference_library", False)
-            if isinstance(hq_raw, str):
-                hq = hq_raw.lower() == "true"
-            else:
-                hq = bool(hq_raw)
-
-            mz_min = _safe_float(_iget("mz_min", 0.0), 0.0)
-            mz_max = _safe_float(_iget("mz_max", 99_999_999.0), 99_999_999.0)
-            int_min = _safe_float(_iget("int_min", 0.0), 0.0)
-            int_max = _safe_float(_iget("int_max", 999_999_999.0), 999_999_999.0)
-
-            weights = {"cosine":input.w_cosine(),
-                       "shannon":input.w_shannon(),
-                       "renyi":input.w_renyi(),
-                       "tsallis":input.w_tsallis(),
-                       "jaccard":input.w_jaccard(),
-                       "dice":input.w_dice(),
-                       "3d_jaccard":input.w_3w_jaccard(),
-                       "sokal_sneak":input.w_sokal_sneath(),
-                       "binary_cosine":input.w_binary_cosine(),
-                       "mountford":input.w_mountford(),
-                       "mcconnaughey":input.w_mcconnaughey(),
-                       "driver_kroeber":input.w_driver_kroeber(),
-                       "simpson":input.w_simpson(),
-                       "braun_banquet":input.w_braun_banquet(),
-                       "fager_mcgowan":input.w_fager_mcgowan(),
-                       "kulczynski":input.w_kulczynski(),
-                       "intersection":input.w_intersection(),
-                       "hamming":input.w_hamming(),
-                       "hellinger":input.w_hellinger()}
-
-            opt_params = tuple(_iget("params", ()) or ())
-            bounds_dict = {}
-            param_defaults = PARAMS_HRMS if platform == "HRMS" else PARAMS_NRMS
-            for p in opt_params:
-                lo = _safe_float(_iget(f"min_{p}", param_defaults.get(p, (0.0, 1.0))[0]),
-                                 param_defaults.get(p, (0.0, 1.0))[0])
-                hi = _safe_float(_iget(f"max_{p}", param_defaults.get(p, (0.0, 1.0))[1]),
-                                 param_defaults.get(p, (0.0, 1.0))[1])
-                if lo > hi:
-                    lo, hi = hi, lo
-                bounds_dict[p] = (lo, hi)
-
-            defaults = {
-                "window_size_centroiding": _safe_float(_iget("window_size_centroiding", 0.5), 0.5),
-                "window_size_matching":    _safe_float(_iget("window_size_matching",    0.5), 0.5),
-                "noise_threshold":         _safe_float(_iget("noise_threshold",         0.0), 0.0),
-                "wf_mz":                   _safe_float(_iget("wf_mz",                   0.0), 0.0),
-                "wf_int":                  _safe_float(_iget("wf_int",                  1.0), 1.0),
-                "LET_threshold":           _safe_float(_iget("LET_threshold",           0.0), 0.0),
-                "entropy_dimension":       _safe_float(_iget("entropy_dimension",       1.1), 1.1),
-            }
-            if platform == "NRMS":
-                defaults.pop("window_size_centroiding", None)
-                defaults.pop("window_size_matching", None)
-
-        except Exception as e:
-            import traceback
-            tb = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-            match_log_rv.set(match_log_rv.get() + f"\n❌ Input snapshot failed:\n{tb}\n")
-            is_tuning_DE_running.set(False); is_any_job_running.set(False)
-            await q.put(None); await drain_task; await reactive.flush()
-            return
-
-        def _run():
-            with redirect_stdout(writer), redirect_stderr(writer):
-                if input.precursor_ion_mz_tolerance() == None:
-                    precursor_ion_mz_tolerance_tmp = None
-                else:
-                    precursor_ion_mz_tolerance_tmp = float(input.precursor_ion_mz_tolerance())
-
-                if input.ionization_mode() == None:
-                    ionization_mode_tmp = None
-                else:
-                    ionization_mode_tmp = input.ionization_mode()
-
-                if input.adduct() == None:
-                    adduct_tmp = None
-                else:
-                    adduct_tmp = input.adduct()
-
-                if input.chromatography_platform() == 'HRMS':
-                    return tune_params_DE(
-                        query_data=qfile,
-                        reference_data=rfile,
-                        precursor_ion_mz_tolerance=precursor_ion_mz_tolerance_tmp,
-                        ionization_mode=ionization_mode_tmp,
-                        adduct=adduct_tmp,
-                        chromatography_platform=input.chromatography_platform(),
-                        similarity_measure=sim,
-                        weights=weights,
-                        spectrum_preprocessing_order=spro,
-                        mz_min=mz_min, mz_max=mz_max,
-                        int_min=int_min, int_max=int_max,
-                        high_quality_reference_library=hq,
-                        optimize_params=list(opt_params),
-                        param_bounds=bounds_dict,
-                        default_params=defaults,
-                        de_workers=1,
-                        maxiters=input.max_iterations()
-                    )
-                else:
-                    return tune_params_DE(
-                        query_data=qfile,
-                        reference_data=rfile,
-                        chromatography_platform=input.chromatography_platform(),
-                        similarity_measure=sim,
-                        weights=weights,
-                        spectrum_preprocessing_order=spro,
-                        mz_min=mz_min, mz_max=mz_max,
-                        int_min=int_min, int_max=int_max,
-                        high_quality_reference_library=hq,
-                        optimize_params=list(opt_params),
-                        param_bounds=bounds_dict,
-                        default_params=defaults,
-                        de_workers=1,
-                        maxiters=input.max_iterations()
-                    )
-
-        try:
-            _ = await asyncio.to_thread(_run)
-            match_log_rv.set(match_log_rv.get() + "\n✅ Differential evolution finished.\n")
-        except Exception as e:
-            import traceback
-            tb = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-            match_log_rv.set(match_log_rv.get() + f"\n❌ {type(e).__name__}: {e}\n{tb}\n")
+            await asyncio.to_thread(transform_spectra, **common_kwargs)
+            with open(outfile, "rb") as f:
+                yield f.read()
         finally:
-            await q.put(None)
-            await drain_task
-            is_tuning_DE_running.set(False)
             is_any_job_running.set(False)
+            is_transform_spectra_running.set(False)
             await reactive.flush()
 
 
-    @reactive.effect
-    async def _pump_reactive_writer_logs():
-        if not is_tuning_grid_running.get():
-            return
-
-        reactive.invalidate_later(0.1)
-        msgs = _drain_queue_nowait(_LOG_QUEUE)
-        if msgs:
-            match_log_rv.set(match_log_rv.get() + "".join(msgs))
-            await reactive.flush()
-
-
-    @render.text
-    def status_output():
-        return run_status_plot_spectra.get()
-        return run_status_spec_lib_matching.get()
-        return run_status_parameter_tuning_grid.get()
-        return run_status_parameter_tuning_DE.get()
-
-    @output
-    @render.text
-    def run_log():
-        return match_log_rv.get()
 
 
 app_dir = Path(__file__).parent

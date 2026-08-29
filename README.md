@@ -27,11 +27,12 @@ PyCompound is a Python-based tool for spectral library matching designed to iden
   - [4.4 Additional Example and Test Scripts](#toy-examples-others)
   - [4.5 Data and Description](#toy-all-data)
 - [5. Key References](#key-references)
-- [6. Bugs/Questions?](#bugs-questions)
+- [6. Citation](#citation)
+- [7. Bugs/Questions?](#bugs-questions)
 
 <a name="create-conda-env"></a>
 ## 1. Installation
-PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Pyteomics, and netCDF4. Specifically, PyCompound was validated with python=3.12.4, matplotlib=3.8.4, numpy=1.26.4, pandas=2.2.2, scipy=1.13.1, pyteomics=4.7.2, netCDF4=1.6.5, lxml=5.1.0, joblib=1.5.2, and shiny=1.4.0, although it may work with other versions of these tools. A user may consider creating a conda environment (see [https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for guidance on getting started with conda if you are unfamiliar). For a system with conda installed, one can create the environment pycompound_env, activate it, and install the necessary dependencies with:
+PyCompound requires the Python dependencies Matplotlib, NumPy, Pandas, SciPy, Pyteomics, and netCDF4. Specifically, PyCompound was validated with python=3.12.4, matplotlib=3.8.4, numpy=1.26.4, pandas=2.2.2, scipy=1.13.1, pyteomics=4.7.2, netCDF4=1.6.5, lxml=5.1.0, joblib=1.5.2, and shiny=1.4.0, although it may work with other versions of these tools. A user may consider creating a conda environment (see [https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for guidance on getting started with conda if you are unfamiliar).
 
 <a name="prerequisites"></a>
 ## 1.1 Prerequisites by Operating System
@@ -1259,7 +1260,11 @@ Li, Y., Kind, T., Folz, J. et al. (2021). Spectral entropy outperforms MS/MS dot
 
 Kim, S., Koo, I., Wei, X., & Zhang, X. (2012). A method of finding optimal weight factors for compound identification in gas chromatography-mass spectrometry. Bioinformatics, 28(8), 1158-1163. https://doi.org/10.1093/bioinformatics/bts083.
 
+<a name="citation"></a>
+## 6. Citation
+Dlugas, H., Zhang, X., Bao, X., Li, J., Kato, I., & Kim, S. (2026). PyCompound: An Open-Source Python Package for Spectral-Library Matching in Mass Spectrometry-Based Metabolomics. Metabolites, 16(8), 585. https://doi.org/10.3390/metabo16080585 
+
 <a name="bugs-questions"></a>
-## 6. Bugs/Questions?
+## 7. Bugs/Questions?
 If you notice any bugs in this software or have any questions, please create a new issue in this repository.
 
